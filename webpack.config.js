@@ -22,40 +22,21 @@ function getEntry(root) {
     return entry;
 }
 
-module.exports = (env, srcFolder, buildFolder) => {
-
-    const isDev = env === 'dev' ? true : false;
+module.exports = (srcFolder, buildFolder) => {
 
     // 获取入口
     const entry = getEntry(srcFolder);
-
-    const plugins = [
-        new webpack.optimize.CommonsChunkPlugin({
-            name: 'vendor',
-            filename: 'common.js',
-            minChunks: Infinity,
-        }),
-        new StringReplacePlugin(),
-        new ExtractTextPlugin({
-            filename: '[name].css',
-            disable: false
-        })
-    ];
-
-    if (isDev) {
-        plugins.push(new webpack.HotModuleReplacementPlugin())
-    }
 
 		const config = {
 				entry: entry,
         output: {
             path: path.join(buildFolder, 'static'),
-            publicPath: 'static',
+            publicPath: '/static/',
             filename: '[name].js',
             chunkFilename: '[name].js'
         },
         resolve: {
-            mainFields: ['jsnext:main', 'main'],
+            mainFields: ['browser', 'module', 'jsnext:main', 'main'],
             alias: {
                 vue: 'vue/dist/vue.js',
             }
@@ -74,17 +55,22 @@ module.exports = (env, srcFolder, buildFolder) => {
                     test: /\.(woff|svg|eot|ttf)\??.*$/,
                     use: 'url-loader?name=img/[hash].[ext]&limit=10'
                 }, {
-    								test: /\.md$/,
-    								loader: 'vue-markdown-loader'
-    						}, {
+                    test: /\.md$/,
+                    loader: 'vue-markdown-loader',
+                    options: {
+                        preprocess: function(markdownIt, source) {
+                          return source;
+                        },
+                    }
+                }, {
                     test: /\.css$/,
-                    use: isDev ? ['vue-style-loader', 'css-loader', 'postcss-loader'] : ExtractTextPlugin.extract({
+                    use: ExtractTextPlugin.extract({
                         use: ['css-loader?minimize', 'postcss-loader'],
                         fallback: 'vue-style-loader'
                     })
                 }, {
                     test: /\.less$/,
-                    use: isDev ? ['vue-style-loader', 'css-loader', 'postcss-loader', 'less-loader'] : ExtractTextPlugin.extract({
+                    use: ExtractTextPlugin.extract({
                         use: ['css-loader?minimize', 'postcss-loader', 'less-loader'],
                         fallback: 'vue-style-loader'
                     })
@@ -96,11 +82,11 @@ module.exports = (env, srcFolder, buildFolder) => {
                     ],
                     options: {
                         loaders: {
-                            css: isDev ? ['vue-style-loader', 'css-loader', 'postcss-loader'] : ExtractTextPlugin.extract({
+                            css: ExtractTextPlugin.extract({
                                 use: ['css-loader?minimize', 'postcss-loader'],
                                 fallback: 'vue-style-loader'
                             }),
-                            less: isDev ? ['vue-style-loader', 'css-loader', 'postcss-loader', 'less-loader'] : ExtractTextPlugin.extract({
+                            less: ExtractTextPlugin.extract({
                                 use: ['css-loader?minimize', 'postcss-loader', 'less-loader'],
                                 fallback: 'vue-style-loader'
                             })
@@ -114,7 +100,18 @@ module.exports = (env, srcFolder, buildFolder) => {
                     ]
                 }]
 				},
-				plugins: plugins
+				plugins: [
+            new webpack.optimize.CommonsChunkPlugin({
+                name: 'vendor',
+                filename: 'common.js',
+                minChunks: Infinity,
+            }),
+            new StringReplacePlugin(),
+            new ExtractTextPlugin({
+                filename: '[name].css',
+                disable: false
+            })
+        ]
 		};
 
 		return config;
