@@ -6,7 +6,6 @@ const webpack = require('webpack');
 const StringReplacePlugin = require('string-replace-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-
 function getEntry(root) {
 
     const files = fs.readdirSync(root);
@@ -14,8 +13,11 @@ function getEntry(root) {
     const entry = { vendor: ['vue', 'vue-router'] };
 
     files.forEach((filename) => {
-        if (fs.statSync(path.join(root, filename)).isDirectory()) {
-            entry[filename + '/index'] = [path.join(root, filename, 'index.js')];
+        const filepath = path.join(root, filename);
+        if (fs.statSync(filepath).isDirectory()) {
+            if (fs.existsSync(path.join(filepath, 'index.html'))) {
+                  entry[filename + '/index'] = [path.join(root, filename, 'index.js')];
+            }
         }
     });
 

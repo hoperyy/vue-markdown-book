@@ -29,7 +29,7 @@ const prepareBuild = () => {
                 const subStats = fs.statSync(path.join(srcFolder, foldername, subname));
 
                 if (!subStats.isDirectory() && /\.html*/.test(subname)) {
-                    fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, 'pages', foldername + '.html'));
+                    fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
                 }
             });
         }
@@ -40,7 +40,7 @@ const prepareBuild = () => {
         const filepath = stats.path;
         const basename = path.basename(filepath);
         const foldername = path.basename(path.dirname(filepath));
-        fse.copySync(filepath, path.join(buildFolder, 'pages', foldername + '.html'));
+        fse.copySync(filepath, path.join(buildFolder, foldername + '.html'));
     });
 };
 
