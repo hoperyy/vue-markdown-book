@@ -57,8 +57,8 @@ const prepareSnippets = () => {
     console.log('Preparing snippets...');
 
     // clear
-    if (fs.existsSync('./src/snippets/dynamic-routes')) {
-        fse.removeSync('./src/snippets/dynamic-routes');
+    if (fs.existsSync('./src/snippets/dynamic-files')) {
+        fse.removeSync('./src/snippets/dynamic-files');
     }
 
     // prepare dynamic-routes
@@ -76,8 +76,7 @@ const prepareSnippets = () => {
           map[md5String] = filepath;
 
           // 创建 dynamic-routes 文件
-          const dynamicFilePath = path.join('./src/snippets/dynamic-routes', md5String + '.vue');
-          // fse.ensureFileSync(dynamicFilePath);
+          const dynamicFilePath = path.join('./src/snippets/dynamic-files', md5String + '.vue');
           const content = `
             <template>
                 <div>
@@ -118,7 +117,7 @@ const prepareSnippets = () => {
 
     const createRoutesFile = (map) => {
         // 创建 routes.js
-        const routesFilePath = './src/snippets/dynamic-routes/routes.js';
+        const routesFilePath = './src/snippets/dynamic-files/routes.js';
         let routesContent = ``;
         for (md5String in map) {
             routesContent += `\nimport ${'doc_' + md5String} from './${md5String}.vue';`;
@@ -145,9 +144,18 @@ const prepareSnippets = () => {
     const map = createDynamicFiles();
     createRoutesFile(map);
 
-    gulp.watch(['./docs/snippets/**/*'], function(stats) {
-        console.log('~~~~ gulp change, ', stats.path, stats);
-    });
+    // create file-tree.js
+    const createFileTree = () => {
+        const dirTree = require('directory-tree')('./docs/snippets/');
+        const dirTreeFilePath = path.join('./src/snippets/dynamic-files/file-tree.js');
+        fse.ensureFileSync(dirTreeFilePath);
+        const fd = fs.openSync(dirTreeFilePath, 'w');
+        fs.writeFileSync(dirTreeFilePath, `module.exports=${JSON.stringify(dirTree)}`);
+        fs.utimesSync(dirTreeFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
+        fs.close(fd);
+    };
+
+    createFileTree();
 
     console.log('Snippets preparation done.');
 
