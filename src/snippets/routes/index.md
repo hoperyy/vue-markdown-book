@@ -11,5 +11,3 @@
 ```
 
 `这是代码`
-
-![图片](./assets/markdown-img-paste-20170713084453441.png)
