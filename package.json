@@ -32,5 +32,9 @@
     "vue-template-compiler": "^2.3.4",
     "webpack": "^3.1.0",
     "webpack-dev-server": "^2.5.1"
+  },
+  "dependencies": {
+    "md5": "^2.2.1",
+    "recursive-readdir-sync": "^1.0.6"
   }
 }

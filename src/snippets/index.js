@@ -2,7 +2,7 @@ import './index.less';
 
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import map from './map';
+import routes from './dynamic-routes/routes';
 
 // 子页面
 import Main from './routes/Index.vue';
@@ -16,7 +16,7 @@ const router = new VueRouter({
     routes: [{
         path: '/',
         component: Main
-    }].concat(map)
+    }].concat(routes)
     // 添加路由结束
 
 });

@@ -4,6 +4,7 @@ const fs = require('fs');
 const webpack = require('webpack');
 const gulp = require('gulp');
 const fse = require('fs-extra');
+const readdirSync = require('recursive-readdir-sync');
 
 const srcFolder = path.join(__dirname, 'src');
 const buildFolder = path.join(__dirname, 'build');
@@ -44,11 +45,96 @@ const prepareBuild = () => {
     });
 };
 
-const prepareMap = () => {
+const prepareSnippets = () => {
+
+    const md5 = require('md5');
 
     // prepare snippets
     console.log('Preparing maps of snippets...');
-    
+
+    // prepare dynamic-routes
+    const snippetsFiles = readdirSync('./docs/snippets');
+
+    const createDynamicFiles = () => {
+
+      const map = {};
+
+      snippetsFiles.forEach((filepath) => {
+          const filename = path.basename(filepath);
+          const foldername = path.dirname(filepath);
+          const md5String = md5(filepath);
+
+          map[md5String] = filepath;
+
+          // 创建 dynamic-routes 文件
+          const dynamicFilePath = path.join('./src/snippets/dynamic-routes', md5String + '.vue');
+          // fse.ensureFileSync(dynamicFilePath);
+          const content = `
+            <template>
+                <div>
+                    <Mheader></Mheader>
+                    <Snippet></Snippet>
+                    <Mfooter></Mfooter>
+                </div>
+            </template>
+
+            <script>
+            import Mheader from '../../components/Header.vue';
+            import Mfooter from '../../components/Footer.vue';
+
+            import Snippet from '../../../${filepath}';
+
+            export default {
+                components: {
+                    Mheader,
+                    Mfooter,
+                    Snippet
+                }
+            };
+
+            </script>
+          `;
+
+          const fd = fs.openSync(dynamicFilePath, 'w+');
+          fs.writeFileSync(dynamicFilePath, content);
+
+          fs.utimesSync(dynamicFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
+          fs.close(fd);
+
+      });
+
+      return map;
+    };
+
+    const createRoutesFile = (map) => {
+        // 创建 routes.js
+        const routesFilePath = './src/snippets/dynamic-routes/routes.js';
+        const fd = fs.openSync(routesFilePath, 'w+');
+        let routesContent = ``;
+        for (md5String in map) {
+            routesContent += `\nimport ${'doc_' + md5String} from './${md5String}.vue';`;
+        }
+        routesContent += `\n\nmodule.exports = [\n`;
+        for (md5String in map) {
+            routesContent += `{
+              path: '${map[md5String].replace('docs/snippets', '').replace(/\.md$/, '')}',
+              component: ${'doc_' + md5String}
+            },`;
+        }
+        routesContent = routesContent.replace(/\,$/, '');
+        routesContent += '\n];';
+        fs.writeFileSync(routesFilePath, routesContent);
+
+        fs.utimesSync(routesFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
+
+        fs.close(fd);
+    };
+
+    const map = createDynamicFiles();
+    createRoutesFile(map);
+
+    console.log(map);
+
     console.log('Preparation done.');
 
 };
@@ -60,7 +146,7 @@ gulp.task('dev', () => {
 
     prepareBuild();
 
-    prepareMap();
+    prepareSnippets();
 
     // HMR
     webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
@@ -110,7 +196,7 @@ gulp.task('build', () => {
 
     prepareBuild();
 
-    prepareMap();
+    prepareSnippets();
 
     webpack(webpackConfig, function() {});
 
