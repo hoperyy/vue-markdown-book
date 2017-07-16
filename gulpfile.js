@@ -44,12 +44,23 @@ const prepareBuild = () => {
     });
 };
 
+const prepareMap = () => {
+
+    // prepare snippets
+    console.log('Preparing maps of snippets...');
+    
+    console.log('Preparation done.');
+
+};
+
 gulp.task('dev', () => {
 
     const WebpackDevServer = require('webpack-dev-server');
     const port = 9000;
 
     prepareBuild();
+
+    prepareMap();
 
     // HMR
     webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
@@ -98,6 +109,8 @@ gulp.task('dev', () => {
 gulp.task('build', () => {
 
     prepareBuild();
+
+    prepareMap();
 
     webpack(webpackConfig, function() {});
 
