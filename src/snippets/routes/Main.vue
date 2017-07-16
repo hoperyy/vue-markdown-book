@@ -1,16 +1,23 @@
 <template>
     <div>
+        <Mheader></Mheader>
         <md></md>
+        <Mfooter></Mfooter>
     </div>
 </template>
 
 <script>
 
+import Mheader from '../../components/Header.vue';
+import Mfooter from '../../components/Footer.vue'
+
 import md from './index.md';
 
 export default {
     components: {
-      md
+        Mheader,
+        Mfooter,
+        md
     },
     data() {
         return {
