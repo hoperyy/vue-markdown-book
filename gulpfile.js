@@ -30,8 +30,12 @@ const prepareBuild = () => {
                 const subStats = fs.statSync(path.join(srcFolder, foldername, subname));
 
                 if (!subStats.isDirectory() && /\.html*/.test(subname)) {
-                    fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
-                }
+                    try {
+                      fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
+                    } catch(err) {
+                      console.log('error: ', err, ' \n and subname is: ', subname);
+                    }
+                  }
             });
         }
 
@@ -51,6 +55,11 @@ const prepareSnippets = () => {
 
     // prepare snippets
     console.log('Preparing maps of snippets...');
+
+    // clear
+    if (fs.existsSync('./src/snippets/dynamic-routes')) {
+        fse.removeSync('./src/snippets/dynamic-routes');
+    }
 
     // prepare dynamic-routes
     const snippetsFiles = readdirSync('./docs/snippets');
@@ -95,6 +104,7 @@ const prepareSnippets = () => {
             </script>
           `;
 
+          fse.ensureFileSync(dynamicFilePath);
           const fd = fs.openSync(dynamicFilePath, 'w+');
           fs.writeFileSync(dynamicFilePath, content);
 
@@ -109,7 +119,6 @@ const prepareSnippets = () => {
     const createRoutesFile = (map) => {
         // 创建 routes.js
         const routesFilePath = './src/snippets/dynamic-routes/routes.js';
-        const fd = fs.openSync(routesFilePath, 'w+');
         let routesContent = ``;
         for (md5String in map) {
             routesContent += `\nimport ${'doc_' + md5String} from './${md5String}.vue';`;
@@ -123,8 +132,11 @@ const prepareSnippets = () => {
         }
         routesContent = routesContent.replace(/\,$/, '');
         routesContent += '\n];';
-        fs.writeFileSync(routesFilePath, routesContent);
 
+        fse.ensureFileSync(routesFilePath);
+        const fd = fs.openSync(routesFilePath, 'w+');
+
+        fs.writeFileSync(routesFilePath, routesContent);
         fs.utimesSync(routesFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
 
         fs.close(fd);
