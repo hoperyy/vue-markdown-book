@@ -54,7 +54,7 @@ const prepareSnippets = () => {
     const md5 = require('md5');
 
     // prepare snippets
-    console.log('Preparing maps of snippets...');
+    console.log('Preparing snippets...');
 
     // clear
     if (fs.existsSync('./src/snippets/dynamic-routes')) {
@@ -145,9 +145,11 @@ const prepareSnippets = () => {
     const map = createDynamicFiles();
     createRoutesFile(map);
 
-    console.log(map);
+    gulp.watch(['./docs/snippets/**/*'], function(stats) {
+        console.log('~~~~ gulp change, ', stats.path, stats);
+    });
 
-    console.log('Preparation done.');
+    console.log('Snippets preparation done.');
 
 };
 
