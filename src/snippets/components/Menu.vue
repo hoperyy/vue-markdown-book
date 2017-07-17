@@ -1,58 +1,24 @@
 <template>
     <div>
-      <sidebar :arr="arr"></sidebar>
+      <Level1Nav :arr="arr"></Level1Nav>
+      <Level2Nav :arr="arr"></Level2Nav>
+      <Level3Nav :arr="arr"></Level3Nav>
     </div>
 </template>
 
 <script>
 
-import Vue from 'vue';
 import fileTree from '../dynamic-files/file-tree';
-
-Vue.component('sidebar', {
-    props: ['arr'],
-    template: `
-      <div>
-          <ul>
-              一级
-              <li v-for="(item, index) in arr">
-                  <div @click="click">{{item.path}}</div>
-              </li>
-          </ul>
-          <ul>
-              二级
-              <li v-for="(item, index) in arr">
-                  <ul>
-                      <li v-if="item.children" v-for="(level2Item, level2Index) in item.children">
-                          <div @click="click">{{level2Item.path}}</div>
-                      </li>
-                  </ul>
-              </li>
-          </ul>
-          <ul>
-              三级
-              <li v-for="(item, index) in arr">
-                  <ul v-if="item.children && item.children.length">
-                      <li v-for="(level2Item, level2Index) in item.children">
-                          <ul v-if="level2Item.children && level2Item.children.length">
-                              <li v-for="(level3Item, level3Index) in level2Item.children">
-                                  <div @click="click">{{level3Item.path}}</div>
-                              </li>
-                          </ul>
-                      </li>
-                  </ul>
-              </li>
-          </ul>
-      </div>
-    `,
-    methods: {
-        click() {
-
-        }
-    },
-});
+import Level1Nav from './Level1Nav.vue';
+import Level2Nav from './Level2Nav.vue';
+import Level3Nav from './Level3Nav.vue';
 
 export default {
+    components: {
+        Level1Nav,
+        Level2Nav,
+        Level3Nav
+    },
     data() {
         return {
           arr: fileTree.children
@@ -62,6 +28,6 @@ export default {
 
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 
 </style>
