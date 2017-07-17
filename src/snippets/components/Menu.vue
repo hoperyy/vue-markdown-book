@@ -10,23 +10,49 @@ import Vue from 'vue';
 import fileTree from '../dynamic-files/file-tree';
 
 Vue.component('sidebar', {
-    props: [
-        'arr'
-    ],
+    props: ['arr'],
     template: `
-      <ul>
-          <li v-for="(item, index) in arr">
-              <div>{{item.path}}</div>
-              <sidebar v-if="item.children" :arr="item.children"></sidebar>
-          </li>
-      </ul>
-    `
+      <div>
+          <ul>
+              一级
+              <li v-for="(item, index) in arr">
+                  <div @click="click">{{item.path}}</div>
+              </li>
+          </ul>
+          <ul>
+              二级
+              <li v-for="(item, index) in arr">
+                  <ul>
+                      <li v-if="item.children" v-for="(level2Item, level2Index) in item.children">
+                          <div @click="click">{{level2Item.path}}</div>
+                      </li>
+                  </ul>
+              </li>
+          </ul>
+          <ul>
+              三级
+              <li v-for="(item, index) in arr">
+                  <ul v-if="item.children && item.children.length">
+                      <li v-for="(level2Item, level2Index) in item.children">
+                          <ul v-if="level2Item.children && level2Item.children.length">
+                              <li v-for="(level3Item, level3Index) in level2Item.children">
+                                  <div @click="click">{{level3Item.path}}</div>
+                              </li>
+                          </ul>
+                      </li>
+                  </ul>
+              </li>
+          </ul>
+      </div>
+    `,
+    methods: {
+        click() {
+
+        }
+    },
 });
 
 export default {
-    components: {
-
-    },
     data() {
         return {
           arr: fileTree.children
@@ -37,4 +63,5 @@ export default {
 </script>
 
 <style lang="less">
+
 </style>
