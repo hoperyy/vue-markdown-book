@@ -150,6 +150,7 @@ const prepareSnippets = () => {
         const dirTreeFilePath = path.join('./src/snippets/dynamic-files/file-tree.js');
         fse.ensureFileSync(dirTreeFilePath);
         const fd = fs.openSync(dirTreeFilePath, 'w');
+        console.log(dirTree);
         fs.writeFileSync(dirTreeFilePath, `module.exports=${JSON.stringify(dirTree)}`);
         fs.utimesSync(dirTreeFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
         fs.close(fd);
