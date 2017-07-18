@@ -81,6 +81,7 @@ const prepareSnippets = () => {
             <template>
                 <div>
                     <Mheader></Mheader>
+                    <Mmenu></Mmenu>
                     <Snippet></Snippet>
                     <Mfooter></Mfooter>
                 </div>
@@ -89,6 +90,7 @@ const prepareSnippets = () => {
             <script>
             import Mheader from '../../components/Header.vue';
             import Mfooter from '../../components/Footer.vue';
+            import Mmenu from '../components/Menu.vue';
 
             import Snippet from '../../../${filepath}';
 
@@ -96,6 +98,7 @@ const prepareSnippets = () => {
                 components: {
                     Mheader,
                     Mfooter,
+                    Mmenu,
                     Snippet
                 }
             };
@@ -122,6 +125,7 @@ const prepareSnippets = () => {
         for (md5String in map) {
             routesContent += `\nimport ${'doc_' + md5String} from './${md5String}.vue';`;
         }
+
         routesContent += `\n\nmodule.exports = [\n`;
         for (md5String in map) {
             routesContent += `{

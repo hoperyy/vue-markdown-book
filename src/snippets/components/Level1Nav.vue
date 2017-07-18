@@ -1,7 +1,8 @@
 <template>
     <ul class="level1">
         <li @click="click(level1Index)" v-bind:class="getLevel1Class(level1Item, level1Index)" v-for="(level1Item, level1Index) in arr">
-            <div>{{level1Item.path.split('/').pop()}}</div>
+            <div v-if="level1Item.type === 'directory'">{{level1Item.path.split('/').pop()}}</div>
+            <a :href="level1Item.path" v-if="level1Item.type !== 'directory'">{{level1Item.path.split('/').pop()}}</a>
         </li>
     </ul>
 </template>
@@ -12,7 +13,7 @@ export default {
     props: ['arr', 'value', 'currentIndex'],
     watch: {
         currentIndex(level1Index) {
-          
+
         }
     },
     methods: {
