@@ -1,7 +1,7 @@
 <template>
     <ul class="level1">
-        <li class="level1-item" v-for="(item, index) in arr">
-            <div>{{item.path}}</div>
+        <li v-bind:class="{'level1-item': true, 'is-folder': level1Item.type === 'directory'}" v-for="(level1Item, index) in arr">
+            <div>{{level1Item.path.split('/').pop()}}</div>
         </li>
     </ul>
 </template>
@@ -19,6 +19,10 @@ ul, li {
     margin: 0;
     padding: 0;
     list-style: none;
+}
+
+.is-folder {
+  background: orange;
 }
 
 .level1 {

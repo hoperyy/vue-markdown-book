@@ -2,8 +2,8 @@
     <ul class="level1">
         <li class="level1-item" v-for="(item, index) in arr">
             <ul class="level2">
-                <li class="level2-item" v-if="item.children" v-for="(level2Item, level2Index) in item.children">
-                    <div>{{level2Item.path}}</div>
+                <li v-bind:class="{'level2-item': true, 'is-folder': level2Item.type === 'directory'}" v-if="item.children" v-for="(level2Item, level2Index) in item.children">
+                    <div>{{level2Item.path.split('/').pop()}}</div>
                 </li>
             </ul>
         </li>
@@ -25,6 +25,9 @@ ul, li {
     margin: 0;
     padding: 0;
     list-style: none;
+}
+.is-folder {
+  background: orange;
 }
 .level1 {
   float: left;
