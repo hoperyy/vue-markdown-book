@@ -39,7 +39,7 @@ export default {
       getLevel2Class(level2Item, level2Index, level1Index) {
         return {
           'level2-item': true,
-          current: [this.currentIndex[0], this.currentIndex[0]].join('-') === [level1Index, level2Index].join('-')
+          current: [this.currentIndex[0], this.currentIndex[1]].join('-') === [level1Index, level2Index].join('-')
         };
       },
       getLevel3Class(level3Item, level3Index, level2Index, level1Index) {

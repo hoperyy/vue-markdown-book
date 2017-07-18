@@ -11,8 +11,8 @@
 export default {
     props: ['arr', 'value', 'currentIndex'],
     watch: {
-        currentIndex(data) {
-            console.log('level1Nav: ', data);
+        currentIndex(level1Index) {
+          
         }
     },
     methods: {

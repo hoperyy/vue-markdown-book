@@ -19,6 +19,14 @@ export default {
         Level2Nav,
         Level3Nav
     },
+    watch: {
+        level1Index() {
+          this.level2Index = '';
+        },
+        level2Index() {
+          this.level3Index = '';
+        }
+    },
     data() {
         return {
           arr: fileTree.children,
