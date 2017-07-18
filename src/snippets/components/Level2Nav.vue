@@ -3,7 +3,8 @@
         <li v-bind:class="getLevel1Class(level1Item, level1Index)" v-for="(level1Item, level1Index) in arr">
             <ul class="level2">
                 <li @click="click(level2Index)" v-bind:class="getLevel2Class(level2Item, level2Index, level1Index)" v-if="level1Item.children" v-for="(level2Item, level2Index) in level1Item.children">
-                    <div>{{level2Item.path.split('/').pop()}}</div>
+                  <div v-if="level2Item.type === 'directory'">{{level2Item.path.split('/').pop()}}</div>
+                  <a :href="level2Item.path" v-if="level2Item.type !== 'directory'">{{level2Item.path.split('/').pop()}}</a>
                 </li>
             </ul>
         </li>
