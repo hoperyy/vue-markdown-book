@@ -32,18 +32,21 @@ export default {
       },
       getLevel1Class(level1Item, level1Index) {
         return {
-          'level1-item': true
+          'level1-item': true,
+          current: this.currentIndex[0] + '' === level1Index + ''
         };
       },
       getLevel2Class(level2Item, level2Index) {
         return {
-          'level2-item': true
+          'level2-item': true,
+          current: this.currentIndex[1] + '' === level2Index + ''
         };
       },
       getLevel3Class(level3Item, level3Index) {
         return {
           'level3-item': true,
-          'is-folder': level3Item.type === 'directory'
+          'is-folder': level3Item.type === 'directory',
+          current: this.currentIndex[2] + '' === level3Index + ''
         };
       }
     }
@@ -60,17 +63,26 @@ ul, li {
 .is-folder {
   background: orange;
 }
+.level1-item,
+.level2-item {
+  display: none;
+
+  &.current {
+    display: block;
+  }
+}
+
+.level3-item {
+
+  &.current {
+    border: 1px solid black;
+  }
+}
 .level1 {
   float: left;
-  padding: 10px;
-  border: 1px solid black;
 }
 .level2 {
-  padding: 10px;
-  border: 1px solid black;
 }
 .level3 {
-  padding: 10px;
-  border: 1px solid black;
 }
 </style>

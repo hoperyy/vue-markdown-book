@@ -51,7 +51,5 @@ ul, li {
 
 .level1 {
   float: left;
-  padding: 10px;
-  border: 1px solid black;
 }
 </style>
