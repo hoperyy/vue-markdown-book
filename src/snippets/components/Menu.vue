@@ -1,8 +1,8 @@
 <template>
     <div>
-      <Level1Nav :arr="arr"></Level1Nav>
-      <Level2Nav :arr="arr"></Level2Nav>
-      <Level3Nav :arr="arr"></Level3Nav>
+      <Level1Nav :currentIndex="[level1Index]" v-model="level1Index" :arr="arr"></Level1Nav>
+      <Level2Nav :currentIndex="[level1Index, level2Index]" v-model="level2Index" :arr="arr"></Level2Nav>
+      <Level3Nav :currentIndex="[level1Index, level2Index, level3Index]" v-model="level3Index" :arr="arr"></Level3Nav>
     </div>
 </template>
 
@@ -21,7 +21,10 @@ export default {
     },
     data() {
         return {
-          arr: fileTree.children
+          arr: fileTree.children,
+          level1Index: '',
+          level2Index: '',
+          level3Index: ''
         };
     }
 };

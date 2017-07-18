@@ -1,6 +1,6 @@
 <template>
     <ul class="level1">
-        <li @click="click(index)" v-bind:class="{'level1-item': true, 'is-folder': level1Item.type === 'directory'}" v-for="(level1Item, index) in arr">
+        <li @click="click(level1Index)" v-bind:class="getLevel1Class(level1Item, level1Index)" v-for="(level1Item, level1Index) in arr">
             <div>{{level1Item.path.split('/').pop()}}</div>
         </li>
     </ul>
@@ -9,11 +9,26 @@
 <script>
 
 export default {
-    props: ['arr'],
+    props: ['arr', 'value', 'currentIndex'],
+    watch: {
+        currentIndex(data) {
+            console.log('level1Nav: ', data);
+        }
+    },
     methods: {
       click(index) {
-        console.log(index);
+        this.$emit('input', index);
+      },
+      getLevel1Class(level1Item, level1Index) {
+        return {
+          'level1-item': true,
+          'is-folder': level1Item.type === 'directory',
+          'current': this.currentIndex + '' === level1Index + ''
+        };
       }
+    },
+    data() {
+      return {}
     }
 };
 
@@ -28,6 +43,10 @@ ul, li {
 
 .is-folder {
   background: orange;
+}
+
+.current {
+    border: 1px solid red;
 }
 
 .level1 {
