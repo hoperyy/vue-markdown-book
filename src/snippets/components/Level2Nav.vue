@@ -32,7 +32,8 @@ export default {
     getLevel2Class(level2Item, level2Index) {
       return {
         'level2-item': true,
-        'is-folder': level2Item.type === 'directory'
+        'is-folder': level2Item.type === 'directory',
+        'current': this.currentIndex[1] + '' === level2Index + ''
       };
     }
   }
@@ -58,17 +59,14 @@ ul, li {
 }
 .level1 {
   float: left;
-  padding: 10px;
-  border: 1px solid black;
 }
 
-.level2 {
-  padding: 10px;
-  border: 1px solid black;
+.level2-item {
+  &.current {
+    border: 1px solid red;
+  }
 }
 
 .level3 {
-  padding: 10px;
-  border: 1px solid black;
 }
 </style>
