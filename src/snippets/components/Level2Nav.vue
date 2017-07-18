@@ -2,7 +2,7 @@
     <ul class="level1">
         <li class="level1-item" v-for="(item, index) in arr">
             <ul class="level2">
-                <li v-bind:class="{'level2-item': true, 'is-folder': level2Item.type === 'directory'}" v-if="item.children" v-for="(level2Item, level2Index) in item.children">
+                <li @click="click(level2Index)" v-bind:class="{'level2-item': true, 'is-folder': level2Item.type === 'directory'}" v-if="item.children" v-for="(level2Item, level2Index) in item.children">
                     <div>{{level2Item.path.split('/').pop()}}</div>
                 </li>
             </ul>
@@ -13,9 +13,12 @@
 <script>
 
 export default {
-    components: {
-    },
-    props: ['arr']
+    props: ['arr'],
+    methods: {
+      click(index) {
+        console.log(index);
+      }
+    }
 };
 
 </script>

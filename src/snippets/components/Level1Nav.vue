@@ -1,6 +1,6 @@
 <template>
     <ul class="level1">
-        <li v-bind:class="{'level1-item': true, 'is-folder': level1Item.type === 'directory'}" v-for="(level1Item, index) in arr">
+        <li @click="click(index)" v-bind:class="{'level1-item': true, 'is-folder': level1Item.type === 'directory'}" v-for="(level1Item, index) in arr">
             <div>{{level1Item.path.split('/').pop()}}</div>
         </li>
     </ul>
@@ -9,7 +9,12 @@
 <script>
 
 export default {
-    props: ['arr']
+    props: ['arr'],
+    methods: {
+      click(index) {
+        console.log(index);
+      }
+    }
 };
 
 </script>
