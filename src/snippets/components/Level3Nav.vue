@@ -1,10 +1,10 @@
 <template>
     <ul class="level1">
-        <li class="level1-item" v-for="(item, index) in arr">
-            <ul class="level2" v-if="item.children">
-                <li class="level2-item" v-for="(level2Item, level2Index) in item.children">
+        <li v-bind:class="getLevel1Class(level1Item, level1Index)" v-for="(level1Item, level1Index) in arr">
+            <ul class="level2" v-if="level1Item.children">
+                <li v-bind:class="getLevel2Class(level2Item, level2Index)" v-for="(level2Item, level2Index) in level1Item.children">
                     <ul class="level3" v-if="level2Item.children">
-                        <li @click="click(level3Index)" v-bind:class="{'level3-item': true, 'is-folder': level3Item.type === 'directory'}" v-for="(level3Item, level3Index) in level2Item.children">
+                        <li @click="click(level3Index)" v-bind:class="getLevel3Class(level3Item, level3Index)" v-for="(level3Item, level3Index) in level2Item.children">
                             <div>{{level3Item.path.split('/').pop()}}</div>
                         </li>
                     </ul>
@@ -17,13 +17,34 @@
 <script>
 
 export default {
-    props: ['arr'],
     data: function() {
         return {};
     },
+    props: ['arr', 'value', 'currentIndex'],
+    watch: {
+        currentIndex: function(data) {
+            console.log('level3Nav: ', data);
+        }
+    },
     methods: {
       click(index) {
-        console.log(index);
+        this.$emit('input', index);
+      },
+      getLevel1Class(level1Item, level1Index) {
+        return {
+          'level1-item': true
+        };
+      },
+      getLevel2Class(level2Item, level2Index) {
+        return {
+          'level2-item': true
+        };
+      },
+      getLevel3Class(level3Item, level3Index) {
+        return {
+          'level3-item': true,
+          'is-folder': level3Item.type === 'directory'
+        };
       }
     }
 };
