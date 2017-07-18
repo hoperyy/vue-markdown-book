@@ -150,7 +150,36 @@ const prepareSnippets = () => {
         const dirTreeFilePath = path.join('./src/snippets/dynamic-files/file-tree.js');
         fse.ensureFileSync(dirTreeFilePath);
         const fd = fs.openSync(dirTreeFilePath, 'w');
-        fs.writeFileSync(dirTreeFilePath, `module.exports=${JSON.stringify(dirTree)}`);
+
+        // const replacePath = (tree) => {
+        //     tree.children.forEach((item) => {
+        //         if (!/^\.\//.test(item.path)) {
+        //             item.path = './' + item.path;
+        //         }
+        //         if (!/^\.\//.test(tree.path)) {
+        //             tree.path = './' + tree.path;
+        //         }
+        //         if (!/\/$/.test(item.path)) {
+        //             item.path = item.path + '/';
+        //         }
+        //         if (!/\/$/.test(tree.path)) {
+        //             tree.path = tree.path + '/';
+        //         }
+        //         item.path = item.path.replace(tree.path, '');
+        //
+        //         if (item.children) {
+        //             replacePath(item);
+        //         }
+        //
+        //         console.log(item.path, tree.path);
+        //     });
+        // };
+        //
+        // replacePath(dirTree);
+
+        const contentStr = JSON.stringify(dirTree).replace(/docs\/snippets\//g, '');
+
+        fs.writeFileSync(dirTreeFilePath, `module.exports=${contentStr}`);
         fs.utimesSync(dirTreeFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
         fs.close(fd);
     };

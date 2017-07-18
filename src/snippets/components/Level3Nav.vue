@@ -33,4 +33,12 @@ ul, li {
   padding: 10px;
   border: 1px solid black;
 }
+.level2 {
+  padding: 10px;
+  border: 1px solid black;
+}
+.level3 {
+  padding: 10px;
+  border: 1px solid black;
+}
 </style>
