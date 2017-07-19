@@ -2,7 +2,7 @@
             <template>
                 <div>
                     <Mheader></Mheader>
-                    <Mmenu :currentIndex="['1','1']"></Mmenu>
+                    <Mmenu :currentIndex="['0','2']"></Mmenu>
                     <Snippet></Snippet>
                     <Mfooter></Mfooter>
                 </div>
@@ -13,7 +13,7 @@
             import Mfooter from '../../components/Footer.vue';
             import Mmenu from '../components/Menu.vue';
 
-            import Snippet from '../../../docs/snippets/JavaScript0/基础知识0.md';
+            import Snippet from '/Users/lyy/Downloads/code/my-project/website/docs/snippets/JavaScript/基础知识.md';
 
             export default {
                 components: {

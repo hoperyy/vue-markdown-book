@@ -9,6 +9,8 @@ const readdirSync = require('recursive-readdir-sync');
 const srcFolder = path.join(__dirname, 'src');
 const buildFolder = path.join(__dirname, 'build');
 
+const docFolder = path.join(__dirname, '/docs/snippets');
+
 // get default webpack config
 const webpackConfig = require('./webpack.config')(srcFolder, buildFolder);
 
@@ -49,21 +51,26 @@ const prepareBuild = () => {
     });
 };
 
-const prepareSnippets = () => {
+const prepareDocs = () => {
 
     const md5 = require('md5');
 
-    // prepare snippets
-    console.log('Preparing snippets...');
+    console.log('Preparing...');
 
     // clear
-    if (fs.existsSync('./src/snippets/dynamic-files')) {
-        fse.removeSync('./src/snippets/dynamic-files');
+    if (fs.existsSync(path.join(srcFolder, './snippets/dynamic-files'))) {
+        fse.removeSync(path.join(srcFolder, './snippets/dynamic-files'));
     }
 
     // prepare dynamic-routes
-    const snippetsFiles = readdirSync('./docs/snippets');
-    const dirTree = require('directory-tree')('./docs/snippets/');
+    const snippetsFiles = readdirSync(docFolder);
+
+    // format into relative path
+    snippetsFiles.forEach((filepath, index) => {
+      snippetsFiles[index] = filepath.replace(docFolder, '');
+    });
+
+    const dirTree = require('directory-tree')(docFolder);
 
     // format dir tree path
     const formateDirTreePath = (tree) => {
@@ -84,7 +91,10 @@ const prepareSnippets = () => {
                 tree.path = '/' + tree.path;
             }
 
-            item.routePath = item.path.replace('/docs/snippets', '').replace(/\.md$/, '');
+            item.path = item.path.replace(docFolder, '');
+            tree.path = tree.path.replace(docFolder, '');
+
+            item.routePath = item.path.replace(docFolder, '').replace(/\.md$/, '');
 
             if (item.children) {
                 formateDirTreePath(item, item.index);
@@ -163,7 +173,7 @@ const prepareSnippets = () => {
             import Mfooter from '../../components/Footer.vue';
             import Mmenu from '../components/Menu.vue';
 
-            import Snippet from '../../..${filepath}';
+            import Snippet from '${path.join(docFolder, filepath)}';
 
             export default {
                 components: {
@@ -238,7 +248,7 @@ const prepareSnippets = () => {
 
     createFileTree();
 
-    console.log('Snippets preparation done.');
+    console.log('Preparation done.');
 
 };
 
@@ -249,7 +259,7 @@ gulp.task('dev', () => {
 
     prepareBuild();
 
-    prepareSnippets();
+    prepareDocs();
 
     // HMR
     webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
@@ -299,7 +309,7 @@ gulp.task('build', () => {
 
     prepareBuild();
 
-    prepareSnippets();
+    prepareDocs();
 
     webpack(webpackConfig, function() {});
 
