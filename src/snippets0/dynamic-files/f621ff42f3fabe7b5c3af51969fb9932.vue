@@ -1,14 +1,14 @@
 
             <template>
                 <div class="hoper-body">
-                    <Mheader></Mheader>
+
                     <div class="hoper-content">
                         <Mmenu :currentIndex="['0','0','1']"></Mmenu>
                         <div class="hoper-doc">
                           <Doc></Doc>
                         </div>
                     </div>
-                    <Mfooter></Mfooter>
+                    
                 </div>
             </template>
 
