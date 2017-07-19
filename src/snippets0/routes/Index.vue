@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="hoper-body">
         <Mheader></Mheader>
         <Mmenu></Mmenu>
         <Mfooter></Mfooter>

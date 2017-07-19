@@ -1,9 +1,13 @@
 
             <template>
-                <div>
+                <div class="hoper-body">
                     <Mheader></Mheader>
-                    <Mmenu :currentIndex="['1','1']"></Mmenu>
-                    <Snippet></Snippet>
+                    <div class="hoper-content">
+                        <Mmenu :currentIndex="['1','1']"></Mmenu>
+                        <div class="hoper-doc">
+                          <Doc></Doc>
+                        </div>
+                    </div>
                     <Mfooter></Mfooter>
                 </div>
             </template>
@@ -13,14 +17,14 @@
             import Mfooter from '../../components/Footer.vue';
             import Mmenu from '../components/Menu.vue';
 
-            import Snippet from '/Users/lyy/Downloads/code/my-project/website/docs/snippets/JavaScript0/基础知识0.md';
+            import Doc from '/Users/lyy/Downloads/code/my-project/website/docs/snippets/JavaScript0/基础知识0.md';
 
             export default {
                 components: {
                     Mheader,
                     Mfooter,
                     Mmenu,
-                    Snippet
+                    Doc
                 }
             };
 

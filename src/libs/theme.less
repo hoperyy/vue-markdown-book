@@ -1,6 +1,5 @@
 
 /* global */
-
 body {
   font-family: Helvetica, arial, sans-serif;
   font-size: 14px;
@@ -23,4 +22,82 @@ body > *:first-child {
 
 body > *:last-child {
   margin-bottom: 0 !important;
+}
+
+/* layout */
+.hoper-body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hoper-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+  background: black;
+  color: white;
+}
+.hoper-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+  background: black;
+  color: white;
+}
+.hoper-body {
+  display: flex;
+}
+.hoper-content {
+  display: flex;
+  flex: 1;
+}
+.hoper-menu {
+  display: flex;
+}
+.hoper-doc {
+  flex: 1;
+  padding: 0 30px;
+}
+
+.menu-box {
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  margin-right: -1px;
+}
+
+.level1 {
+  box-shadow: 0 0 4px black;
+}
+
+.level1-item,
+.level2-item,
+.level3-item {
+    cursor: pointer;
+
+    div,
+    a {
+      display: block;
+      padding: 5px 10px;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    &.is-folder.current,
+    &.is-folder:hover {
+      div {
+        background: gray;
+        color: white;
+      }
+    }
+
+    &.is-file.current,
+    &.is-file:hover {
+      a {
+        color: red;
+      }
+    }
 }
