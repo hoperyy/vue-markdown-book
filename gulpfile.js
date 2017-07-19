@@ -98,7 +98,7 @@ const prepareSnippets = () => {
             import Mfooter from '../../components/Footer.vue';
             import Mmenu from '../components/Menu.vue';
 
-            import Snippet from '../../../${filepath}';
+            import Snippet from '../../..${filepath}';
 
             export default {
                 components: {
@@ -116,6 +116,7 @@ const prepareSnippets = () => {
           const fd = fs.openSync(dynamicFilePath, 'w+');
           fs.writeFileSync(dynamicFilePath, content);
 
+          // prevent multi callback in webpack
           fs.utimesSync(dynamicFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
           fs.close(fd);
 
@@ -146,6 +147,8 @@ const prepareSnippets = () => {
         const fd = fs.openSync(routesFilePath, 'w+');
 
         fs.writeFileSync(routesFilePath, routesContent);
+
+        // prevent multi callback in webpack
         fs.utimesSync(routesFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
 
         fs.close(fd);
