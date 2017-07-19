@@ -140,7 +140,6 @@ const prepareSnippets = () => {
           // get file index
           const fileIndex = getFileIndexFromDirtree(filepath, dirTree);
 
-
           // create dynamic-routes files
           const dynamicFilePath = path.join('./src/snippets/dynamic-files', md5String + '.vue');
           const content = `
