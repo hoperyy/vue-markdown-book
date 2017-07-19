@@ -1,5 +1,5 @@
 <template>
-  <div>这是 header</div>
+  <div class="hoper-header">这是 header</div>
 </template>
 
 <style lang="less" scoped>

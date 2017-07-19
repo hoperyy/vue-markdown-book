@@ -18,9 +18,7 @@
 <script>
 
 export default {
-    data: function() {
-        return {};
-    },
+
     props: ['arr', 'value', 'currentIndex'],
     watch: {
         currentIndex: function(data) {
@@ -47,6 +45,7 @@ export default {
         return {
           'level3-item': true,
           'is-folder': level3Item.type === 'directory',
+          'is-file': level3Item.type === 'file',
           current: [this.currentIndex[0], this.currentIndex[1], this.currentIndex[2]].join('-')  === [level1Index, level2Index, level3Index].join('-')
         };
       }
@@ -62,7 +61,7 @@ ul, li {
     list-style: none;
 }
 .is-folder {
-  background: orange;
+  //background: orange;
 }
 .level1-item,
 .level2-item {
@@ -73,17 +72,4 @@ ul, li {
   }
 }
 
-.level3-item {
-
-  &.current {
-    border: 1px solid black;
-  }
-}
-.level1 {
-  float: left;
-}
-.level2 {
-}
-.level3 {
-}
 </style>

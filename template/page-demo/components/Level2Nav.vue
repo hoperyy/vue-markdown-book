@@ -34,6 +34,7 @@ export default {
       return {
         'level2-item': true,
         'is-folder': level2Item.type === 'directory',
+        'is-file': level2Item.type === 'file',
         'current': [this.currentIndex[0], this.currentIndex[1]].join('-') === [level1Index, level2Index].join('-')
       };
     }
@@ -49,7 +50,7 @@ ul, li {
     list-style: none;
 }
 .is-folder {
-  background: orange;
+  // background: orange;
 }
 .level1-item {
   display: none;
@@ -58,16 +59,7 @@ ul, li {
     display: block;
   }
 }
-.level1 {
-  float: left;
-}
 
-.level2-item {
-  &.current {
-    border: 1px solid red;
-  }
-}
 
-.level3 {
-}
+
 </style>

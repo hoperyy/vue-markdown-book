@@ -1,5 +1,5 @@
 <template>
-    <div class="menu">
+    <div class="hoper-menu">
       <Level1Nav :currentIndex="[level1Index]" v-model="level1Index" :arr="arr"></Level1Nav>
       <Level2Nav :currentIndex="[level1Index, level2Index]" v-model="level2Index" :arr="arr"></Level2Nav>
       <Level3Nav :currentIndex="[level1Index, level2Index, level3Index]" v-model="level3Index" :arr="arr"></Level3Nav>
@@ -42,7 +42,5 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.menu {
-  height: 200px;
-}
+
 </style>

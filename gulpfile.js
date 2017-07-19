@@ -17,7 +17,7 @@ const utime = (filepath) => {
   fs.utimesSync(filepath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
 };
 
-const prepareBuild = () => {
+const prepareBuildFolder = () => {
 
     // remove build folder
     fse.removeSync(buildFolder);
@@ -46,12 +46,6 @@ const prepareBuild = () => {
 
     });
 
-    gulp.watch([path.join(srcFolder, '**/*.html')], (stats) => {
-        const filepath = stats.path;
-        const basename = path.basename(filepath);
-        const foldername = path.basename(path.dirname(filepath));
-        fse.copySync(filepath, path.join(buildFolder, foldername + '.html'));
-    });
 };
 
 const prepareSrc = (docName) => {
@@ -183,10 +177,14 @@ const prepareSrc = (docName) => {
 
           const content = `
             <template>
-                <div>
+                <div class="hoper-body">
                     <Mheader></Mheader>
-                    <Mmenu :currentIndex="${fileIndex}"></Mmenu>
-                    <Snippet></Snippet>
+                    <div class="hoper-content">
+                        <Mmenu :currentIndex="${fileIndex}"></Mmenu>
+                        <div class="hoper-doc">
+                          <Doc></Doc>
+                        </div>
+                    </div>
                     <Mfooter></Mfooter>
                 </div>
             </template>
@@ -196,14 +194,14 @@ const prepareSrc = (docName) => {
             import Mfooter from '../../components/Footer.vue';
             import Mmenu from '../components/Menu.vue';
 
-            import Snippet from '${path.join(currentDocFolder, filepath)}';
+            import Doc from '${path.join(currentDocFolder, filepath)}';
 
             export default {
                 components: {
                     Mheader,
                     Mfooter,
                     Mmenu,
-                    Snippet
+                    Doc
                 }
             };
 
@@ -311,7 +309,14 @@ gulp.task('dev', () => {
 
     transferDoc2Src();
 
-    prepareBuild();
+    prepareBuildFolder();
+
+    gulp.watch([path.join(srcFolder, '**/*.html')], (stats) => {
+        const filepath = stats.path;
+        const basename = path.basename(filepath);
+        const foldername = path.basename(path.dirname(filepath));
+        fse.copySync(filepath, path.join(buildFolder, foldername + '.html'));
+    });
 
     // get default webpack config
     const webpackConfig = require('./webpack.config')(srcFolder, buildFolder);
@@ -364,7 +369,10 @@ gulp.task('build', () => {
 
     transferDoc2Src();
 
-    prepareBuild();
+    prepareBuildFolder();
+
+    // get default webpack config
+    const webpackConfig = require('./webpack.config')(srcFolder, buildFolder);
 
     webpack(webpackConfig, function() {});
 
