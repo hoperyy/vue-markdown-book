@@ -24,7 +24,7 @@ export default {
     props: ['arr', 'value', 'currentIndex'],
     watch: {
         currentIndex: function(data) {
-            console.log('level3Nav: ', data);
+
         }
     },
     methods: {
@@ -44,7 +44,6 @@ export default {
         };
       },
       getLevel3Class(level3Item, level3Index, level2Index, level1Index) {
-        console.log([this.currentIndex[0], this.currentIndex[1], this.currentIndex[2]].join('-'), [level1Index, level2Index, level3Index].join('-'));
         return {
           'level3-item': true,
           'is-folder': level3Item.type === 'directory',

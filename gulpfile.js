@@ -49,30 +49,6 @@ const prepareBuild = () => {
     });
 };
 
-const getFileIndexFromDirtree = (filepath, dirTree) => {
-
-    console.log(filepath);
-    const getFileIndex = (tree) => {
-
-        for (let index = 0; index < tree.children.length; index++) {
-            const item = tree.children[index];
-
-            if (item.path === filepath) {
-
-            }
-
-            console.log('~~~', item.path, tree.path);
-
-            if (item.children) {
-                return getFileIndex(item);
-            }
-
-        };
-    };
-
-    return getFileIndex(dirTree);
-};
-
 const prepareSnippets = () => {
 
     const md5 = require('md5');
@@ -90,7 +66,8 @@ const prepareSnippets = () => {
     const dirTree = require('directory-tree')('./docs/snippets/');
 
     // format dir tree path
-    const formateDirTreePath = (tree) => {
+    const indexMap = {};
+    const formateDirTreePath = (tree, fileIndex) => {
 
         tree.children.forEach((item, index) => {
 
@@ -110,19 +87,27 @@ const prepareSnippets = () => {
 
             item.routePath = item.path.replace('/docs/snippets', '').replace(/\.md$/, '');
 
+            item.index = fileIndex + '-' + index;
+
+            // format
+            if (/^-/.test(item.index)) {
+              item.index = item.index.replace(/^-/, '');
+            }
+
+            indexMap[item.path] = item.index;
+
             if (item.children) {
-                console.log(item.routePath);
-                formateDirTreePath(item);
+                formateDirTreePath(item, item.index);
             }
 
         });
     };
 
-    formateDirTreePath(dirTree);
+    const indexMap = formateDirTreePath(dirTree, '');
 
     const createDynamicFiles = () => {
 
-      const map = {};
+      const hashMap = {};
 
       snippetsFiles.forEach((filepath) => {
 
@@ -137,8 +122,7 @@ const prepareSnippets = () => {
 
           map[md5String] = filepath;
 
-          // get file index
-          const fileIndex = getFileIndexFromDirtree(filepath, dirTree);
+          const fileIndex = JSON.stringify(indexMap[filepath].split('-')).replace(/\"/g, "'");
 
           // create dynamic-routes files
           const dynamicFilePath = path.join('./src/snippets/dynamic-files', md5String + '.vue');
@@ -146,7 +130,7 @@ const prepareSnippets = () => {
             <template>
                 <div>
                     <Mheader></Mheader>
-                    <Mmenu></Mmenu>
+                    <Mmenu :currentIndex="${fileIndex}"></Mmenu>
                     <Snippet></Snippet>
                     <Mfooter></Mfooter>
                 </div>
@@ -181,7 +165,7 @@ const prepareSnippets = () => {
 
       });
 
-      return map;
+      return hashMap;
     };
 
     const createRoutesFile = (map) => {
@@ -213,8 +197,8 @@ const prepareSnippets = () => {
         fs.close(fd);
     };
 
-    const map = createDynamicFiles();
-    createRoutesFile(map);
+    const hashMap = createDynamicFiles();
+    createRoutesFile(hashMap);
 
     // create file-tree.js
     const createFileTree = () => {
