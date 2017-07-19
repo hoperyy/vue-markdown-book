@@ -17,7 +17,7 @@ export default {
   props: ['arr', 'value', 'currentIndex'],
   watch: {
       currentIndex: function(data) {
-          console.log('level2Nav: ', data);
+
       }
   },
   methods: {

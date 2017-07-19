@@ -14,6 +14,7 @@ import Level2Nav from './Level2Nav.vue';
 import Level3Nav from './Level3Nav.vue';
 
 export default {
+    props: ['currentIndex'],
     components: {
         Level1Nav,
         Level2Nav,
@@ -28,11 +29,12 @@ export default {
         }
     },
     data() {
+
         return {
           arr: fileTree.children,
-          level1Index: '',
-          level2Index: '',
-          level3Index: ''
+          level1Index: this.currentIndex[0],
+          level2Index: this.currentIndex[1],
+          level3Index: this.currentIndex[2]
         };
     }
 };

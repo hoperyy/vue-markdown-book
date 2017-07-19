@@ -2,7 +2,7 @@
             <template>
                 <div>
                     <Mheader></Mheader>
-                    <Mmenu></Mmenu>
+                    <Mmenu :currentIndex="['0','1','0']"></Mmenu>
                     <Snippet></Snippet>
                     <Mfooter></Mfooter>
                 </div>
