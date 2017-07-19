@@ -13,7 +13,7 @@
             import Mfooter from '../../components/Footer.vue';
             import Mmenu from '../components/Menu.vue';
 
-            import Snippet from '../../../docs/snippets/JavaScript/基础知识.md';
+            import Snippet from '../../..//docs/snippets/JavaScript/BB/B1.md';
 
             export default {
                 components: {

@@ -69,6 +69,12 @@ const prepareSnippets = () => {
       const map = {};
 
       snippetsFiles.forEach((filepath) => {
+
+          // formate
+          if (!/^\//.test(filepath)) {
+            filepath = '/' + filepath;
+          }
+
           const filename = path.basename(filepath);
           const foldername = path.dirname(filepath);
           const md5String = md5(filepath);
@@ -129,7 +135,7 @@ const prepareSnippets = () => {
         routesContent += `\n\nmodule.exports = [\n`;
         for (md5String in map) {
             routesContent += `{
-              path: '${map[md5String].replace('docs/snippets', '').replace(/\.md$/, '')}',
+              path: '${map[md5String].replace('/docs/snippets', '').replace(/\.md$/, '')}',
               component: ${'doc_' + md5String}
             },`;
         }
@@ -155,31 +161,33 @@ const prepareSnippets = () => {
         fse.ensureFileSync(dirTreeFilePath);
         const fd = fs.openSync(dirTreeFilePath, 'w');
 
-        // const replacePath = (tree) => {
-        //     tree.children.forEach((item) => {
-        //         if (!/^\.\//.test(item.path)) {
-        //             item.path = './' + item.path;
-        //         }
-        //         if (!/^\.\//.test(tree.path)) {
-        //             tree.path = './' + tree.path;
-        //         }
-        //         if (!/\/$/.test(item.path)) {
-        //             item.path = item.path + '/';
-        //         }
-        //         if (!/\/$/.test(tree.path)) {
-        //             tree.path = tree.path + '/';
-        //         }
-        //         item.path = item.path.replace(tree.path, '');
-        //
-        //         if (item.children) {
-        //             replacePath(item);
-        //         }
-        //
-        //         console.log(item.path, tree.path);
-        //     });
-        // };
-        //
-        // replacePath(dirTree);
+        const formatePath = (tree) => {
+
+            tree.children.forEach((item) => {
+                if (/^\.\//.test(item.path)) {
+                    item.path = item.path.replace(/^\.\//, '');
+                }
+                if (/^\.\//.test(tree.path)) {
+                    tree.path = tree.path.replace(/^\.\//, '');
+                }
+                if (!/^\//.test(item.path)) {
+                    item.path = '/' + item.path;
+                }
+                if (!/^\//.test(tree.path)) {
+                    tree.path = '/' + tree.path;
+                }
+
+                item.routePath = item.path.replace('/docs/snippets', '').replace(/\.md$/, '');
+
+                if (item.children) {
+                    console.log(item.routePath);
+                    formatePath(item);
+                }
+
+            });
+        };
+
+        formatePath(dirTree);
 
         const contentStr = JSON.stringify(dirTree).replace(/docs\/snippets\//g, '');
 
