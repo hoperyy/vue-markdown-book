@@ -5,14 +5,17 @@ const webpack = require('webpack');
 const gulp = require('gulp');
 const fse = require('fs-extra');
 const readdirSync = require('recursive-readdir-sync');
+const md5 = require('md5');
+const readdirTree = require('directory-tree');
 
 const srcFolder = path.join(__dirname, 'src');
 const buildFolder = path.join(__dirname, 'build');
+const docFolder = path.join(__dirname, 'docs');
+const templateFolder = path.join(__dirname, 'template');
 
-const docFolder = path.join(__dirname, '/docs/snippets');
-
-// get default webpack config
-const webpackConfig = require('./webpack.config')(srcFolder, buildFolder);
+const utime = (filepath) => {
+  fs.utimesSync(filepath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
+};
 
 const prepareBuild = () => {
 
@@ -51,61 +54,83 @@ const prepareBuild = () => {
     });
 };
 
-const prepareDocs = () => {
+const prepareSrc = (docName) => {
 
-    const md5 = require('md5');
+    const currentDocFolder = path.join(docFolder, docName);
+    const currentDocFiles = readdirSync(currentDocFolder);
+    const dirTree = readdirTree(currentDocFolder);
 
-    console.log('Preparing...');
+    // create src pages by docs folder
+    const createPage = () => {
+      const targetFolder = path.join(srcFolder, docName);
+      if (fs.existsSync(targetFolder)) {
+        fse.removeSync(targetFolder);
+      }
+      fse.copySync(path.join(templateFolder, 'page-demo'), targetFolder);
 
-    // clear
-    if (fs.existsSync(path.join(srcFolder, './snippets/dynamic-files'))) {
-        fse.removeSync(path.join(srcFolder, './snippets/dynamic-files'));
-    }
+      const files = readdirSync(targetFolder);
 
-    // prepare dynamic-routes
-    const snippetsFiles = readdirSync(docFolder);
-
-    // format into relative path
-    snippetsFiles.forEach((filepath, index) => {
-      snippetsFiles[index] = filepath.replace(docFolder, '');
-    });
-
-    const dirTree = require('directory-tree')(docFolder);
-
-    // format dir tree path
-    const formateDirTreePath = (tree) => {
-
-        tree.children.forEach((item, index) => {
-
-            // format path to '/docs/snippets/...'
-            if (/^\.\//.test(item.path)) {
-                item.path = item.path.replace(/^\.\//, '');
-            }
-            if (/^\.\//.test(tree.path)) {
-                tree.path = tree.path.replace(/^\.\//, '');
-            }
-            if (!/^\//.test(item.path)) {
-                item.path = '/' + item.path;
-            }
-            if (!/^\//.test(tree.path)) {
-                tree.path = '/' + tree.path;
-            }
-
-            item.path = item.path.replace(docFolder, '');
-            tree.path = tree.path.replace(docFolder, '');
-
-            item.routePath = item.path.replace(docFolder, '').replace(/\.md$/, '');
-
-            if (item.children) {
-                formateDirTreePath(item, item.index);
-            }
-
-        });
+      files.forEach((filepath) => {
+        utime(filepath);
+      });
     };
 
-    const getIndexMap = () => {
+    // format path to '/xxx/xxx'
+    const formatePath = () => {
 
-        const indexMap = {};
+        // format into relative path
+        currentDocFiles.forEach((filepath, index) => {
+
+            // currentDocFiles[index] = filepath.replace(currentDocFolder, '');
+            filepath = filepath.replace(currentDocFolder, '');
+
+            if (!/^\//.test(filepath)) {
+                filepath = '/' + filepath;
+            }
+
+            currentDocFiles[index] = filepath;
+
+        });
+
+        const formateDirTree = (tree) => {
+
+          tree.children.forEach((item, index) => {
+
+              // format path to '/xxx/xxx/...'
+              if (/^\.\//.test(item.path)) {
+                  item.path = item.path.replace(/^\.\//, '');
+              }
+              if (/^\.\//.test(tree.path)) {
+                  tree.path = tree.path.replace(/^\.\//, '');
+              }
+              if (!/^\//.test(item.path)) {
+                  item.path = '/' + item.path;
+              }
+              if (!/^\//.test(tree.path)) {
+                  tree.path = '/' + tree.path;
+              }
+
+              item.path = item.path.replace(currentDocFolder, '');
+              tree.path = tree.path.replace(currentDocFolder, '');
+
+              item.routePath = item.path.replace(currentDocFolder, '').replace(/\.md$/, '');
+
+              if (item.children) {
+                  formateDirTree(item, item.index);
+              }
+
+          });
+
+        };
+
+        formateDirTree(dirTree);
+
+    };
+
+    // get index map
+    const getFilesMap = () => {
+
+        const filesMap = {};
 
         const act = (tree, fileIndex) => {
 
@@ -118,7 +143,7 @@ const prepareDocs = () => {
                 item.index = item.index.replace(/^-/, '');
               }
 
-              indexMap[item.path] = item.index;
+              filesMap[item.path] = item;
 
               if (item.children) {
                   act(item, item.index);
@@ -130,18 +155,15 @@ const prepareDocs = () => {
 
       act(dirTree, '');
 
-      return indexMap;
+      return filesMap;
     };
 
-    formateDirTreePath(dirTree);
-
-    const indexMap = getIndexMap();
-
-    const createDynamicFiles = () => {
+    // create dynamic-files in src for sources to load
+    const createDynamicFiles = (filesMap) => {
 
       const hashMap = {};
 
-      snippetsFiles.forEach((filepath) => {
+      currentDocFiles.forEach((filepath) => {
 
           // formate
           if (!/^\//.test(filepath)) {
@@ -154,10 +176,11 @@ const prepareDocs = () => {
 
           hashMap[md5String] = filepath;
 
-          const fileIndex = JSON.stringify(indexMap[filepath].split('-')).replace(/\"/g, "'");
+          const fileIndex = JSON.stringify(filesMap[filepath].index.split('-')).replace(/\"/g, "'");
 
           // create dynamic-routes files
-          const dynamicFilePath = path.join('./src/snippets/dynamic-files', md5String + '.vue');
+          const dynamicFilePath = path.join(srcFolder, docName, 'dynamic-files', md5String + '.vue');
+
           const content = `
             <template>
                 <div>
@@ -173,7 +196,7 @@ const prepareDocs = () => {
             import Mfooter from '../../components/Footer.vue';
             import Mmenu from '../components/Menu.vue';
 
-            import Snippet from '${path.join(docFolder, filepath)}';
+            import Snippet from '${path.join(currentDocFolder, filepath)}';
 
             export default {
                 components: {
@@ -192,7 +215,7 @@ const prepareDocs = () => {
           fs.writeFileSync(dynamicFilePath, content);
 
           // prevent multi callback in webpack
-          fs.utimesSync(dynamicFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
+          utime(dynamicFilePath);
           fs.close(fd);
 
       });
@@ -200,18 +223,19 @@ const prepareDocs = () => {
       return hashMap;
     };
 
-    const createRoutesFile = (map) => {
+    // create vue routes
+    const createRoutesFile = (hashMap, filesMap) => {
         // 创建 routes.js
-        const routesFilePath = './src/snippets/dynamic-files/routes.js';
+        const routesFilePath = path.join(srcFolder, docName, '/dynamic-files/routes.js');
         let routesContent = ``;
-        for (md5String in map) {
+        for (md5String in hashMap) {
             routesContent += `\nimport ${'doc_' + md5String} from './${md5String}.vue';`;
         }
 
         routesContent += `\n\nmodule.exports = [\n`;
-        for (md5String in map) {
+        for (md5String in hashMap) {
             routesContent += `{
-              path: '${map[md5String].replace('/docs/snippets', '').replace(/\.md$/, '')}',
+              path: '${filesMap[hashMap[md5String]].routePath}',
               component: ${'doc_' + md5String}
             },`;
         }
@@ -224,32 +248,60 @@ const prepareDocs = () => {
         fs.writeFileSync(routesFilePath, routesContent);
 
         // prevent multi callback in webpack
-        fs.utimesSync(routesFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
+        utime(routesFilePath);
 
         fs.close(fd);
     };
 
-    const hashMap = createDynamicFiles();
-    createRoutesFile(hashMap);
-
     // create file-tree.js
     const createFileTree = () => {
 
-        const dirTreeFilePath = path.join('./src/snippets/dynamic-files/file-tree.js');
+        const dirTreeFilePath = path.join(path.join(srcFolder, docName, '/dynamic-files/file-tree.js'));
         fse.ensureFileSync(dirTreeFilePath);
         const fd = fs.openSync(dirTreeFilePath, 'w');
 
-        const contentStr = JSON.stringify(dirTree).replace(/docs\/snippets\//g, '');
+        const contentStr = JSON.stringify(dirTree);
 
         fs.writeFileSync(dirTreeFilePath, `module.exports=${contentStr}`);
         fs.utimesSync(dirTreeFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
         fs.close(fd);
     };
 
+    // clear dynamic-files
+    if (fs.existsSync(path.join(srcFolder, docName, 'dynamic-files'))) {
+        fse.removeSync(path.join(srcFolder, docName, 'dynamic-files'));
+    }
+
+    createPage();
+    formatePath();
+    const filesMap = getFilesMap();
+    const hashMap = createDynamicFiles(filesMap);
+    createRoutesFile(hashMap, filesMap);
+
     createFileTree();
 
-    console.log('Preparation done.');
+};
 
+const transferDoc2Src = () => {
+
+  // clear src folder
+  const srcFiles = fs.readdirSync(srcFolder);
+
+  srcFiles.forEach((filename) => {
+     if (!/(components)|(libs)/.test(filename)) {
+       try {
+         fse.removeSync(path.join(srcFolder, filename));
+       } catch(err) {
+
+       }
+     }
+  });
+
+  const docs = fs.readdirSync(docFolder);
+
+  docs.forEach((docName) => {
+    prepareSrc(docName);
+  });
 };
 
 gulp.task('dev', () => {
@@ -257,9 +309,12 @@ gulp.task('dev', () => {
     const WebpackDevServer = require('webpack-dev-server');
     const port = 9000;
 
+    transferDoc2Src();
+
     prepareBuild();
 
-    prepareDocs();
+    // get default webpack config
+    const webpackConfig = require('./webpack.config')(srcFolder, buildFolder);
 
     // HMR
     webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
@@ -307,9 +362,9 @@ gulp.task('dev', () => {
 
 gulp.task('build', () => {
 
-    prepareBuild();
+    transferDoc2Src();
 
-    prepareDocs();
+    prepareBuild();
 
     webpack(webpackConfig, function() {});
 
