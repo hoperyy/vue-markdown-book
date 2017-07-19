@@ -50,7 +50,27 @@ const prepareBuild = () => {
 };
 
 const getFileIndexFromDirtree = (filepath, dirTree) => {
-  
+
+    console.log(filepath);
+    const getFileIndex = (tree) => {
+
+        for (let index = 0; index < tree.children.length; index++) {
+            const item = tree.children[index];
+
+            if (item.path === filepath) {
+
+            }
+
+            console.log('~~~', item.path, tree.path);
+
+            if (item.children) {
+                return getFileIndex(item);
+            }
+
+        };
+    };
+
+    return getFileIndex(dirTree);
 };
 
 const prepareSnippets = () => {
@@ -68,6 +88,37 @@ const prepareSnippets = () => {
     // prepare dynamic-routes
     const snippetsFiles = readdirSync('./docs/snippets');
     const dirTree = require('directory-tree')('./docs/snippets/');
+
+    // format dir tree path
+    const formateDirTreePath = (tree) => {
+
+        tree.children.forEach((item, index) => {
+
+            // format path to '/docs/snippets/...'
+            if (/^\.\//.test(item.path)) {
+                item.path = item.path.replace(/^\.\//, '');
+            }
+            if (/^\.\//.test(tree.path)) {
+                tree.path = tree.path.replace(/^\.\//, '');
+            }
+            if (!/^\//.test(item.path)) {
+                item.path = '/' + item.path;
+            }
+            if (!/^\//.test(tree.path)) {
+                tree.path = '/' + tree.path;
+            }
+
+            item.routePath = item.path.replace('/docs/snippets', '').replace(/\.md$/, '');
+
+            if (item.children) {
+                console.log(item.routePath);
+                formateDirTreePath(item);
+            }
+
+        });
+    };
+
+    formateDirTreePath(dirTree);
 
     const createDynamicFiles = () => {
 
@@ -87,6 +138,8 @@ const prepareSnippets = () => {
           map[md5String] = filepath;
 
           // get file index
+          const fileIndex = getFileIndexFromDirtree(filepath, dirTree);
+
 
           // create dynamic-routes files
           const dynamicFilePath = path.join('./src/snippets/dynamic-files', md5String + '.vue');
@@ -170,34 +223,6 @@ const prepareSnippets = () => {
         const dirTreeFilePath = path.join('./src/snippets/dynamic-files/file-tree.js');
         fse.ensureFileSync(dirTreeFilePath);
         const fd = fs.openSync(dirTreeFilePath, 'w');
-
-        const formatePath = (tree) => {
-
-            tree.children.forEach((item) => {
-                if (/^\.\//.test(item.path)) {
-                    item.path = item.path.replace(/^\.\//, '');
-                }
-                if (/^\.\//.test(tree.path)) {
-                    tree.path = tree.path.replace(/^\.\//, '');
-                }
-                if (!/^\//.test(item.path)) {
-                    item.path = '/' + item.path;
-                }
-                if (!/^\//.test(tree.path)) {
-                    tree.path = '/' + tree.path;
-                }
-
-                item.routePath = item.path.replace('/docs/snippets', '').replace(/\.md$/, '');
-
-                if (item.children) {
-                    console.log(item.routePath);
-                    formatePath(item);
-                }
-
-            });
-        };
-
-        formatePath(dirTree);
 
         const contentStr = JSON.stringify(dirTree).replace(/docs\/snippets\//g, '');
 
