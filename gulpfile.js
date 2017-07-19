@@ -66,8 +66,7 @@ const prepareSnippets = () => {
     const dirTree = require('directory-tree')('./docs/snippets/');
 
     // format dir tree path
-    const indexMap = {};
-    const formateDirTreePath = (tree, fileIndex) => {
+    const formateDirTreePath = (tree) => {
 
         tree.children.forEach((item, index) => {
 
@@ -87,15 +86,6 @@ const prepareSnippets = () => {
 
             item.routePath = item.path.replace('/docs/snippets', '').replace(/\.md$/, '');
 
-            item.index = fileIndex + '-' + index;
-
-            // format
-            if (/^-/.test(item.index)) {
-              item.index = item.index.replace(/^-/, '');
-            }
-
-            indexMap[item.path] = item.index;
-
             if (item.children) {
                 formateDirTreePath(item, item.index);
             }
@@ -103,7 +93,39 @@ const prepareSnippets = () => {
         });
     };
 
-    const indexMap = formateDirTreePath(dirTree, '');
+    const getIndexMap = () => {
+
+        const indexMap = {};
+
+        const act = (tree, fileIndex) => {
+
+          tree.children.forEach((item, index) => {
+
+              item.index = fileIndex + '-' + index;
+
+              // format
+              if (/^-/.test(item.index)) {
+                item.index = item.index.replace(/^-/, '');
+              }
+
+              indexMap[item.path] = item.index;
+
+              if (item.children) {
+                  act(item, item.index);
+              }
+
+          });
+
+      };
+
+      act(dirTree, '');
+
+      return indexMap;
+    };
+
+    formateDirTreePath(dirTree);
+
+    const indexMap = getIndexMap();
 
     const createDynamicFiles = () => {
 
@@ -120,7 +142,7 @@ const prepareSnippets = () => {
           const foldername = path.dirname(filepath);
           const md5String = md5(filepath);
 
-          map[md5String] = filepath;
+          hashMap[md5String] = filepath;
 
           const fileIndex = JSON.stringify(indexMap[filepath].split('-')).replace(/\"/g, "'");
 
