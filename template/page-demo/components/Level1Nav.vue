@@ -1,8 +1,8 @@
 <template>
-    <ul class="level1">
+    <ul v-bind:class="{'level1': true, 'has-border': hasBorder}">
         <li @click="click(level1Index)" v-bind:class="getLevel1Class(level1Item, level1Index, withBorder = true)" v-for="(level1Item, level1Index) in arr">
-            <div v-if="level1Item.type === 'directory'">{{level1Item.path.split('/').pop()}}</div>
-            <router-link :to="level1Item.routePath" v-if="level1Item.type !== 'directory'">{{level1Item.path.split('/').pop()}}</router-link>
+            <div ref="level1-folder" v-if="level1Item.type === 'directory'">{{level1Item.path.split('/').pop()}}</div>
+            <router-link ref="level1-link" :to="level1Item.routePath" v-if="level1Item.type !== 'directory'">{{level1Item.path.split('/').pop()}}</router-link>
         </li>
     </ul>
 </template>
@@ -12,8 +12,12 @@
 export default {
     props: ['arr', 'value', 'currentIndex'],
     watch: {
-        currentIndex(level1Index) {
-
+        currentIndex: function(data) {
+          const dom1 = this.$refs['level1-folder'];
+          const dom2 = this.$refs['level1-link'];
+          if ( (dom1 && dom1.length) || (dom2 && dom2.length) ) {
+            this.hasBorder = true;
+          }
         }
     },
     methods: {
@@ -29,23 +33,22 @@ export default {
         };
       }
     },
+    data() {
+      return {
+        hasBorder: false
+      };
+    },
     mounted() {
-
+      const dom1 = this.$refs['level1-folder'];
+      const dom2 = this.$refs['level1-link'];
+      if ( (dom1 && dom1.length) || (dom2 && dom2.length) ) {
+        this.hasBorder = true;
+      }
     }
 };
 
 </script>
 
 <style lang="less" scoped>
-ul, li {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.is-folder {
-
-}
-
-
+@import "./nav.less";
 </style>

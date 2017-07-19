@@ -178,14 +178,14 @@ const prepareSrc = (docName) => {
           const content = `
             <template>
                 <div class="hoper-body">
-                    <Mheader></Mheader>
+
                     <div class="hoper-content">
                         <Mmenu :currentIndex="${fileIndex}"></Mmenu>
                         <div class="hoper-doc">
                           <Doc></Doc>
                         </div>
                     </div>
-                    <Mfooter></Mfooter>
+                    
                 </div>
             </template>
 
