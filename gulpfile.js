@@ -49,6 +49,10 @@ const prepareBuild = () => {
     });
 };
 
+const getFileIndexFromDirtree = (filepath, dirTree) => {
+  
+};
+
 const prepareSnippets = () => {
 
     const md5 = require('md5');
@@ -63,6 +67,7 @@ const prepareSnippets = () => {
 
     // prepare dynamic-routes
     const snippetsFiles = readdirSync('./docs/snippets');
+    const dirTree = require('directory-tree')('./docs/snippets/');
 
     const createDynamicFiles = () => {
 
@@ -81,7 +86,9 @@ const prepareSnippets = () => {
 
           map[md5String] = filepath;
 
-          // 创建 dynamic-routes 文件
+          // get file index
+
+          // create dynamic-routes files
           const dynamicFilePath = path.join('./src/snippets/dynamic-files', md5String + '.vue');
           const content = `
             <template>
@@ -159,7 +166,7 @@ const prepareSnippets = () => {
 
     // create file-tree.js
     const createFileTree = () => {
-        const dirTree = require('directory-tree')('./docs/snippets/');
+
         const dirTreeFilePath = path.join('./src/snippets/dynamic-files/file-tree.js');
         fse.ensureFileSync(dirTreeFilePath);
         const fd = fs.openSync(dirTreeFilePath, 'w');
