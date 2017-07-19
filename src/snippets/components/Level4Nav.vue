@@ -4,9 +4,13 @@
             <ul class="level2" v-if="level1Item.children">
                 <li v-bind:class="getLevel2Class(level2Item, level2Index, level1Index)" v-for="(level2Item, level2Index) in level1Item.children">
                     <ul class="level3" v-if="level2Item.children">
-                        <li @click="click(level3Index)" v-bind:class="getLevel3Class(level3Item, level3Index, level2Index, level1Index)" v-for="(level3Item, level3Index) in level2Item.children">
-                          <div v-if="level3Item.type === 'directory'">{{level3Item.path.split('/').pop()}}</div>
-                          <router-link :to="level3Item.routePath" v-if="level3Item.type !== 'directory'">{{level3Item.path.split('/').pop()}}</router-link>
+                        <li v-bind:class="getLevel3Class(level3Item, level3Index, level2Index, level1Index)" v-for="(level3Item, level3Index) in level2Item.children">
+                            <ul class="level3" v-if="level2Item.children">
+                                <li @click="click(level4Index)" v-bind:class="getLevel4Class(level4Item, level4Index, level3Index, level2Index, level1Index)" v-for="(level4Item, level4Index) in level3Item.children">
+                                  <div v-if="level4Item.type === 'directory'">{{level4Item.path.split('/').pop()}}</div>
+                                  <router-link :to="level4Item.routePath" v-if="level4Item.type !== 'directory'">{{level4Item.path.split('/').pop()}}</router-link>
+                                </li>
+                            </ul>
                         </li>
                     </ul>
                 </li>
@@ -39,9 +43,15 @@ export default {
       getLevel3Class(level3Item, level3Index, level2Index, level1Index) {
         return {
           'level3-item': true,
-          'is-folder': level3Item.type === 'directory',
-          'is-file': level3Item.type === 'file',
           current: [this.currentIndex[0], this.currentIndex[1], this.currentIndex[2]].join('-')  === [level1Index, level2Index, level3Index].join('-')
+        };
+      },
+      getLevel4Class(level4Item, level4Index, level3Index, level2Index, level1Index) {
+        return {
+          'level4-item': true,
+          'is-folder': level4Item.type === 'directory',
+          'is-file': level4Item.type === 'file',
+          current: [this.currentIndex[0], this.currentIndex[1], this.currentIndex[2], this.currentIndex[3]].join('-')  === [level1Index, level2Index, level3Index, level4Index].join('-')
         };
       }
     }
@@ -54,7 +64,8 @@ export default {
 @import "./nav.less";
 
 .level1-item,
-.level2-item {
+.level2-item,
+.level3-item {
   display: none;
 
   &.current {
