@@ -3,13 +3,15 @@ const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
 const gulp = require('gulp');
+const gulpWatch = require('gulp-watch');
 const fse = require('fs-extra');
 const readdirSync = require('recursive-readdir-sync');
 const md5 = require('md5');
 const readdirTree = require('directory-tree');
 
 const srcFolder = path.join(__dirname, 'src');
-const buildFolder = path.join(__dirname, 'build');
+// const buildFolder = path.join(__dirname, 'build');
+const buildFolder = path.join(__dirname, '../snippets-site');
 const docFolder = path.join(__dirname, 'docs');
 const templateFolder = path.join(__dirname, 'template');
 
@@ -20,7 +22,16 @@ const utime = (filepath) => {
 const prepareBuildFolder = () => {
 
     // remove build folder
-    fse.removeSync(buildFolder);
+    fse.ensureDirSync(buildFolder);
+    fs.readdirSync(buildFolder).forEach((filename) => {
+      if (!/(\.DS_Store)|(\.git)/.test(filename)) {
+        try {
+          fse.removeSync(path.join(buildFolder, filename));
+        } catch(err) {
+
+        }
+      }
+    });
 
     // create *.html in build folder
     fs.readdirSync(srcFolder).forEach((filename) => {
@@ -61,6 +72,13 @@ const prepareSrc = (docName) => {
         fse.removeSync(targetFolder);
       }
       fse.copySync(path.join(templateFolder, 'page-demo'), targetFolder);
+
+      // replace string
+      const htmlPath = path.join(targetFolder, 'index.html');
+      const fd = fs.openSync(htmlPath, 'r');
+      const newHtmlContent = fs.readFileSync(htmlPath).toString().replace(/\$\$\_\_DOCNAME\_\_\$\$/g, docName);
+      fs.writeFileSync(htmlPath, newHtmlContent);
+      fs.close(fd);
 
       const files = readdirSync(targetFolder);
 
@@ -185,7 +203,7 @@ const prepareSrc = (docName) => {
                           <Doc></Doc>
                         </div>
                     </div>
-                    
+
                 </div>
             </template>
 
@@ -311,11 +329,17 @@ gulp.task('dev', () => {
 
     prepareBuildFolder();
 
-    gulp.watch([path.join(srcFolder, '**/*.html')], (stats) => {
+    gulpWatch([path.join(srcFolder, '**/*.html')], (stats) => {
         const filepath = stats.path;
         const basename = path.basename(filepath);
         const foldername = path.basename(path.dirname(filepath));
-        fse.copySync(filepath, path.join(buildFolder, foldername + '.html'));
+
+        if (stats.event !== 'unlink') {
+          fse.copySync(filepath, path.join(buildFolder, foldername + '.html'));
+        } else {
+          fse.removeSync(path.join(buildFolder, foldername + '.html'));
+        }
+
     });
 
     // get default webpack config
@@ -373,6 +397,20 @@ gulp.task('build', () => {
 
     // get default webpack config
     const webpackConfig = require('./webpack.config')(srcFolder, buildFolder);
+
+    // rules
+    webpackConfig.module.rules.forEach((item) => {
+
+        if (item.test.test('.css')) {
+            item.use = ['vue-style-loader', 'css-loader', 'postcss-loader'];
+        } else if (item.test.test('.less')) {
+            item.use = ['vue-style-loader', 'css-loader', 'postcss-loader', 'less-loader'];
+        } else if (item.test.test('.vue')) {
+            item.options.loaders.css = ['vue-style-loader', 'css-loader', 'postcss-loader'];
+            item.options.loaders.less = ['vue-style-loader', 'css-loader', 'postcss-loader', 'less-loader'];
+        }
+
+    });
 
     webpack(webpackConfig, function() {});
 
