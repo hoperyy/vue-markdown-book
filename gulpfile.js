@@ -10,8 +10,8 @@ const md5 = require('md5');
 const readdirTree = require('directory-tree');
 
 const srcFolder = path.join(__dirname, 'src');
-const buildFolder = path.join(__dirname, 'build');
-// const buildFolder = path.join(__dirname, '../snippets-site');
+// const buildFolder = path.join(__dirname, 'build');
+const buildFolder = path.join(__dirname, '../snippets-site');
 const docFolder = path.join(__dirname, 'docs');
 const templateFolder = path.join(__dirname, 'template');
 

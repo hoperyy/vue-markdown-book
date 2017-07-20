@@ -17,7 +17,7 @@
             import Mfooter from '../../components/Footer.vue';
             import Mmenu from '../components/Menu.vue';
 
-            import Doc from '/Users/lyy/Downloads/code/my-project/website/docs/snippets/JavaScript/BB/B1.md';
+            import Doc from '/Users/lyy/Downloads/code/my-project/github/website/docs/snippets/JavaScript/BB/B1.md';
 
             export default {
                 components: {
