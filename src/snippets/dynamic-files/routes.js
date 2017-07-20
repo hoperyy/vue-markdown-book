@@ -1,6 +1,7 @@
 
 import doc_c33e9fc9b3770650fea38bd34514af17 from './c33e9fc9b3770650fea38bd34514af17.vue';
 import doc_f621ff42f3fabe7b5c3af51969fb9932 from './f621ff42f3fabe7b5c3af51969fb9932.vue';
+import doc_149af894543b1e86ac93550f882548e5 from './149af894543b1e86ac93550f882548e5.vue';
 import doc_de8b95d860592ce5e9394e503e308c37 from './de8b95d860592ce5e9394e503e308c37.vue';
 import doc_d0a68ad5bdf56cfc62916f8c2d02820b from './d0a68ad5bdf56cfc62916f8c2d02820b.vue';
 import doc_51fd0757cbc2b0068c69b1078d55251b from './51fd0757cbc2b0068c69b1078d55251b.vue';
@@ -18,6 +19,9 @@ module.exports = [
             },{
               path: '/JavaScript/AA/A2',
               component: doc_f621ff42f3fabe7b5c3af51969fb9932
+            },{
+              path: '/JavaScript/AA/assets/markdown-img-paste-20170720131717582.png',
+              component: doc_149af894543b1e86ac93550f882548e5
             },{
               path: '/JavaScript/AA/sub/A1',
               component: doc_de8b95d860592ce5e9394e503e308c37

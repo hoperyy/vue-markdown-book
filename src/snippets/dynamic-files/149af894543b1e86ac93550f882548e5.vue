@@ -3,7 +3,7 @@
                 <div class="hoper-body">
 
                     <div class="hoper-content">
-                        <Mmenu :currentIndex="['0','0','3','1']"></Mmenu>
+                        <Mmenu :currentIndex="['0','0','2','0']"></Mmenu>
                         <div class="hoper-doc">
                           <Doc></Doc>
                         </div>
@@ -17,7 +17,7 @@
             import Mfooter from '../../components/Footer.vue';
             import Mmenu from '../components/Menu.vue';
 
-            import Doc from '/Users/lyy/Downloads/code/my-project/github/website/docs/snippets/JavaScript/AA/sub/A2.md';
+            import Doc from '/Users/lyy/Downloads/code/my-project/github/website/docs/snippets/JavaScript/AA/assets/markdown-img-paste-20170720131717582.png';
 
             export default {
                 components: {
