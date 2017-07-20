@@ -5,9 +5,10 @@ const webpack = require('webpack');
 const gulp = require('gulp');
 const gulpWatch = require('gulp-watch');
 const fse = require('fs-extra');
-const readdirSync = require('recursive-readdir-sync');
+// const readdirSync = require('recursive-readdir-sync');
 const md5 = require('md5');
 const readdirTree = require('directory-tree');
+const readdirSync = require('readdir-enhanced').sync;
 // const StringReplacePlugin = require('string-replace-webpack-plugin');
 
 const srcFolder = path.join(__dirname, 'src');
@@ -71,7 +72,7 @@ const replaceKeywords = (docName, currentEnv) => {
     fs.writeFileSync(htmlPath, newHtmlContent);
     fs.close(fd);
 
-    readdirSync(targetFolder).forEach((filepath) => {
+    readdirSync(targetFolder, {deep: true, basePath: targetFolder}).forEach((filepath) => {
       utime(filepath);
     });
 };
@@ -80,13 +81,13 @@ const prepareSrc = (docName) => {
 
     const currentDocFolder = path.join(docFolder, docName);
     const currentDocFiles = [];
-    readdirSync(currentDocFolder).forEach((item) => {
-      if (!/\/assets/.test(item)) {
+    readdirSync(currentDocFolder, {deep: true, basePath: currentDocFolder}).forEach((item) => {
+      //if (!/\/assets/.test(item)) {
         currentDocFiles.push(item);
-      }
+      //}
     });
     const dirTree = readdirTree(currentDocFolder, {
-      exclude: /\/assets/
+      // exclude: /\/assets/
     });
 
     // create src pages by docs folder
@@ -97,7 +98,7 @@ const prepareSrc = (docName) => {
       }
       fse.copySync(path.join(templateFolder, 'page-demo'), targetFolder);
 
-      readdirSync(targetFolder).forEach((filepath) => {
+      readdirSync(targetFolder, {deep: true, basePath: targetFolder}).forEach((filepath) => {
         utime(filepath);
       });
 
@@ -166,7 +167,7 @@ const prepareSrc = (docName) => {
 
               item.index = fileIndex + '-' + index;
 
-              // format
+              // format index
               if (/^-/.test(item.index)) {
                 item.index = item.index.replace(/^-/, '');
               }
@@ -209,38 +210,71 @@ const prepareSrc = (docName) => {
           // create dynamic-routes files
           const dynamicFilePath = path.join(srcFolder, docName, 'dynamic-files', md5String + '.vue');
 
-          const content = `
-            <template>
-                <div class="hoper-body">
+          let content = '';
 
-                    <div class="hoper-content">
-                        <Mmenu :currentIndex="${fileIndex}"></Mmenu>
-                        <div class="hoper-doc">
-                          <Doc></Doc>
-                        </div>
-                    </div>
+          if (!fs.statSync(path.join(currentDocFolder, filepath)).isDirectory()) {
+            content = `
+              <template>
+                  <div class="hoper-body">
 
-                </div>
-            </template>
+                      <div class="hoper-content">
+                          <Mmenu :currentIndex="${fileIndex}"></Mmenu>
+                          <div class="hoper-doc">
+                            <Doc></Doc>
+                          </div>
+                      </div>
 
-            <script>
-            import Mheader from '../../components/Header.vue';
-            import Mfooter from '../../components/Footer.vue';
-            import Mmenu from '../components/Menu.vue';
+                  </div>
+              </template>
 
-            import Doc from '${path.join(currentDocFolder, filepath)}';
+              <script>
+              import Mheader from '../../components/Header.vue';
+              import Mfooter from '../../components/Footer.vue';
+              import Mmenu from '../components/Menu.vue';
 
-            export default {
-                components: {
-                    Mheader,
-                    Mfooter,
-                    Mmenu,
-                    Doc
-                }
-            };
+              import Doc from '${path.join(currentDocFolder, filepath)}';
 
-            </script>
-          `;
+              export default {
+                  components: {
+                      Mheader,
+                      Mfooter,
+                      Mmenu,
+                      Doc
+                  }
+              };
+
+              </script>
+            `;
+          } else {
+            content = `
+              <template>
+                  <div class="hoper-body">
+
+                      <div class="hoper-content">
+                          <Mmenu :currentIndex="${fileIndex}"></Mmenu>
+                          <div class="hoper-doc">
+                          </div>
+                      </div>
+
+                  </div>
+              </template>
+
+              <script>
+              import Mheader from '../../components/Header.vue';
+              import Mfooter from '../../components/Footer.vue';
+              import Mmenu from '../components/Menu.vue';
+
+              export default {
+                  components: {
+                      Mheader,
+                      Mfooter,
+                      Mmenu,
+                  }
+              };
+
+              </script>
+            `;
+          }
 
           fse.ensureFileSync(dynamicFilePath);
           const fd = fs.openSync(dynamicFilePath, 'w+');

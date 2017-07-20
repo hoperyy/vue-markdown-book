@@ -3,9 +3,8 @@
                   <div class="hoper-body">
 
                       <div class="hoper-content">
-                          <Mmenu :currentIndex="['0','1']"></Mmenu>
+                          <Mmenu :currentIndex="['1']"></Mmenu>
                           <div class="hoper-doc">
-                            <Doc></Doc>
                           </div>
                       </div>
 
@@ -17,14 +16,11 @@
               import Mfooter from '../../components/Footer.vue';
               import Mmenu from '../components/Menu.vue';
 
-              import Doc from '/Users/lyy/Downloads/code/my-project/github/website/docs/snippets/Chrome-Plugin/manifest.json.md';
-
               export default {
                   components: {
                       Mheader,
                       Mfooter,
                       Mmenu,
-                      Doc
                   }
               };
 
