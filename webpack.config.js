@@ -33,7 +33,7 @@ module.exports = (srcFolder, buildFolder) => {
 				entry: entry,
         output: {
             path: path.join(buildFolder, 'static'),
-            publicPath: '/static/',
+            publicPath: '/website/static/',
             filename: '[name].js',
             chunkFilename: '[name].js'
         },
