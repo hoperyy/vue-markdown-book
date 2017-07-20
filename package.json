@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "directory-tree": "^2.0.0",
+    "gulp-watch": "^4.3.11",
     "md5": "^2.2.1",
     "recursive-readdir-sync": "^1.0.6"
   }
