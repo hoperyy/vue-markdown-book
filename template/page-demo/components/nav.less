@@ -30,16 +30,22 @@
     div,
     a {
       display: block;
-      padding: 5px 10px;
+      padding: 0 10px;
+      height: 36px;
+      line-height: 36px;
       min-width: 80px;
       text-align: center;
+    }
+
+    a {
+      text-decoration: none;
     }
 
     &.is-folder.current,
     &.is-folder:hover {
       div {
-        background: gray;
-        color: white;
+        background: #000;
+        color: #fff;
       }
     }
 
