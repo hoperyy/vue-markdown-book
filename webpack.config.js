@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const webpack = require('webpack');
-const StringReplacePlugin = require('string-replace-webpack-plugin');
+// const StringReplacePlugin = require('string-replace-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 function getEntry(root) {
@@ -108,7 +108,7 @@ module.exports = (srcFolder, buildFolder) => {
                 filename: 'common.js',
                 minChunks: Infinity,
             }),
-            new StringReplacePlugin(),
+            // new StringReplacePlugin(),
             new ExtractTextPlugin({
                 filename: '[name].css',
                 disable: false

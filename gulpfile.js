@@ -8,6 +8,7 @@ const fse = require('fs-extra');
 const readdirSync = require('recursive-readdir-sync');
 const md5 = require('md5');
 const readdirTree = require('directory-tree');
+// const StringReplacePlugin = require('string-replace-webpack-plugin');
 
 const srcFolder = path.join(__dirname, 'src');
 // const buildFolder = path.join(__dirname, 'build');
@@ -47,9 +48,9 @@ const prepareBuildFolder = () => {
 
                 if (!subStats.isDirectory() && /\.html*/.test(subname)) {
                     try {
-                      fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
+                        fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
                     } catch(err) {
-                      console.log('error: ', err, ' \n and subname is: ', subname);
+                        console.log('error: ', err, ' \n and subname is: ', subname);
                     }
                   }
             });
@@ -57,6 +58,22 @@ const prepareBuildFolder = () => {
 
     });
 
+};
+
+const replaceKeywords = (docName, currentEnv) => {
+    const targetFolder = path.join(srcFolder, docName);
+    const htmlPath = path.join(targetFolder, 'index.html');
+    const fd = fs.openSync(htmlPath, 'r');
+    const newHtmlContent = fs.readFileSync(htmlPath)
+                              .toString()
+                              .replace(/\$\$\_DOCNAME\_\$\$/g, docName)
+                              .replace(/\$\$\_CDNURL\_\$\$/g, currentEnv === 'is-build' ? './static' : './website/static');
+    fs.writeFileSync(htmlPath, newHtmlContent);
+    fs.close(fd);
+
+    readdirSync(targetFolder).forEach((filepath) => {
+      utime(filepath);
+    });
 };
 
 const prepareSrc = (docName) => {
@@ -80,18 +97,10 @@ const prepareSrc = (docName) => {
       }
       fse.copySync(path.join(templateFolder, 'page-demo'), targetFolder);
 
-      // replace string
-      const htmlPath = path.join(targetFolder, 'index.html');
-      const fd = fs.openSync(htmlPath, 'r');
-      const newHtmlContent = fs.readFileSync(htmlPath).toString().replace(/\$\$\_\_DOCNAME\_\_\$\$/g, docName);
-      fs.writeFileSync(htmlPath, newHtmlContent);
-      fs.close(fd);
-
-      const files = readdirSync(targetFolder);
-
-      files.forEach((filepath) => {
+      readdirSync(targetFolder).forEach((filepath) => {
         utime(filepath);
       });
+
     };
 
     // format path to '/xxx/xxx'
@@ -334,6 +343,10 @@ gulp.task('dev', () => {
 
     transferDoc2Src();
 
+    fs.readdirSync(docFolder).forEach((docName) => {
+      replaceKeywords(docName, 'is-dev');
+    });
+
     prepareBuildFolder();
 
     gulpWatch([path.join(srcFolder, '**/*.html')], (stats) => {
@@ -369,6 +382,19 @@ gulp.task('dev', () => {
 
     });
 
+    // webpackConfig.module.rules.push({
+    //     test: /\.[(vue)(vuex)(js)(jsx)(html)]*$/,
+    //     exclude: /(node_modules|bower_components)/,
+    //     loader: StringReplacePlugin.replace({
+    //         replacements: [{
+    //             pattern: /\$\$\_CDNURL\_\$\$/,
+    //             replacement: function () {
+    //                 return './website/static/';
+    //             }
+    //         }]
+    //     })
+    // });
+
     for(let i in webpackConfig.entry) {
         webpackConfig.entry[i].unshift(`webpack-dev-server/client?http://127.0.0.1:${port}`, 'webpack/hot/dev-server');
     }
@@ -400,6 +426,10 @@ gulp.task('build', () => {
 
     transferDoc2Src();
 
+    fs.readdirSync(docFolder).forEach((docName) => {
+      replaceKeywords(docName, 'is-build');
+    });
+
     prepareBuildFolder();
 
     // get default webpack config
@@ -418,6 +448,19 @@ gulp.task('build', () => {
         }
 
     });
+
+    // webpackConfig.module.rules.push({
+    //     test: /\.[(vue)(vuex)(js)(jsx)(html)]*$/,
+    //     exclude: /(node_modules|bower_components)/,
+    //     loader: StringReplacePlugin.replace({
+    //         replacements: [{
+    //             pattern: /\$\$\_CDNURL\_\$\$/,
+    //             replacement: function () {
+    //                 return './static/';
+    //             }
+    //         }]
+    //     })
+    // });
 
     webpack(webpackConfig, function() {});
 
