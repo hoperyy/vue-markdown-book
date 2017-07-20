@@ -17,7 +17,7 @@
             import Mfooter from '../../components/Footer.vue';
             import Mmenu from '../components/Menu.vue';
 
-            import Doc from '/Users/lyy/Downloads/code/my-project/website/docs/snippets/JavaScript/AA/sub/A2.md';
+            import Doc from '/Users/lyy/Downloads/code/my-project/github/website/docs/snippets/JavaScript/AA/sub/A2.md';
 
             export default {
                 components: {
