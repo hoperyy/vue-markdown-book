@@ -62,8 +62,15 @@ const prepareBuildFolder = () => {
 const prepareSrc = (docName) => {
 
     const currentDocFolder = path.join(docFolder, docName);
-    const currentDocFiles = readdirSync(currentDocFolder);
-    const dirTree = readdirTree(currentDocFolder);
+    const currentDocFiles = [];
+    readdirSync(currentDocFolder).forEach((item) => {
+      if (!/\/assets/.test(item)) {
+        currentDocFiles.push(item);
+      }
+    });
+    const dirTree = readdirTree(currentDocFolder, {
+      exclude: /\/assets/
+    });
 
     // create src pages by docs folder
     const createPage = () => {

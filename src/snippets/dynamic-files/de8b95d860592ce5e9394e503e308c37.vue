@@ -3,7 +3,7 @@
                 <div class="hoper-body">
 
                     <div class="hoper-content">
-                        <Mmenu :currentIndex="['0','0','3','0']"></Mmenu>
+                        <Mmenu :currentIndex="['0','0','2','0']"></Mmenu>
                         <div class="hoper-doc">
                           <Doc></Doc>
                         </div>
