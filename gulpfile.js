@@ -88,11 +88,15 @@ const prepareSrc = (docName) => {
 
     const currentDocFolder = path.join(docFolder, docName);
     const currentDocFiles = [];
+
+    // get doc files
     readdirSync(currentDocFolder).forEach((item) => {
       //if (!/\/assets/.test(item)) {
         currentDocFiles.push(item);
       //}
     });
+
+    // get dir tree
     const dirTree = readdirTree(currentDocFolder, {
       // exclude: /\/assets/
     });
@@ -111,7 +115,8 @@ const prepareSrc = (docName) => {
 
     };
 
-    const formatePath = () => {
+    // format path of doc files and dir tree files to relative path
+    const formateAll2ReativePath = () => {
 
         // format current doc files path
         currentDocFiles.forEach((filepath, index) => {
@@ -163,7 +168,7 @@ const prepareSrc = (docName) => {
 
     };
 
-    // get index map
+    // get files map: {'/xx/xx..': {...}}
     const getFilesMap = () => {
 
         const filesMap = {};
@@ -322,7 +327,7 @@ const prepareSrc = (docName) => {
     };
 
     // create file-tree.js
-    const createFileTree = () => {
+    const createFileTreeJsFile = () => {
 
         const dirTreeFilePath = path.join(path.join(srcFolder, docName, '/dynamic-files/file-tree.js'));
         fse.ensureFileSync(dirTreeFilePath);
@@ -341,12 +346,12 @@ const prepareSrc = (docName) => {
     }
 
     createPage();
-    formatePath();
+    formateAll2ReativePath();
     const filesMap = getFilesMap();
     const hashMap = createDynamicFiles(filesMap);
     createRoutesFile(hashMap, filesMap);
 
-    createFileTree();
+    createFileTreeJsFile();
 
 };
 
