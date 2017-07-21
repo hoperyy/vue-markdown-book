@@ -8,8 +8,15 @@ const fse = require('fs-extra');
 // const readdirSync = require('recursive-readdir-sync');
 const md5 = require('md5');
 const readdirTree = require('directory-tree');
-const readdirSync = require('readdir-enhanced').sync;
+const readdirEnhanced = require('readdir-enhanced').sync;
 // const StringReplacePlugin = require('string-replace-webpack-plugin');
+
+const readdirSync = (dir) => {
+  return readdirEnhanced(dir, {
+    deep: true,
+    basePath: dir
+  });
+};
 
 const srcFolder = path.join(__dirname, 'src');
 // const buildFolder = path.join(__dirname, 'build');
@@ -23,7 +30,7 @@ const utime = (filepath) => {
 
 const prepareBuildFolder = () => {
 
-    // remove build folder
+    // empty build folder
     fse.ensureDirSync(buildFolder);
     fs.readdirSync(buildFolder).forEach((filename) => {
       if (!/(\.DS_Store)|(\.git)/.test(filename)) {
@@ -72,7 +79,7 @@ const replaceKeywords = (docName, currentEnv) => {
     fs.writeFileSync(htmlPath, newHtmlContent);
     fs.close(fd);
 
-    readdirSync(targetFolder, {deep: true, basePath: targetFolder}).forEach((filepath) => {
+    readdirSync(targetFolder).forEach((filepath) => {
       utime(filepath);
     });
 };
@@ -81,7 +88,7 @@ const prepareSrc = (docName) => {
 
     const currentDocFolder = path.join(docFolder, docName);
     const currentDocFiles = [];
-    readdirSync(currentDocFolder, {deep: true, basePath: currentDocFolder}).forEach((item) => {
+    readdirSync(currentDocFolder).forEach((item) => {
       //if (!/\/assets/.test(item)) {
         currentDocFiles.push(item);
       //}
@@ -98,21 +105,21 @@ const prepareSrc = (docName) => {
       }
       fse.copySync(path.join(templateFolder, 'page-demo'), targetFolder);
 
-      readdirSync(targetFolder, {deep: true, basePath: targetFolder}).forEach((filepath) => {
+      readdirSync(targetFolder).forEach((filepath) => {
         utime(filepath);
       });
 
     };
 
-    // format path to '/xxx/xxx'
     const formatePath = () => {
 
-        // format into relative path
+        // format current doc files path
         currentDocFiles.forEach((filepath, index) => {
 
-            // currentDocFiles[index] = filepath.replace(currentDocFolder, '');
+            // format into relative path
             filepath = filepath.replace(currentDocFolder, '');
 
+            // format into '/xxx/xxx'
             if (!/^\//.test(filepath)) {
                 filepath = '/' + filepath;
             }
@@ -121,9 +128,14 @@ const prepareSrc = (docName) => {
 
         });
 
+        // format dir tree path
         const formateDirTree = (tree) => {
 
           tree.children.forEach((item, index) => {
+
+              // format into relative path
+              item.path = item.path.replace(currentDocFolder, '');
+              tree.path = tree.path.replace(currentDocFolder, '');
 
               // format path to '/xxx/xxx/...'
               if (/^\.\//.test(item.path)) {
@@ -138,11 +150,6 @@ const prepareSrc = (docName) => {
               if (!/^\//.test(tree.path)) {
                   tree.path = '/' + tree.path;
               }
-
-              item.path = item.path.replace(currentDocFolder, '');
-              tree.path = tree.path.replace(currentDocFolder, '');
-
-              item.routePath = item.path.replace(currentDocFolder, '').replace(/\.md$/, '');
 
               if (item.children) {
                   formateDirTree(item, item.index);
@@ -167,7 +174,7 @@ const prepareSrc = (docName) => {
 
               item.index = fileIndex + '-' + index;
 
-              // format index
+              // format index to 'x' or 'x-x' or 'x-x-x'
               if (/^-/.test(item.index)) {
                 item.index = item.index.replace(/^-/, '');
               }
@@ -193,11 +200,6 @@ const prepareSrc = (docName) => {
       const hashMap = {};
 
       currentDocFiles.forEach((filepath) => {
-
-          // formate
-          if (!/^\//.test(filepath)) {
-            filepath = '/' + filepath;
-          }
 
           const filename = path.basename(filepath);
           const foldername = path.dirname(filepath);
@@ -301,7 +303,7 @@ const prepareSrc = (docName) => {
         routesContent += `\n\nmodule.exports = [\n`;
         for (md5String in hashMap) {
             routesContent += `{
-              path: '${filesMap[hashMap[md5String]].routePath}',
+              path: '${filesMap[hashMap[md5String]].path}',
               component: ${'doc_' + md5String}
             },`;
         }
@@ -381,6 +383,7 @@ gulp.task('dev', () => {
       replaceKeywords(docName, 'is-dev');
     });
 
+    // empty buildFolder  && create html file
     prepareBuildFolder();
 
     gulpWatch([path.join(srcFolder, '**/*.html')], (stats) => {
@@ -464,6 +467,7 @@ gulp.task('build', () => {
       replaceKeywords(docName, 'is-build');
     });
 
+    // empty buildFolder  && create html file
     prepareBuildFolder();
 
     // get default webpack config
