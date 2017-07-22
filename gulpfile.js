@@ -188,7 +188,8 @@ const createDynamicFiles = (docName, filesMap) => {
       const foldername = path.dirname(relativeFilePath);
       const md5String = filesMapItem.md5String;
 
-      const fileIndex = JSON.stringify(filesMap[relativeFilePath].index.split('-')).replace(/\"/g, "'");
+      // format 'x-x-x' to '[x, x, x]'
+      const fileIndex = JSON.stringify(filesMapItem.index.split('-')).replace(/\"/g, "'");
 
       // create dynamic-routes files
       const dynamicFilePath = path.join(srcFolder, docName, 'dynamic-files', md5String + '.vue');
