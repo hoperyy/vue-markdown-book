@@ -34,8 +34,11 @@
   },
   "dependencies": {
     "directory-tree": "^2.0.0",
+    "file-type": "^5.2.0",
     "gulp-watch": "^4.3.11",
     "md5": "^2.2.1",
+    "mime-types": "^2.1.15",
+    "read-chunk": "^2.0.0",
     "readdir-enhanced": "^1.5.2"
   }
 }

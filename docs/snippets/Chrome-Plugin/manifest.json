@@ -1,4 +1,4 @@
-```
+
 {
     "name": "demo",
     "version": "1.0.0",
@@ -60,4 +60,3 @@
     "content_security_policy": "style-src 'self' 'unsafe-inline';script-src 'self' 'unsafe-eval'; object-src 'self' ""content_security_policy": "style-src 'self' 'unsafe-inline';script-src 'self' 'unsafe-eval'; object-src 'self' "
 
 }
-```
