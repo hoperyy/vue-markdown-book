@@ -197,6 +197,8 @@ const createShownDocs = (docName, filesMap) => {
       let content = '';
 
       // 根据 doc 文件类型的不同，生成不同的显示模板
+
+      // 如果是文件类型
       if (!fs.statSync(filesMapItem.absolutePath).isDirectory()) {
         content = `
           <template>
@@ -230,6 +232,8 @@ const createShownDocs = (docName, filesMap) => {
 
           </script>
         `;
+
+      // 如果是目录
       } else {
         content = `
           <template>
