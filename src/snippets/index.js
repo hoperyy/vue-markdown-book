@@ -2,7 +2,7 @@ import './index.less';
 
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import routes from './dynamic-files/routes';
+import routes from './shown-docs/routes';
 
 // 子页面
 import Main from './routes/Index.vue';
