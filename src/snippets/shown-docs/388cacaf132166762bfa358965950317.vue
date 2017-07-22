@@ -3,7 +3,7 @@
                   <div class="hoper-body">
 
                       <div class="hoper-content">
-                          <Mmenu :currentIndex="['0','0']"></Mmenu>
+                          <Mmenu :currentIndex="['0','3','0']"></Mmenu>
                           <div class="hoper-doc">
                             <Doc></Doc>
                           </div>
@@ -17,7 +17,7 @@
               import Mfooter from '../../components/Footer.vue';
               import Mmenu from '../components/Menu.vue';
 
-              import Doc from './loaded-doc/Chrome-Plugin/README.md';
+              import Doc from './loaded-doc/Chrome-Plugin/template/popup.html.md';
 
               export default {
                   components: {

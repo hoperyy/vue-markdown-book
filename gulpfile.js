@@ -6,6 +6,11 @@ const gulp = require('gulp');
 const gulpWatch = require('gulp-watch');
 const fse = require('fs-extra');
 const md5 = require('md5');
+
+const readChunk = require('read-chunk');
+const fileType = require('file-type');
+const mime = require('mime-types');
+
 const readdirTree = require('directory-tree');
 const readdirEnhanced = require('readdir-enhanced').sync;
 const readdirSync = (dir) => {
@@ -192,46 +197,115 @@ const createShownDocs = (docName, filesMap) => {
       const fileIndex = JSON.stringify(filesMapItem.index.split('-')).replace(/\"/g, "'");
 
       // create shown files
-      const shownFilePath = path.join(srcFolder, docName, 'shown-docs', md5String + '.vue');
+      const shownDocsFolder = path.join(srcFolder, docName, 'shown-docs');
+      const shownFilePath = path.join(shownDocsFolder, md5String + '.vue');
 
       let content = '';
 
-      // 根据 doc 文件类型的不同，生成不同的显示模板
+      const isFile = !fs.statSync(filesMapItem.absolutePath).isDirectory();
 
       // 如果是文件类型
-      if (!fs.statSync(filesMapItem.absolutePath).isDirectory()) {
-        content = `
-          <template>
-              <div class="hoper-body">
+      if (isFile) {
 
-                  <div class="hoper-content">
-                      <Mmenu :currentIndex="${fileIndex}"></Mmenu>
-                      <div class="hoper-doc">
-                        <Doc></Doc>
+        let absoluteLoadedFilePath = path.join(shownDocsFolder, 'loaded-doc', relativeFilePath);
+        let relativeLoadedFilePath = path.join('loaded-doc', relativeFilePath);
+
+        if (!/^\//.test(relativeLoadedFilePath)) {
+            relativeLoadedFilePath = '/' + relativeLoadedFilePath;
+        }
+
+        if (!/^\./.test(relativeLoadedFilePath)) {
+            relativeLoadedFilePath = '.' + relativeLoadedFilePath;
+        }
+
+        console.log('relativeLoadedFilePath: ', relativeLoadedFilePath);
+
+        // copy docs into shown files docs/, txt file -> md; img file copied
+        if (/\.(png)|(md)$/.test(relativeFilePath)) {
+            fse.copySync(filesMapItem.absolutePath, absoluteLoadedFilePath);
+        } else {
+            absoluteLoadedFilePath += '.md';
+            relativeLoadedFilePath += '.md';
+
+            const content = fs.readFileSync(filesMapItem.absolutePath).toString();
+
+            fse.ensureFileSync(absoluteLoadedFilePath);
+            const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
+            fs.writeFileSync(absoluteLoadedFilePath, '```\n' + content + '\n```');
+            fs.close(fd);
+        }
+
+        if (/\.(png)$/.test(relativeLoadedFilePath)) {
+          content = `
+            <template>
+                <div class="hoper-body">
+
+                    <div class="hoper-content">
+                        <Mmenu :currentIndex="${fileIndex}"></Mmenu>
+                        <div class="hoper-doc">
+                          <img v-bind:src="src">
+                        </div>
+                    </div>
+
+                </div>
+            </template>
+
+            <script>
+            import Mheader from '../../components/Header.vue';
+            import Mfooter from '../../components/Footer.vue';
+            import Mmenu from '../components/Menu.vue';
+
+            export default {
+                components: {
+                    Mheader,
+                    Mfooter,
+                    Mmenu
+                },
+                data() {
+                  return {
+                    src: '${relativeLoadedFilePath}'
+                  }
+                }
+            };
+
+            </script>
+          `;
+        }
+
+        if (/\.(md)$/.test(relativeLoadedFilePath)) {
+            content = `
+              <template>
+                  <div class="hoper-body">
+
+                      <div class="hoper-content">
+                          <Mmenu :currentIndex="${fileIndex}"></Mmenu>
+                          <div class="hoper-doc">
+                            <Doc></Doc>
+                          </div>
                       </div>
+
                   </div>
+              </template>
 
-              </div>
-          </template>
+              <script>
+              import Mheader from '../../components/Header.vue';
+              import Mfooter from '../../components/Footer.vue';
+              import Mmenu from '../components/Menu.vue';
 
-          <script>
-          import Mheader from '../../components/Header.vue';
-          import Mfooter from '../../components/Footer.vue';
-          import Mmenu from '../components/Menu.vue';
+              import Doc from '${relativeLoadedFilePath}';
 
-          import Doc from '${filesMapItem.absolutePath}';
+              export default {
+                  components: {
+                      Mheader,
+                      Mfooter,
+                      Mmenu,
+                      Doc
+                  }
+              };
 
-          export default {
-              components: {
-                  Mheader,
-                  Mfooter,
-                  Mmenu,
-                  Doc
-              }
-          };
-
-          </script>
-        `;
+              </script>
+            `;
+        }
 
       // 如果是目录
       } else {
