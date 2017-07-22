@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 
 const webpack = require('webpack');
-// const StringReplacePlugin = require('string-replace-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 function getEntry(root) {
