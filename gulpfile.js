@@ -177,8 +177,8 @@ const getFilesMapByDirTree = (dirTree) => {
   return filesMap;
 };
 
-// create dynamic-files in src for sources to load
-const createDynamicFiles = (docName, filesMap) => {
+// create shown-docs in src for sources to load
+const createShownDocs = (docName, filesMap) => {
 
   for (let relativeFilePath in filesMap) {
 
@@ -191,11 +191,12 @@ const createDynamicFiles = (docName, filesMap) => {
       // format 'x-x-x' to '[x, x, x]'
       const fileIndex = JSON.stringify(filesMapItem.index.split('-')).replace(/\"/g, "'");
 
-      // create dynamic-routes files
-      const dynamicFilePath = path.join(srcFolder, docName, 'dynamic-files', md5String + '.vue');
+      // create shown files
+      const shownFilePath = path.join(srcFolder, docName, 'shown-docs', md5String + '.vue');
 
       let content = '';
 
+      // 根据 doc 文件类型的不同，生成不同的显示模板
       if (!fs.statSync(filesMapItem.absolutePath).isDirectory()) {
         content = `
           <template>
@@ -260,12 +261,12 @@ const createDynamicFiles = (docName, filesMap) => {
         `;
       }
 
-      fse.ensureFileSync(dynamicFilePath);
-      const fd = fs.openSync(dynamicFilePath, 'w+');
-      fs.writeFileSync(dynamicFilePath, content);
+      fse.ensureFileSync(shownFilePath);
+      const fd = fs.openSync(shownFilePath, 'w+');
+      fs.writeFileSync(shownFilePath, content);
 
       // prevent multi callback in webpack
-      utime(dynamicFilePath);
+      utime(shownFilePath);
       fs.close(fd);
   }
 };
@@ -273,7 +274,7 @@ const createDynamicFiles = (docName, filesMap) => {
 // create file-tree.js
 const createFileTreeJsFile = (docName, dirTree) => {
 
-    const dirTreeFilePath = path.join(path.join(srcFolder, docName, '/dynamic-files/file-tree.js'));
+    const dirTreeFilePath = path.join(path.join(srcFolder, docName, '/shown-docs/file-tree.js'));
     fse.ensureFileSync(dirTreeFilePath);
     const fd = fs.openSync(dirTreeFilePath, 'w');
 
@@ -287,7 +288,7 @@ const createFileTreeJsFile = (docName, dirTree) => {
 // create vue routes
 const createRoutesFile = (docName, filesMap) => {
     // 创建 routes.js
-    const routesFilePath = path.join(srcFolder, docName, '/dynamic-files/routes.js');
+    const routesFilePath = path.join(srcFolder, docName, '/shown-docs/routes.js');
     let routesContent = ``;
     for (relativeFilePath in filesMap) {
         routesContent += `\nimport ${'doc_' + filesMap[relativeFilePath].md5String} from './${filesMap[relativeFilePath].md5String}.vue';`;
@@ -343,7 +344,7 @@ const prepareSrcFolder = () => {
         const dirTree = getFormatedDirTree(path.join(docFolder, docName));
         const filesMap = getFilesMapByDirTree(dirTree);
 
-        createDynamicFiles(docName, filesMap);
+        createShownDocs(docName, filesMap);
         createRoutesFile(docName, filesMap);
         createFileTreeJsFile(docName, dirTree);
 
