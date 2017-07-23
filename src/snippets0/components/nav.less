@@ -1,0 +1,59 @@
+
+.level1 {
+  //box-shadow: 0 0 4px black;
+  border-right: 1px solid black;
+  margin-left: -1px;
+}
+
+.level1-item {
+  font-size: 18px;
+}
+
+.level2-item {
+  font-size: 16px;
+}
+
+.level3-item {
+  font-size: 14px;
+}
+
+.level4-item {
+  font-size: 12px;
+}
+
+.level1-item,
+.level2-item,
+.level3-item,
+.level4-item {
+    cursor: pointer;
+
+    div,
+    a {
+      display: block;
+      padding: 0 10px;
+      height: 36px;
+      line-height: 36px;
+      min-width: 80px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    &.is-folder.current,
+    &.is-folder:hover {
+      div {
+        background: #000;
+        color: #fff;
+      }
+    }
+
+    &.is-file.current,
+    &.is-file:hover {
+      a {
+        color: red;
+      }
+    }
+}

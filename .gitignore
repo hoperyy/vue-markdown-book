@@ -2,3 +2,4 @@ node_modules/*
 build/*
 dynamic-files/*
 npm-debug.log
+docs/*
