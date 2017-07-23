@@ -73,7 +73,7 @@ const createHtmlInBuildFolder = () => {
 
 };
 
-const replaceKeywords = (docName, currentEnv) => {
+const replaceHtmlKeywords = (docName, currentEnv) => {
     const targetFolder = path.join(srcFolder, docName);
     const htmlPath = path.join(targetFolder, 'index.html');
     const fd = fs.openSync(htmlPath, 'r');
@@ -383,7 +383,7 @@ const clearSrcFolder = () => {
     });
 };
 
-const prepareSrcFolder = () => {
+const prepareSrcFolder = (envString) => {
     fs.readdirSync(docFolder).forEach((docName) => {
 
         createPageFromDemo(docName);
@@ -393,7 +393,8 @@ const prepareSrcFolder = () => {
         createShownVue(docName, filesMap);
         createRoutesFile(docName, filesMap);
         createFileTreeJsFile(docName, dirTree);
-        replaceKeywords(docName, 'is-dev');
+
+        replaceHtmlKeywords(docName, envString);
 
     });
 };
@@ -401,7 +402,7 @@ const prepareSrcFolder = () => {
 gulp.task('dev', () => {
 
     clearSrcFolder();
-    prepareSrcFolder();
+    prepareSrcFolder('is-dev');
     emptyBuildFolder();
     createHtmlInBuildFolder();
 
@@ -484,7 +485,7 @@ gulp.task('dev', () => {
 gulp.task('build', () => {
 
     clearSrcFolder();
-    prepareSrcFolder();
+    prepareSrcFolder('is-build');
     emptyBuildFolder();
     createHtmlInBuildFolder();
 
