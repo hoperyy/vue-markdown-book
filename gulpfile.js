@@ -7,10 +7,6 @@ const gulpWatch = require('gulp-watch');
 const fse = require('fs-extra');
 const md5 = require('md5');
 
-const readChunk = require('read-chunk');
-const fileType = require('file-type');
-const mime = require('mime-types');
-
 const relative = require('relative');
 
 const readdirTree = require('directory-tree');
@@ -23,8 +19,8 @@ const readdirSync = (dir) => {
 };
 
 const srcFolder = path.join(__dirname, 'src');
-// const buildFolder = path.join(__dirname, 'build');
-const buildFolder = path.join(__dirname, '../snippets-site');
+const buildFolder = path.join(__dirname, 'build');
+// const buildFolder = path.join(__dirname, '../snippets-site');
 const docFolder = path.join(__dirname, 'docs');
 const templateFolder = path.join(__dirname, 'template');
 

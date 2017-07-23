@@ -5,6 +5,7 @@ import doc_131cd7ca2f76fe1c90ca25ec9009630e from './131cd7ca2f76fe1c90ca25ec9009
 import doc_c8390ac623ce8d49559dd9be5bf955f8 from './c8390ac623ce8d49559dd9be5bf955f8.vue';
 import doc_6aa4de1cbad2e35744579363367890bf from './6aa4de1cbad2e35744579363367890bf.vue';
 import doc_ebb6fb540b6e10dff88c4c8944f064a9 from './ebb6fb540b6e10dff88c4c8944f064a9.vue';
+import doc_4e9a2878dc6d10bc9e64d38bf6cb7b87 from './4e9a2878dc6d10bc9e64d38bf6cb7b87.vue';
 
 module.exports = [
 {
@@ -25,5 +26,8 @@ module.exports = [
         },{
           path: '/test.md',
           component: doc_ebb6fb540b6e10dff88c4c8944f064a9
+        },{
+          path: '/test.py',
+          component: doc_4e9a2878dc6d10bc9e64d38bf6cb7b87
         }
 ];
