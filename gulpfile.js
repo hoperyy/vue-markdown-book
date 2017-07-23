@@ -11,6 +11,8 @@ const readChunk = require('read-chunk');
 const fileType = require('file-type');
 const mime = require('mime-types');
 
+const relative = require('relative');
+
 const readdirTree = require('directory-tree');
 const readdirEnhanced = require('readdir-enhanced').sync;
 const readdirSync = (dir) => {
@@ -182,140 +184,65 @@ const getFilesMapByDirTree = (dirTree) => {
   return filesMap;
 };
 
-// create shown-docs in src for sources to load
-const createShownDocs = (docName, filesMap) => {
+const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
+    const filesMapItem = filesMap[relativeDocFilePath];
 
-  for (let relativeFilePath in filesMap) {
+    const filename = path.basename(relativeDocFilePath);
+    const foldername = path.dirname(relativeDocFilePath);
+    const md5String = filesMapItem.md5String;
 
-      const filesMapItem = filesMap[relativeFilePath];
+    // format 'x-x-x' to '[x, x, x]'
+    const fileIndex = JSON.stringify(filesMapItem.index.split('-')).replace(/\"/g, "'");
 
-      const filename = path.basename(relativeFilePath);
-      const foldername = path.dirname(relativeFilePath);
-      const md5String = filesMapItem.md5String;
+    // create shown files
+    const shownVueFolder = path.join(srcFolder, docName, 'shown-vue');
+    const shownFilePath = path.join(shownVueFolder, md5String + '.vue');
 
-      // format 'x-x-x' to '[x, x, x]'
-      const fileIndex = JSON.stringify(filesMapItem.index.split('-')).replace(/\"/g, "'");
+    let shownVueContent = '';
 
-      // create shown files
-      const shownDocsFolder = path.join(srcFolder, docName, 'shown-docs');
-      const shownFilePath = path.join(shownDocsFolder, md5String + '.vue');
+    const isFile = !fs.statSync(filesMapItem.absolutePath).isDirectory();
 
-      let content = '';
+    // 如果是文件类型
+    if (isFile) {
 
-      const isFile = !fs.statSync(filesMapItem.absolutePath).isDirectory();
+      let absoluteLoadedFilePath = filesMapItem.absolutePath;
 
-      // 如果是文件类型
-      if (isFile) {
+      // create doc files that can be loaded.
+      if (/\.((jpg)|(png)|(gif))$/.test(absoluteLoadedFilePath)) {
 
-        let absoluteLoadedFilePath = path.join(shownDocsFolder, 'loaded-doc', relativeFilePath);
-        let relativeLoadedFilePath = path.join('loaded-doc', relativeFilePath);
+          absoluteLoadedFilePath = path.join(shownVueFolder, 'loaded-doc', relativeDocFilePath);
 
-        if (!/^\//.test(relativeLoadedFilePath)) {
-            relativeLoadedFilePath = '/' + relativeLoadedFilePath;
-        }
+          absoluteLoadedFilePath += '.md';
 
-        if (!/^\./.test(relativeLoadedFilePath)) {
-            relativeLoadedFilePath = '.' + relativeLoadedFilePath;
-        }
+          fse.ensureFileSync(absoluteLoadedFilePath);
+          const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
 
-        console.log('relativeLoadedFilePath: ', relativeLoadedFilePath);
+          const content = `![img](${relative(absoluteLoadedFilePath, filesMapItem.absolutePath)})`;
 
-        // copy docs into shown files docs/, txt file -> md; img file copied
-        if (/\.(png)|(md)$/.test(relativeFilePath)) {
-            fse.copySync(filesMapItem.absolutePath, absoluteLoadedFilePath);
-        } else {
-            absoluteLoadedFilePath += '.md';
-            relativeLoadedFilePath += '.md';
+          fs.writeFileSync(absoluteLoadedFilePath, content);
+          fs.close(fd);
+      } else if (!/\.md$/.test(absoluteLoadedFilePath)) {
 
-            const content = fs.readFileSync(filesMapItem.absolutePath).toString();
+          absoluteLoadedFilePath = path.join(shownVueFolder, 'loaded-doc', relativeDocFilePath);
+          absoluteLoadedFilePath += '.md';
 
-            fse.ensureFileSync(absoluteLoadedFilePath);
-            const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
-            fs.writeFileSync(absoluteLoadedFilePath, '```\n' + content + '\n```');
-            fs.close(fd);
-        }
+          const content = fs.readFileSync(filesMapItem.absolutePath).toString();
 
-        if (/\.(png)$/.test(relativeLoadedFilePath)) {
-          content = `
-            <template>
-                <div class="hoper-body">
+          fse.ensureFileSync(absoluteLoadedFilePath);
+          const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
+          fs.writeFileSync(absoluteLoadedFilePath, '```\n' + content + '\n```');
+          fs.close(fd);
 
-                    <div class="hoper-content">
-                        <Mmenu :currentIndex="${fileIndex}"></Mmenu>
-                        <div class="hoper-doc">
-                          <img v-bind:src="src">
-                        </div>
-                    </div>
+      }
 
-                </div>
-            </template>
-
-            <script>
-            import Mheader from '../../components/Header.vue';
-            import Mfooter from '../../components/Footer.vue';
-            import Mmenu from '../components/Menu.vue';
-
-            export default {
-                components: {
-                    Mheader,
-                    Mfooter,
-                    Mmenu
-                },
-                data() {
-                  return {
-                    src: '${relativeLoadedFilePath}'
-                  }
-                }
-            };
-
-            </script>
-          `;
-        }
-
-        if (/\.(md)$/.test(relativeLoadedFilePath)) {
-            content = `
-              <template>
-                  <div class="hoper-body">
-
-                      <div class="hoper-content">
-                          <Mmenu :currentIndex="${fileIndex}"></Mmenu>
-                          <div class="hoper-doc">
-                            <Doc></Doc>
-                          </div>
-                      </div>
-
-                  </div>
-              </template>
-
-              <script>
-              import Mheader from '../../components/Header.vue';
-              import Mfooter from '../../components/Footer.vue';
-              import Mmenu from '../components/Menu.vue';
-
-              import Doc from '${relativeLoadedFilePath}';
-
-              export default {
-                  components: {
-                      Mheader,
-                      Mfooter,
-                      Mmenu,
-                      Doc
-                  }
-              };
-
-              </script>
-            `;
-        }
-
-      // 如果是目录
-      } else {
-        content = `
+      shownVueContent = `
           <template>
               <div class="hoper-body">
 
                   <div class="hoper-content">
                       <Mmenu :currentIndex="${fileIndex}"></Mmenu>
                       <div class="hoper-doc">
+                        <Doc></Doc>
                       </div>
                   </div>
 
@@ -327,32 +254,74 @@ const createShownDocs = (docName, filesMap) => {
           import Mfooter from '../../components/Footer.vue';
           import Mmenu from '../components/Menu.vue';
 
+          import Doc from './${relative(shownFilePath, absoluteLoadedFilePath)}';
+
           export default {
               components: {
                   Mheader,
                   Mfooter,
                   Mmenu,
+                  Doc
               }
           };
 
           </script>
         `;
-      }
 
-      fse.ensureFileSync(shownFilePath);
-      const fd = fs.openSync(shownFilePath, 'w+');
-      fs.writeFileSync(shownFilePath, content);
+    // 如果是目录
+    } else {
+      shownVueContent = `
+        <template>
+            <div class="hoper-body">
 
-      // prevent multi callback in webpack
-      utime(shownFilePath);
-      fs.close(fd);
+                <div class="hoper-content">
+                    <Mmenu :currentIndex="${fileIndex}"></Mmenu>
+                    <div class="hoper-doc">
+                    </div>
+                </div>
+
+            </div>
+        </template>
+
+        <script>
+        import Mheader from '../../components/Header.vue';
+        import Mfooter from '../../components/Footer.vue';
+        import Mmenu from '../components/Menu.vue';
+
+        export default {
+            components: {
+                Mheader,
+                Mfooter,
+                Mmenu,
+            }
+        };
+
+        </script>
+      `;
+    }
+
+    fse.ensureFileSync(shownFilePath);
+    const fd = fs.openSync(shownFilePath, 'w+');
+    fs.writeFileSync(shownFilePath, shownVueContent);
+
+    // prevent multi callback in webpack
+    utime(shownFilePath);
+    fs.close(fd);
+};
+
+// create shown-vue in src for sources to load
+const createShownVue = (docName, filesMap) => {
+
+  for (let relativeDocFilePath in filesMap) {
+      createShownVueFile(relativeDocFilePath, filesMap, docName);
   }
+
 };
 
 // create file-tree.js
 const createFileTreeJsFile = (docName, dirTree) => {
 
-    const dirTreeFilePath = path.join(path.join(srcFolder, docName, '/shown-docs/file-tree.js'));
+    const dirTreeFilePath = path.join(path.join(srcFolder, docName, '/shown-vue/file-tree.js'));
     fse.ensureFileSync(dirTreeFilePath);
     const fd = fs.openSync(dirTreeFilePath, 'w');
 
@@ -366,17 +335,17 @@ const createFileTreeJsFile = (docName, dirTree) => {
 // create vue routes
 const createRoutesFile = (docName, filesMap) => {
     // 创建 routes.js
-    const routesFilePath = path.join(srcFolder, docName, '/shown-docs/routes.js');
+    const routesFilePath = path.join(srcFolder, docName, '/shown-vue/routes.js');
     let routesContent = ``;
-    for (relativeFilePath in filesMap) {
-        routesContent += `\nimport ${'doc_' + filesMap[relativeFilePath].md5String} from './${filesMap[relativeFilePath].md5String}.vue';`;
+    for (relativeDocFilePath in filesMap) {
+        routesContent += `\nimport ${'doc_' + filesMap[relativeDocFilePath].md5String} from './${filesMap[relativeDocFilePath].md5String}.vue';`;
     }
 
     routesContent += `\n\nmodule.exports = [\n`;
-    for (relativeFilePath in filesMap) {
+    for (relativeDocFilePath in filesMap) {
         routesContent += `{
-          path: '${filesMap[relativeFilePath].path}',
-          component: ${'doc_' + filesMap[relativeFilePath].md5String}
+          path: '${filesMap[relativeDocFilePath].path}',
+          component: ${'doc_' + filesMap[relativeDocFilePath].md5String}
         },`;
     }
     routesContent = routesContent.replace(/\,$/, '');
@@ -421,12 +390,11 @@ const prepareSrcFolder = () => {
 
         const dirTree = getFormatedDirTree(path.join(docFolder, docName));
         const filesMap = getFilesMapByDirTree(dirTree);
-
-        createShownDocs(docName, filesMap);
+        createShownVue(docName, filesMap);
         createRoutesFile(docName, filesMap);
         createFileTreeJsFile(docName, dirTree);
-
         replaceKeywords(docName, 'is-dev');
+
     });
 };
 
@@ -437,15 +405,28 @@ gulp.task('dev', () => {
     emptyBuildFolder();
     createHtmlInBuildFolder();
 
-    gulpWatch([path.join(srcFolder, '**/*.html')], (stats) => {
+    gulpWatch([path.join(docFolder, '**/*')], (stats) => {
         const filepath = stats.path;
-        const basename = path.basename(filepath);
-        const foldername = path.basename(path.dirname(filepath));
+        const docName = filepath.replace(docFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
+        const relativeDocFilePath = filepath.replace(docFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
 
-        if (stats.event !== 'unlink') {
-          fse.copySync(filepath, path.join(buildFolder, foldername + '.html'));
-        } else {
-          fse.removeSync(path.join(buildFolder, foldername + '.html'));
+        const dirTree = getFormatedDirTree(path.join(docFolder, docName));
+        const filesMap = getFilesMapByDirTree(dirTree);
+
+        switch(stats.event) {
+            case 'change':
+              createShownVueFile(relativeDocFilePath, filesMap, docName);
+              break;
+            case 'add':
+              createShownVue(docName, filesMap);
+              createRoutesFile(docName, filesMap);
+              createFileTreeJsFile(docName, dirTree);
+              break;
+            case 'unlink':
+              createShownVue(docName, filesMap);
+              createRoutesFile(docName, filesMap);
+              createFileTreeJsFile(docName, dirTree);
+              break;
         }
 
     });

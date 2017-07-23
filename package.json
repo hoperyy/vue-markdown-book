@@ -39,6 +39,7 @@
     "md5": "^2.2.1",
     "mime-types": "^2.1.15",
     "read-chunk": "^2.0.0",
-    "readdir-enhanced": "^1.5.2"
+    "readdir-enhanced": "^1.5.2",
+    "relative": "^3.0.2"
   }
 }

@@ -9,7 +9,7 @@
 
 <script>
 
-import fileTree from '../shown-docs/file-tree';
+import fileTree from '../shown-vue/file-tree';
 import Level1Nav from './Level1Nav.vue';
 import Level2Nav from './Level2Nav.vue';
 import Level3Nav from './Level3Nav.vue';

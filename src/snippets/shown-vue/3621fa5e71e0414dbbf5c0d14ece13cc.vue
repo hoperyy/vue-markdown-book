@@ -3,8 +3,9 @@
               <div class="hoper-body">
 
                   <div class="hoper-content">
-                      <Mmenu :currentIndex="['0','2','0']"></Mmenu>
+                      <Mmenu :currentIndex="['3']"></Mmenu>
                       <div class="hoper-doc">
+                        <Doc></Doc>
                       </div>
                   </div>
 
@@ -16,11 +17,14 @@
           import Mfooter from '../../components/Footer.vue';
           import Mmenu from '../components/Menu.vue';
 
+          import Doc from './loaded-doc/test2.js.md';
+
           export default {
               components: {
                   Mheader,
                   Mfooter,
                   Mmenu,
+                  Doc
               }
           };
 
