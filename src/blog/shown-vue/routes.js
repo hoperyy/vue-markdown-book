@@ -55,7 +55,6 @@ import doc_8ee407c84d4556721bed2114e86da912 from './8ee407c84d4556721bed2114e86d
 import doc_d250079f567550be88a3bd17cf6cf945 from './d250079f567550be88a3bd17cf6cf945.vue';
 import doc_777daa6c9d6e2ee673bf0836f4e4aa93 from './777daa6c9d6e2ee673bf0836f4e4aa93.vue';
 import doc_d17ac41ab087f5ac1bcff36456007e6a from './d17ac41ab087f5ac1bcff36456007e6a.vue';
-import doc_e366b63ffa3953a4d3ce8248d0df9c20 from './e366b63ffa3953a4d3ce8248d0df9c20.vue';
 import doc_1d6bf707e376a541f907640bb5f12898 from './1d6bf707e376a541f907640bb5f12898.vue';
 import doc_4f1de0a46396fd8b89764ddee3389e39 from './4f1de0a46396fd8b89764ddee3389e39.vue';
 
@@ -228,9 +227,6 @@ module.exports = [
         },{
           path: '/方法论',
           component: doc_d17ac41ab087f5ac1bcff36456007e6a
-        },{
-          path: '/方法论/七个对我最重要的职业建议（译文）.md',
-          component: doc_e366b63ffa3953a4d3ce8248d0df9c20
         },{
           path: '/方法论/工作中的方法论.md',
           component: doc_1d6bf707e376a541f907640bb5f12898
