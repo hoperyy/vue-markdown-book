@@ -1,4 +1,10 @@
 
+import doc_7b00c7c70a1b9c72122ca2dabe0a0a13 from './7b00c7c70a1b9c72122ca2dabe0a0a13.vue';
+import doc_fbea37708fff04e39f07cd81cb4ca96f from './fbea37708fff04e39f07cd81cb4ca96f.vue';
+import doc_e3829a63690966b592eea9eae3ddf6dc from './e3829a63690966b592eea9eae3ddf6dc.vue';
+import doc_79bf13ffa20a4710be6b7dd304097392 from './79bf13ffa20a4710be6b7dd304097392.vue';
+import doc_1cf1f32854fa884ed5d0897272536996 from './1cf1f32854fa884ed5d0897272536996.vue';
+import doc_a3705e94d59bd7fe1632c2e50a377e1d from './a3705e94d59bd7fe1632c2e50a377e1d.vue';
 import doc_4d6ca76e0c6496d5788a0698a6da1d59 from './4d6ca76e0c6496d5788a0698a6da1d59.vue';
 import doc_f22a8471b83c4e9e9ad70320fa8f352f from './f22a8471b83c4e9e9ad70320fa8f352f.vue';
 import doc_eb7616f65e403e2d43a1b2df7e59b363 from './eb7616f65e403e2d43a1b2df7e59b363.vue';
@@ -56,11 +62,27 @@ import doc_d250079f567550be88a3bd17cf6cf945 from './d250079f567550be88a3bd17cf6c
 import doc_777daa6c9d6e2ee673bf0836f4e4aa93 from './777daa6c9d6e2ee673bf0836f4e4aa93.vue';
 import doc_d17ac41ab087f5ac1bcff36456007e6a from './d17ac41ab087f5ac1bcff36456007e6a.vue';
 import doc_1d6bf707e376a541f907640bb5f12898 from './1d6bf707e376a541f907640bb5f12898.vue';
-import doc_4f1de0a46396fd8b89764ddee3389e39 from './4f1de0a46396fd8b89764ddee3389e39.vue';
-import doc_32f99138a5492aa7dd89c80ea103eae7 from './32f99138a5492aa7dd89c80ea103eae7.vue';
 
 module.exports = [
 {
+          path: '/life',
+          component: doc_7b00c7c70a1b9c72122ca2dabe0a0a13
+        },{
+          path: '/life/assets',
+          component: doc_fbea37708fff04e39f07cd81cb4ca96f
+        },{
+          path: '/life/assets/markdown-img-paste-20170724185101208.png',
+          component: doc_e3829a63690966b592eea9eae3ddf6dc
+        },{
+          path: '/life/index.html',
+          component: doc_79bf13ffa20a4710be6b7dd304097392
+        },{
+          path: '/life/index.js',
+          component: doc_1cf1f32854fa884ed5d0897272536996
+        },{
+          path: '/life/test.md',
+          component: doc_a3705e94d59bd7fe1632c2e50a377e1d
+        },{
           path: '/前端',
           component: doc_4d6ca76e0c6496d5788a0698a6da1d59
         },{
@@ -231,11 +253,5 @@ module.exports = [
         },{
           path: '/方法论/工作中的方法论.md',
           component: doc_1d6bf707e376a541f907640bb5f12898
-        },{
-          path: '/生活',
-          component: doc_4f1de0a46396fd8b89764ddee3389e39
-        },{
-          path: '/生活/test.md',
-          component: doc_32f99138a5492aa7dd89c80ea103eae7
         }
 ];
