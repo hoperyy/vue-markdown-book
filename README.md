@@ -17,6 +17,12 @@
 
 ## 举例
 
++ html 文件：https://hoperyy.github.io/website/blog.html#/life/index.html
++ js 文件：https://hoperyy.github.io/website/blog.html#/life/index.js
++ markdown 文件：https://hoperyy.github.io/website/blog.html#/life/test.md
++ png 图片：https://hoperyy.github.io/website/blog.html#/life/assets/markdown-img-paste-20170724185101208.png
++ 在 markdown 文件中插入 vue 代码
+
 ![code](./assets/markdown-img-paste-20170724184650846.png)
 
 ![demo](./assets/markdown-img-paste-20170724184704994.png)
