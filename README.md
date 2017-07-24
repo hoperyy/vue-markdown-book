@@ -14,3 +14,9 @@
 
 + 启动本地调试: `npm run dev`
 + 执行 build：`npm run build`
+
+## 举例
+
+![code](./assets/markdown-img-paste-20170724184650846.png)
+
+![demo](./assets/markdown-img-paste-20170724184704994.png)
