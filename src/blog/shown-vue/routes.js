@@ -57,6 +57,7 @@ import doc_777daa6c9d6e2ee673bf0836f4e4aa93 from './777daa6c9d6e2ee673bf0836f4e4
 import doc_d17ac41ab087f5ac1bcff36456007e6a from './d17ac41ab087f5ac1bcff36456007e6a.vue';
 import doc_1d6bf707e376a541f907640bb5f12898 from './1d6bf707e376a541f907640bb5f12898.vue';
 import doc_4f1de0a46396fd8b89764ddee3389e39 from './4f1de0a46396fd8b89764ddee3389e39.vue';
+import doc_32f99138a5492aa7dd89c80ea103eae7 from './32f99138a5492aa7dd89c80ea103eae7.vue';
 
 module.exports = [
 {
@@ -233,5 +234,8 @@ module.exports = [
         },{
           path: '/生活',
           component: doc_4f1de0a46396fd8b89764ddee3389e39
+        },{
+          path: '/生活/test.md',
+          component: doc_32f99138a5492aa7dd89c80ea103eae7
         }
 ];

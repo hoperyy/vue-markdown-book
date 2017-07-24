@@ -49,5 +49,14 @@ export default {
 </script>
 
 <style lang="less" scoped>
-@import "./menu.less";
+.menu {
+  display: flex;
+  padding-left: 1px;
+  background-color: #fff;
+}
+.menu-box {
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  margin-right: -1px;
+}
 </style>
