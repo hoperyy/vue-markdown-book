@@ -24,11 +24,11 @@ const buildFolder = path.join(__dirname, '../website');
 const docFolder = path.join(__dirname, 'docs');
 const templateFolder = path.join(__dirname, 'template');
 
-const excludeFilesRegExp = /(\.ds_store)|(node\_modules)/i;
+const excludeFilesRegExp = /(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)/i;
 const shouldNotRemovedFilesRegExp = /(\.DS_Store)|(\.git)/i;
 
-const utime = (filepath) => {
-  fs.utimesSync(filepath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
+const utime = (filePath) => {
+  fs.utimesSync(filePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
 };
 
 const emptyBuildFolder = () => {
@@ -56,9 +56,11 @@ const createHtmlInBuildFolder = () => {
             const subFiles = fs.readdirSync(path.join(srcFolder, foldername));
 
             subFiles.forEach((subname) => {
-                const subStats = fs.statSync(path.join(srcFolder, foldername, subname));
 
-                if (!subStats.isDirectory() && /\.html*/.test(subname)) {
+                const filePath = path.join(srcFolder, foldername, subname);
+                const subStats = fs.statSync(filePath);
+
+                if (subStats.isFile() && /\.html$/.test(filePath) && !excludeFilesRegExp.test(filePath)) {
                     try {
                         fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
                     } catch(err) {
@@ -83,8 +85,8 @@ const replaceHtmlKeywords = (docName, currentEnv) => {
     fs.writeFileSync(htmlPath, newHtmlContent);
     fs.close(fd);
 
-    readdirSync(targetFolder).forEach((filepath) => {
-      utime(filepath);
+    readdirSync(targetFolder).forEach((filePath) => {
+      utime(filePath);
     });
 };
 
@@ -95,8 +97,8 @@ const createPageFromDemo = (docName) => {
   }
   fse.copySync(path.join(templateFolder, 'page-demo'), targetFolder);
 
-  readdirSync(targetFolder).forEach((filepath) => {
-    utime(filepath);
+  readdirSync(targetFolder).forEach((filePath) => {
+    utime(filePath);
   });
 
 };
@@ -404,6 +406,10 @@ const clearSrcFolder = () => {
 const prepareSrcFolder = (envString) => {
     fs.readdirSync(docFolder).forEach((docName) => {
 
+        if (excludeFilesRegExp.test(docName)) {
+            return;
+        }
+
         createPageFromDemo(docName);
 
         const dirTree = getFormatedDirTree(path.join(docFolder, docName));
@@ -425,9 +431,9 @@ gulp.task('dev', () => {
     createHtmlInBuildFolder();
 
     gulpWatch([path.join(docFolder, '**/*')], (stats) => {
-        const filepath = stats.path;
-        const docName = filepath.replace(docFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
-        const relativeDocFilePath = filepath.replace(docFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
+        const filePath = stats.path;
+        const docName = filePath.replace(docFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
+        const relativeDocFilePath = filePath.replace(docFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
 
         const dirTree = getFormatedDirTree(path.join(docFolder, docName));
         const filesMap = getFilesMapByDirTree(dirTree);
