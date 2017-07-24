@@ -24,6 +24,9 @@ const buildFolder = path.join(__dirname, '../snippets-site');
 const docFolder = path.join(__dirname, 'docs');
 const templateFolder = path.join(__dirname, 'template');
 
+const excludeFilesRegExp = /(\.ds_store)|(node\_modules)/i;
+const shouldNotRemovedFilesRegExp = /(\.DS_Store)|(\.git)/i;
+
 const utime = (filepath) => {
   fs.utimesSync(filepath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
 };
@@ -31,7 +34,7 @@ const utime = (filepath) => {
 const emptyBuildFolder = () => {
     fse.ensureDirSync(buildFolder);
     fs.readdirSync(buildFolder).forEach((filename) => {
-      if (!/(\.DS_Store)|(\.git)/.test(filename)) {
+      if (!shouldNotRemovedFilesRegExp.test(filename)) {
         try {
           fse.removeSync(path.join(buildFolder, filename));
         } catch(err) {
@@ -101,17 +104,31 @@ const createPageFromDemo = (docName) => {
 // get dir tree
 const getFormatedDirTree = (currentDocFolder) => {
 
+    const filteredDirTree = {};
+
     // get dir tree
     const dirTree = readdirTree(currentDocFolder);
 
     // format dir tree path
     const formateDirTree = (tree, fileIndex) => {
 
+      if (!tree.children) {
+          return;
+      }
+
       tree.children.forEach((item, index) => {
 
           // format into relative path
           item.path = item.path.replace(currentDocFolder, '');
           tree.path = tree.path.replace(currentDocFolder, '');
+
+          // should be exluded
+          if (excludeFilesRegExp.test(item.path)) {
+              item.shouldNotShow = true;
+          }
+          if (excludeFilesRegExp.test(tree.path)) {
+              tree.shouldNotShow = true;
+          }
 
           // format path to '/xxx/xxx/...'
           if (/^\.\//.test(item.path)) {
@@ -163,9 +180,14 @@ const getFilesMapByDirTree = (dirTree) => {
 
     const act = (tree) => {
 
+      if (!tree.children) {
+          return;
+      }
       tree.children.forEach((item, index) => {
 
-          filesMap[item.path] = item;
+          if (!item.shouldNotShow) {
+              filesMap[item.path] = item;
+          }
 
           if (item.children) {
               act(item, item.index);
