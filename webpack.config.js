@@ -23,7 +23,7 @@ function getEntry(root) {
     return entry;
 }
 
-module.exports = (srcFolder, buildFolder) => {
+module.exports = (srcFolder, buildFolder, docFolder) => {
 
     // 获取入口
     const entry = getEntry(srcFolder);
@@ -41,6 +41,12 @@ module.exports = (srcFolder, buildFolder) => {
             alias: {
                 vue: 'vue/dist/vue.js',
             }
+        },
+        resolveLoader: {
+            modules: [
+                path.resolve(docFolder, 'node_modules/'),      // 工作目录的依赖
+                path.resolve(__dirname, 'node_modules/')       // 脚手架的依赖
+            ]
         },
 				module: {
 						rules: [{

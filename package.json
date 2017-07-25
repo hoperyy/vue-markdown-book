@@ -1,5 +1,5 @@
 {
-  "name": "my-website",
+  "name": "@vdian/vuebook",
   "version": "1.0.0",
   "description": "",
   "main": "webpack.config.js",
@@ -30,13 +30,20 @@
     "vue-style-loader": "^3.0.1",
     "vue-template-compiler": "^2.3.4",
     "webpack": "^3.1.0",
-    "webpack-dev-server": "^2.5.1"
-  },
-  "dependencies": {
+    "webpack-dev-server": "^2.5.1",
     "directory-tree": "^2.0.0",
     "gulp-watch": "^4.3.11",
     "md5": "^2.2.1",
     "readdir-enhanced": "^1.5.2",
-    "relative": "^3.0.2"
+    "relative": "^3.0.2",
+    "gulp-sequence": "^0.4.6"
+  },
+  "dependencies": {
+    "co": "^4.6.0",
+    "commander": "^2.11.0",
+    "vue-hot-reload-api": "^2.1.0"
+  },
+  "bin": {
+    "vuebook": "./bin/cmd.js"
   }
 }
