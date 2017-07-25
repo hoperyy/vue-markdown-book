@@ -17,7 +17,7 @@
           import Mfooter from '../../components/Footer.vue';
           import Mmenu from '../components/Menu.vue';
 
-          import Doc from './loaded-doc/life/assets/markdown-img-paste-20170724185101208.png.md';
+          import Doc from './loaded-doc/demo/assets/markdown-img-paste-20170724185101208.png.md';
 
           export default {
               components: {

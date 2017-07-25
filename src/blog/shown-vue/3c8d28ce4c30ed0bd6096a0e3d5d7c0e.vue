@@ -17,7 +17,7 @@
           import Mfooter from '../../components/Footer.vue';
           import Mmenu from '../components/Menu.vue';
 
-          import Doc from './../../../docs/blog/life/test.md';
+          import Doc from './../../../docs/blog/demo/test.md';
 
           export default {
               components: {

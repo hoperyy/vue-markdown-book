@@ -3,7 +3,7 @@
               <div class="hoper-body">
 
                   <div class="hoper-content">
-                      <Mmenu :currentIndex="['1','1']"></Mmenu>
+                      <Mmenu :currentIndex="['5','0']"></Mmenu>
                       <div class="hoper-doc">
                         <Doc></Doc>
                       </div>
@@ -17,7 +17,7 @@
           import Mfooter from '../../components/Footer.vue';
           import Mmenu from '../components/Menu.vue';
 
-          import Doc from './loaded-doc/life/index.html.md';
+          import Doc from './../../../docs/blog/方法论/工作.md';
 
           export default {
               components: {

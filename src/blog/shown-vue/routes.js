@@ -1,10 +1,10 @@
 
-import doc_7b00c7c70a1b9c72122ca2dabe0a0a13 from './7b00c7c70a1b9c72122ca2dabe0a0a13.vue';
-import doc_fbea37708fff04e39f07cd81cb4ca96f from './fbea37708fff04e39f07cd81cb4ca96f.vue';
-import doc_e3829a63690966b592eea9eae3ddf6dc from './e3829a63690966b592eea9eae3ddf6dc.vue';
-import doc_79bf13ffa20a4710be6b7dd304097392 from './79bf13ffa20a4710be6b7dd304097392.vue';
-import doc_1cf1f32854fa884ed5d0897272536996 from './1cf1f32854fa884ed5d0897272536996.vue';
-import doc_a3705e94d59bd7fe1632c2e50a377e1d from './a3705e94d59bd7fe1632c2e50a377e1d.vue';
+import doc_d373004d42d1b4d57a0fbe6d390049e3 from './d373004d42d1b4d57a0fbe6d390049e3.vue';
+import doc_3320a5baddebcf453de8f858e88e7e7c from './3320a5baddebcf453de8f858e88e7e7c.vue';
+import doc_4606486608d64908692798c64d05cd8e from './4606486608d64908692798c64d05cd8e.vue';
+import doc_5bbb60f3eeb7e547b00ec3ce8803496c from './5bbb60f3eeb7e547b00ec3ce8803496c.vue';
+import doc_c9d3d6752a138a2c5f3a82f999610d08 from './c9d3d6752a138a2c5f3a82f999610d08.vue';
+import doc_3c8d28ce4c30ed0bd6096a0e3d5d7c0e from './3c8d28ce4c30ed0bd6096a0e3d5d7c0e.vue';
 import doc_4d6ca76e0c6496d5788a0698a6da1d59 from './4d6ca76e0c6496d5788a0698a6da1d59.vue';
 import doc_f22a8471b83c4e9e9ad70320fa8f352f from './f22a8471b83c4e9e9ad70320fa8f352f.vue';
 import doc_eb7616f65e403e2d43a1b2df7e59b363 from './eb7616f65e403e2d43a1b2df7e59b363.vue';
@@ -61,27 +61,27 @@ import doc_8ee407c84d4556721bed2114e86da912 from './8ee407c84d4556721bed2114e86d
 import doc_d250079f567550be88a3bd17cf6cf945 from './d250079f567550be88a3bd17cf6cf945.vue';
 import doc_777daa6c9d6e2ee673bf0836f4e4aa93 from './777daa6c9d6e2ee673bf0836f4e4aa93.vue';
 import doc_d17ac41ab087f5ac1bcff36456007e6a from './d17ac41ab087f5ac1bcff36456007e6a.vue';
-import doc_1d6bf707e376a541f907640bb5f12898 from './1d6bf707e376a541f907640bb5f12898.vue';
+import doc_55c38ca809102af2606c4aa1ac66b5bc from './55c38ca809102af2606c4aa1ac66b5bc.vue';
 
 module.exports = [
 {
-          path: '/life',
-          component: doc_7b00c7c70a1b9c72122ca2dabe0a0a13
+          path: '/demo',
+          component: doc_d373004d42d1b4d57a0fbe6d390049e3
         },{
-          path: '/life/assets',
-          component: doc_fbea37708fff04e39f07cd81cb4ca96f
+          path: '/demo/assets',
+          component: doc_3320a5baddebcf453de8f858e88e7e7c
         },{
-          path: '/life/assets/markdown-img-paste-20170724185101208.png',
-          component: doc_e3829a63690966b592eea9eae3ddf6dc
+          path: '/demo/assets/markdown-img-paste-20170724185101208.png',
+          component: doc_4606486608d64908692798c64d05cd8e
         },{
-          path: '/life/index.html',
-          component: doc_79bf13ffa20a4710be6b7dd304097392
+          path: '/demo/index.html',
+          component: doc_5bbb60f3eeb7e547b00ec3ce8803496c
         },{
-          path: '/life/index.js',
-          component: doc_1cf1f32854fa884ed5d0897272536996
+          path: '/demo/index.js',
+          component: doc_c9d3d6752a138a2c5f3a82f999610d08
         },{
-          path: '/life/test.md',
-          component: doc_a3705e94d59bd7fe1632c2e50a377e1d
+          path: '/demo/test.md',
+          component: doc_3c8d28ce4c30ed0bd6096a0e3d5d7c0e
         },{
           path: '/前端',
           component: doc_4d6ca76e0c6496d5788a0698a6da1d59
@@ -251,7 +251,7 @@ module.exports = [
           path: '/方法论',
           component: doc_d17ac41ab087f5ac1bcff36456007e6a
         },{
-          path: '/方法论/工作中的方法论.md',
-          component: doc_1d6bf707e376a541f907640bb5f12898
+          path: '/方法论/工作.md',
+          component: doc_55c38ca809102af2606c4aa1ac66b5bc
         }
 ];
