@@ -78,9 +78,6 @@ module.exports = (srcFolder, buildFolder) => {
                 }, {
                     test: /\.vue$/,
                     loader: 'vue-loader',
-                    include: [
-                        srcFolder
-                    ],
                     options: {
                         loaders: {
                             css: ExtractTextPlugin.extract({
