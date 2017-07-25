@@ -5,6 +5,7 @@ import doc_4606486608d64908692798c64d05cd8e from './4606486608d64908692798c64d05
 import doc_5bbb60f3eeb7e547b00ec3ce8803496c from './5bbb60f3eeb7e547b00ec3ce8803496c.vue';
 import doc_c9d3d6752a138a2c5f3a82f999610d08 from './c9d3d6752a138a2c5f3a82f999610d08.vue';
 import doc_3c8d28ce4c30ed0bd6096a0e3d5d7c0e from './3c8d28ce4c30ed0bd6096a0e3d5d7c0e.vue';
+import doc_2d0c65bbb4bb9566cc2292fd56795c40 from './2d0c65bbb4bb9566cc2292fd56795c40.vue';
 import doc_4d6ca76e0c6496d5788a0698a6da1d59 from './4d6ca76e0c6496d5788a0698a6da1d59.vue';
 import doc_f22a8471b83c4e9e9ad70320fa8f352f from './f22a8471b83c4e9e9ad70320fa8f352f.vue';
 import doc_eb7616f65e403e2d43a1b2df7e59b363 from './eb7616f65e403e2d43a1b2df7e59b363.vue';
@@ -82,6 +83,9 @@ module.exports = [
         },{
           path: '/demo/test.md',
           component: doc_3c8d28ce4c30ed0bd6096a0e3d5d7c0e
+        },{
+          path: '/demo/test.vue',
+          component: doc_2d0c65bbb4bb9566cc2292fd56795c40
         },{
           path: '/前端',
           component: doc_4d6ca76e0c6496d5788a0698a6da1d59
