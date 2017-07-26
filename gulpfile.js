@@ -19,8 +19,8 @@ const readdirSync = (dir) => {
 };
 
 const srcFolder = path.join(__dirname, 'src');
-const buildFolder = path.join(__dirname, 'build');
-// const buildFolder = path.join(__dirname, '../vue-markdown-book-ghpages');
+// const buildFolder = path.join(__dirname, 'build');
+const buildFolder = path.join(__dirname, '../vue-markdown-book-ghpages');
 const docFolder = path.join(__dirname, 'docs');
 const templateFolder = path.join(__dirname, 'template');
 
@@ -250,7 +250,7 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
 
           fse.ensureFileSync(absoluteLoadedFilePath);
           const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
-          fs.writeFileSync(absoluteLoadedFilePath, '```\n' + content + '\n```');
+          fs.writeFileSync(absoluteLoadedFilePath, '```\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
           fs.close(fd);
 
       }
