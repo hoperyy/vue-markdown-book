@@ -156,6 +156,9 @@ const getFormatedDirTree = (currentDocFolder) => {
           item.md5String = md5(item.absolutePath);
           tree.md5String = md5(tree.absolutePath);
 
+          // item routerPath
+          item.routerPath = item.path.replace(/\.md$/, '');
+
           // add index
           item.index = fileIndex + '-' + index;
 
@@ -306,7 +309,7 @@ const createRoutesFile = (docName, filesMap) => {
     routesContent += `\n\nmodule.exports = [\n`;
     for (relativeDocFilePath in filesMap) {
         routesContent += `{
-          path: '${filesMap[relativeDocFilePath].path}',
+          path: '${filesMap[relativeDocFilePath].routerPath}',
           component: ${'doc_' + filesMap[relativeDocFilePath].md5String}
         },`;
     }

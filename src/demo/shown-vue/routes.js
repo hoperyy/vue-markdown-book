@@ -15,7 +15,7 @@ module.exports = [
           path: '/assets/markdown-img-paste-20170726194904174.png',
           component: doc_3345113f7f15bc1fd77419b9b647cd4e
         },{
-          path: '/demo.md',
+          path: '/demo',
           component: doc_b4c2adec87f689b03a9ac7adc53e2907
         },{
           path: '/index.html',
@@ -24,7 +24,7 @@ module.exports = [
           path: '/index.js',
           component: doc_0ae36df161f13187dad848636178e8fc
         },{
-          path: '/test.md',
+          path: '/test',
           component: doc_d97f079e9b51cdeda9d789b435ae8d16
         },{
           path: '/test.vue',
