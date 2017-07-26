@@ -3,3 +3,5 @@ build/*
 dynamic-files/*
 npm-debug.log
 package-lock.json
+.DS_Store
+.git/*
