@@ -1,6 +1,6 @@
 ```
 <template>
-  <div>bbb</div>
+  <div>vue 方式插入的 dom</div>
 </template>
 
 <style lang="less" scoped>
