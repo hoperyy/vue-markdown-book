@@ -1,4 +1,4 @@
-```
+```vue
 <template>
   <div>vue 方式插入的 dom</div>
 </template>
