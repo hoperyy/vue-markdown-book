@@ -6,7 +6,7 @@
 
 + 可以用 markdown 语法插入图片，但图片路径不要有中文
 
-  ![aaa](./assets/markdown-img-paste-20170724185101208.png)
+  ![img](./assets/markdown-img-paste-20170726194904174.png)
 
 + 可以随时插入前端代码
 
