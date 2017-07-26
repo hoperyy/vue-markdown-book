@@ -15,3 +15,8 @@
 ## demo
 
 https://hoperyy.github.io/vue-markdown-book/demo.html#/test.md
+
+## todo
+
++ 支持多个文档主题
++ 主题美化
