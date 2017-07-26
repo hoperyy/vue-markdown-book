@@ -18,11 +18,13 @@ const readdirSync = (dir) => {
   });
 };
 
+const themeName = 'default';
+
 const srcFolder = path.join(__dirname, 'src');
 // const buildFolder = path.join(__dirname, 'build');
 const buildFolder = path.join(__dirname, '../vue-markdown-book-ghpages');
 const docFolder = path.join(__dirname, 'docs');
-const templateFolder = path.join(__dirname, 'template');
+const templateFolder = path.join(__dirname, 'theme-template');
 
 const excludeFilesRegExp = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)/i;
 const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
@@ -95,7 +97,7 @@ const createPageFromDemo = (docName) => {
   if (fs.existsSync(targetFolder)) {
     fse.removeSync(targetFolder);
   }
-  fse.copySync(path.join(templateFolder, 'page-demo'), targetFolder);
+  fse.copySync(path.join(templateFolder, themeName), targetFolder);
 
   readdirSync(targetFolder).forEach((filePath) => {
     utime(filePath);
@@ -218,15 +220,11 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
     const shownVueFolder = path.join(srcFolder, docName, 'shown-vue');
     const shownFilePath = path.join(shownVueFolder, md5String + '.vue');
 
-    let shownVueContent = '';
-
     const isFile = !fs.statSync(filesMapItem.absolutePath).isDirectory();
+    let absoluteLoadedFilePath = filesMapItem.absolutePath;
 
     // 如果是文件类型
     if (isFile) {
-
-      let absoluteLoadedFilePath = filesMapItem.absolutePath;
-
       // create doc files that can be loaded.
       if (/\.((jpg)|(png)|(gif))$/.test(absoluteLoadedFilePath)) {
 
@@ -244,81 +242,25 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
       } else if (!/\.md$/.test(absoluteLoadedFilePath)) {
 
           absoluteLoadedFilePath = path.join(shownVueFolder, 'loaded-doc', relativeDocFilePath);
+          const extname = path.extname(absoluteLoadedFilePath).replace('.', '');
           absoluteLoadedFilePath += '.md';
 
           const content = fs.readFileSync(filesMapItem.absolutePath).toString();
 
           fse.ensureFileSync(absoluteLoadedFilePath);
           const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
-          fs.writeFileSync(absoluteLoadedFilePath, '```\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
+          fs.writeFileSync(absoluteLoadedFilePath, '```' + extname + '\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
           fs.close(fd);
-
       }
 
-      shownVueContent = `
-          <template>
-              <div class="hoper-body">
-
-                  <div class="hoper-content">
-                      <Mmenu :currentIndex="${fileIndex}"></Mmenu>
-                      <div class="hoper-doc">
-                        <Doc></Doc>
-                      </div>
-                  </div>
-
-              </div>
-          </template>
-
-          <script>
-          import Mheader from '../../components/Header.vue';
-          import Mfooter from '../../components/Footer.vue';
-          import Mmenu from '../components/Menu.vue';
-
-          import Doc from './${relative(shownFilePath, absoluteLoadedFilePath)}';
-
-          export default {
-              components: {
-                  Mheader,
-                  Mfooter,
-                  Mmenu,
-                  Doc
-              }
-          };
-
-          </script>
-        `;
-
-    // 如果是目录
-    } else {
-      shownVueContent = `
-        <template>
-            <div class="hoper-body">
-
-                <div class="hoper-content">
-                    <Mmenu :currentIndex="${fileIndex}"></Mmenu>
-                    <div class="hoper-doc">
-                    </div>
-                </div>
-
-            </div>
-        </template>
-
-        <script>
-        import Mheader from '../../components/Header.vue';
-        import Mfooter from '../../components/Footer.vue';
-        import Mmenu from '../components/Menu.vue';
-
-        export default {
-            components: {
-                Mheader,
-                Mfooter,
-                Mmenu,
-            }
-        };
-
-        </script>
-      `;
     }
+
+    const shownVueContent = require('./get-shown-vue-content-by-theme')[themeName]({
+        isDirectory: !isFile,
+        isFile: isFile,
+        fileIndex: fileIndex,
+        loadedDocPath: './' + relative(shownFilePath, absoluteLoadedFilePath)
+    });
 
     fse.ensureFileSync(shownFilePath);
     const fd = fs.openSync(shownFilePath, 'w+');

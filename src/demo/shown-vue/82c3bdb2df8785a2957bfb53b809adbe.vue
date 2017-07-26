@@ -1,28 +1,28 @@
 
-        <template>
-            <div class="hoper-body">
+              <template>
+                  <div class="theme-default-body">
+                      <div class="theme-default-content">
 
-                <div class="hoper-content">
-                    <Mmenu :currentIndex="['0']"></Mmenu>
-                    <div class="hoper-doc">
-                    </div>
-                </div>
+                          <Mmenu :currentIndex="['0']"></Mmenu>
+                          <div class="common-theme-markdown-doc theme-default-markdown-doc">
+                          </div>
 
-            </div>
-        </template>
+                      </div>
+                  </div>
+              </template>
 
-        <script>
-        import Mheader from '../../components/Header.vue';
-        import Mfooter from '../../components/Footer.vue';
-        import Mmenu from '../components/Menu.vue';
+              <script>
+              import Mheader from '../components/common/Header.vue';
+              import Mfooter from '../components/common/Footer.vue';
+              import Mmenu from '../components/Menu.vue';
 
-        export default {
-            components: {
-                Mheader,
-                Mfooter,
-                Mmenu,
-            }
-        };
+              export default {
+                  components: {
+                      Mheader,
+                      Mfooter,
+                      Mmenu,
+                  }
+              };
 
-        </script>
-      
+              </script>
+            
