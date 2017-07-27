@@ -18,10 +18,6 @@ const readdirSync = (dir) => {
   });
 };
 
-const srcFolder = path.join(__dirname, 'src');
-const docFolder = path.join(__dirname, 'docs');
-const templateFolder = path.join(__dirname, 'theme-template');
-
 // merge user config
 let themeName = 'default';
 let userName = '';
@@ -49,6 +45,10 @@ if (fs.existsSync(userConfigFilePath)) {
     }
 
 }
+
+const srcFolder = path.join(__dirname, 'src');
+const docFolder = path.join(__dirname, 'docs');
+const themeFolder = path.join(__dirname, 'theme', themeName);
 
 const excludeFilesRegExp = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)/i;
 const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
@@ -122,7 +122,6 @@ const createPageFromDemo = (docName) => {
     fse.removeSync(targetFolder);
   }
 
-  const themeFolder = path.join(templateFolder, themeName);
   fs.readdirSync(themeFolder).forEach((filename) => {
       if (filename === 'shown-vue-template') {
           return;
@@ -292,11 +291,11 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
 
     let shownVueContent = '';
     if (isFile) {
-        const templateContent = fs.readFileSync(path.join(templateFolder, themeName, 'shown-vue-template/file-template.vue')).toString();
+        const templateContent = fs.readFileSync(path.join(themeFolder, 'shown-vue-template/file-template.vue')).toString();
         shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex))
                                          .replace(/\$\$\_DOC\_PATH\_\$\$/g, JSON.stringify('./' + relative(shownFilePath, absoluteLoadedFilePath)));
     } else {
-      const templateContent = fs.readFileSync(path.join(templateFolder, themeName, 'shown-vue-template/dir-template.vue')).toString();
+      const templateContent = fs.readFileSync(path.join(themeFolder, 'shown-vue-template/dir-template.vue')).toString();
       shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex));
     }
 
