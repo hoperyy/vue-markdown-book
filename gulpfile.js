@@ -48,9 +48,13 @@ if (fs.existsSync(userConfigFilePath)) {
 
 const srcFolder = path.join(__dirname, 'src');
 const docFolder = path.join(__dirname, 'docs');
-const themeFolder = path.join(__dirname, 'theme', themeName);
+let themeFolder = path.join(__dirname, 'theme', themeName);
 
-const excludeFilesRegExp = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)/i;
+if (fs.existsSync(path.join(docFolder, 'doc-theme')) && fs.readdirSync(path.join(docFolder, 'doc-theme')).length) {
+    themeFolder = path.join(docFolder, 'doc-theme', themeName);
+}
+
+const excludeFilesRegExp = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
 const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
 const utime = (filePath) => {
@@ -123,7 +127,7 @@ const createPageFromDemo = (docName) => {
   }
 
   fs.readdirSync(themeFolder).forEach((filename) => {
-      if (filename === 'shown-vue-template') {
+      if (filename === 'routes-template') {
           return;
       }
 
@@ -251,7 +255,7 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
     const fileIndex = JSON.stringify(filesMapItem.index.split('-')).replace(/\"/g, "'");
 
     // create shown files
-    const shownVueFolder = path.join(srcFolder, docName, 'shown-vue');
+    const shownVueFolder = path.join(srcFolder, docName, 'routes');
     const shownFilePath = path.join(shownVueFolder, md5String + '.vue');
 
     const isFile = !fs.statSync(filesMapItem.absolutePath).isDirectory();
@@ -291,11 +295,11 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
 
     let shownVueContent = '';
     if (isFile) {
-        const templateContent = fs.readFileSync(path.join(themeFolder, 'shown-vue-template/file-template.vue')).toString();
+        const templateContent = fs.readFileSync(path.join(themeFolder, 'routes-template/file-template.vue')).toString();
         shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex))
                                          .replace(/\$\$\_DOC\_PATH\_\$\$/g, JSON.stringify('./' + relative(shownFilePath, absoluteLoadedFilePath)));
     } else {
-      const templateContent = fs.readFileSync(path.join(themeFolder, 'shown-vue-template/dir-template.vue')).toString();
+      const templateContent = fs.readFileSync(path.join(themeFolder, 'routes-template/dir-template.vue')).toString();
       shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex));
     }
 
@@ -320,7 +324,7 @@ const createShownVue = (docName, filesMap) => {
 // create file-tree.js
 const createFileTreeJsFile = (docName, dirTree) => {
 
-    const dirTreeFilePath = path.join(path.join(srcFolder, docName, '/shown-vue/file-tree.js'));
+    const dirTreeFilePath = path.join(path.join(srcFolder, docName, 'file-tree.js'));
     fse.ensureFileSync(dirTreeFilePath);
     const fd = fs.openSync(dirTreeFilePath, 'w');
 
@@ -332,12 +336,12 @@ const createFileTreeJsFile = (docName, dirTree) => {
 };
 
 // create vue routes
-const createRoutesFile = (docName, filesMap) => {
+const createRouteFiles = (docName, filesMap) => {
     // 创建 routes.js
-    const routesFilePath = path.join(srcFolder, docName, '/shown-vue/routes.js');
+    const routesFilePath = path.join(srcFolder, docName, 'routes.js');
     let routesContent = ``;
     for (relativeDocFilePath in filesMap) {
-        routesContent += `\nimport ${'doc_' + filesMap[relativeDocFilePath].md5String} from './${filesMap[relativeDocFilePath].md5String}.vue';`;
+        routesContent += `\nimport ${'doc_' + filesMap[relativeDocFilePath].md5String} from './routes/${filesMap[relativeDocFilePath].md5String}.vue';`;
     }
 
     routesContent += `\n\nmodule.exports = [\n`;
@@ -394,7 +398,7 @@ const prepareSrcFolder = (envString) => {
         const dirTree = getFormatedDirTree(path.join(docFolder, docName));
         const filesMap = getFilesMapByDirTree(dirTree);
         createShownVue(docName, filesMap);
-        createRoutesFile(docName, filesMap);
+        createRouteFiles(docName, filesMap);
         createFileTreeJsFile(docName, dirTree);
 
         replaceHtmlKeywords(docName, envString);
@@ -423,12 +427,12 @@ gulp.task('dev', () => {
               break;
             case 'add':
               createShownVue(docName, filesMap);
-              createRoutesFile(docName, filesMap);
+              createRouteFiles(docName, filesMap);
               createFileTreeJsFile(docName, dirTree);
               break;
             case 'unlink':
               createShownVue(docName, filesMap);
-              createRoutesFile(docName, filesMap);
+              createRouteFiles(docName, filesMap);
               createFileTreeJsFile(docName, dirTree);
               break;
         }
