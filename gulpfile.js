@@ -18,11 +18,29 @@ const readdirSync = (dir) => {
   });
 };
 
-const themeName = 'default';
+const userConfig = require('./book.config.js')();
+
+// merge user config
+let themeName = 'default';
+let userName = '';
+let buildFolder = path.join(__dirname, 'build');
+if (userConfig) {
+    
+    if (userConfig.theme) {
+        themeName = userConfig.theme;
+    }
+
+    if (userConfig.userName) {
+        userName = userConfig.userName;
+    }
+
+    if (userConfig.buildFolder) {
+        buildFolder = userConfig.buildFolder;
+    }
+
+}
 
 const srcFolder = path.join(__dirname, 'src');
-// const buildFolder = path.join(__dirname, 'build');
-const buildFolder = path.join(__dirname, '../vue-markdown-book-ghpages');
 const docFolder = path.join(__dirname, 'docs');
 const templateFolder = path.join(__dirname, 'theme-template');
 
