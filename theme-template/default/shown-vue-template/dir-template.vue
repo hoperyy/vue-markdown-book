@@ -1,7 +1,7 @@
 <template>
     <div class="theme-default-body">
         <div class="theme-default-content">
-            <Mmenu :currentIndex="['0']"></Mmenu>
+            <Mmenu :currentIndex=$$_FILE_INDEX_$$></Mmenu>
             <div class="common-theme-markdown-doc theme-default-markdown-doc"></div>
         </div>
     </div>

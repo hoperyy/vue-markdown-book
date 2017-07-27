@@ -121,7 +121,15 @@ const createPageFromDemo = (docName) => {
   if (fs.existsSync(targetFolder)) {
     fse.removeSync(targetFolder);
   }
-  fse.copySync(path.join(templateFolder, themeName), targetFolder);
+
+  const themeFolder = path.join(templateFolder, themeName);
+  fs.readdirSync(themeFolder).forEach((filename) => {
+      if (filename === 'shown-vue-template') {
+          return;
+      }
+
+      fse.copySync(path.join(themeFolder, filename), path.join(targetFolder, filename));
+  });
 
   readdirSync(targetFolder).forEach((filePath) => {
     utime(filePath);
@@ -282,12 +290,15 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
 
     }
 
-    const shownVueContent = require('./get-shown-vue-content-by-theme')[themeName]({
-        isDirectory: !isFile,
-        isFile: isFile,
-        fileIndex: fileIndex,
-        loadedDocPath: './' + relative(shownFilePath, absoluteLoadedFilePath)
-    });
+    let shownVueContent = '';
+    if (isFile) {
+        const templateContent = fs.readFileSync(path.join(templateFolder, themeName, 'shown-vue-template/file-template.vue')).toString();
+        shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex))
+                                         .replace(/\$\$\_DOC\_PATH\_\$\$/g, JSON.stringify('./' + relative(shownFilePath, absoluteLoadedFilePath)));
+    } else {
+      const templateContent = fs.readFileSync(path.join(templateFolder, themeName, 'shown-vue-template/dir-template.vue')).toString();
+      shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex));
+    }
 
     fse.ensureFileSync(shownFilePath);
     const fd = fs.openSync(shownFilePath, 'w+');
