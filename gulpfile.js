@@ -18,31 +18,37 @@ const readdirSync = (dir) => {
   });
 };
 
-const userConfig = require('./book.config.js')();
+const srcFolder = path.join(__dirname, 'src');
+const docFolder = path.join(__dirname, 'docs');
+const templateFolder = path.join(__dirname, 'theme-template');
 
 // merge user config
 let themeName = 'default';
 let userName = '';
 let buildFolder = path.join(__dirname, 'build');
-if (userConfig) {
-    
-    if (userConfig.theme) {
-        themeName = userConfig.theme;
-    }
 
-    if (userConfig.userName) {
-        userName = userConfig.userName;
-    }
+// merge user config
+const userConfigFilePath = path.join(__dirname, './book.config.js');
+if (fs.existsSync(userConfigFilePath)) {
 
-    if (userConfig.buildFolder) {
-        buildFolder = userConfig.buildFolder;
+    const userConfig = require(userConfigFilePath)();
+
+    if (userConfig) {
+
+        if (userConfig.theme) {
+            themeName = userConfig.theme;
+        }
+
+        if (userConfig.userName) {
+            userName = userConfig.userName;
+        }
+
+        if (userConfig.buildFolder) {
+            buildFolder = userConfig.buildFolder;
+        }
     }
 
 }
-
-const srcFolder = path.join(__dirname, 'src');
-const docFolder = path.join(__dirname, 'docs');
-const templateFolder = path.join(__dirname, 'theme-template');
 
 const excludeFilesRegExp = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)/i;
 const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
