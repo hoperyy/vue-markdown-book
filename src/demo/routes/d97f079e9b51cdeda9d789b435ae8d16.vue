@@ -1,11 +1,13 @@
 <template>
     <div class="theme-default-body">
+        <Mheader></Mheader>
         <div class="theme-default-content">
             <Mmenu :currentIndex="['5']"></Mmenu>
             <div class="common-theme-markdown-doc theme-default-markdown-doc">
                 <Doc></Doc>
             </div>
         </div>
+        <Mfooter></Mfooter>
     </div>
 </template>
 
