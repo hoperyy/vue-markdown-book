@@ -7,7 +7,6 @@
                 <Doc></Doc>
             </div>
         </div>
-        <Mfooter></Mfooter>
     </div>
 </template>
 

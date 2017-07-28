@@ -5,7 +5,6 @@
             <Mmenu :currentIndex=$$_FILE_INDEX_$$></Mmenu>
             <div class="common-theme-markdown-doc theme-default-markdown-doc"></div>
         </div>
-        <Mfooter></Mfooter>
     </div>
 </template>
 

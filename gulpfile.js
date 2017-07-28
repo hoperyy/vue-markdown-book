@@ -22,6 +22,7 @@ const readdirSync = (dir) => {
 let themeName = 'default';
 let userName = '';
 let buildFolder = path.join(__dirname, 'build');
+let userExcludedFileReg = null;
 
 // merge user config
 const userConfigFilePath = path.join(__dirname, './book.config.js');
@@ -42,6 +43,10 @@ if (fs.existsSync(userConfigFilePath)) {
         if (userConfig.buildFolder) {
             buildFolder = userConfig.buildFolder;
         }
+
+        if (userConfig.ignored) {
+            userExcludedFileReg = userConfig.ignored;
+        }
     }
 
 }
@@ -56,6 +61,18 @@ if (fs.existsSync(path.join(docFolder, 'doc-theme')) && fs.readdirSync(path.join
 
 const excludeFilesRegExp = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
 const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
+
+const isExcludedFile = (filePath) => {
+    if (excludeFilesRegExp.test(filePath)) {
+        return true;
+    }
+
+    if (userExcludedFileReg && userExcludedFileReg.test(filePath)) {
+        return true;
+    }
+
+    return false;
+};
 
 const utime = (filePath) => {
   fs.utimesSync(filePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
@@ -90,7 +107,7 @@ const createHtmlInBuildFolder = () => {
                 const filePath = path.join(srcFolder, foldername, subname);
                 const subStats = fs.statSync(filePath);
 
-                if (subStats.isFile() && /\.html$/.test(filePath) && !excludeFilesRegExp.test(filePath)) {
+                if (subStats.isFile() && /\.html$/.test(filePath) && !isExcludedFile(filePath)) {
                     try {
                         fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
                     } catch(err) {
@@ -162,10 +179,10 @@ const getFormatedDirTree = (currentDocFolder) => {
           tree.path = tree.path.replace(currentDocFolder, '');
 
           // should be exluded
-          if (excludeFilesRegExp.test(item.path)) {
+          if (isExcludedFile(item.path)) {
               item.shouldNotShow = true;
           }
-          if (excludeFilesRegExp.test(tree.path)) {
+          if (isExcludedFile(tree.path)) {
               tree.shouldNotShow = true;
           }
 
@@ -389,7 +406,7 @@ const clearSrcFolder = () => {
 const prepareSrcFolder = (envString) => {
     fs.readdirSync(docFolder).forEach((docName) => {
 
-        if (excludeFilesRegExp.test(docName)) {
+        if (isExcludedFile(docName)) {
             return;
         }
 
