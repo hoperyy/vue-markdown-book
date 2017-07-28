@@ -9,7 +9,10 @@ module.exports = () => {
         theme: 'default',
 
         // user name
-        userName: 'xxx'
+        userName: 'xxx',
+
+        // ignore files
+        ignored: /assets/i
 
     };
 
