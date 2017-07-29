@@ -15,7 +15,7 @@ import Mheader from '../components/common/Header.vue';
 import Mfooter from '../components/common/Footer.vue';
 import Mmenu from '../components/Menu.vue';
 
-import Doc from "./../../../docs/demo/demo.md";
+import Doc from "./processed-doc/demo.md";
 
 export default {
     components: {
