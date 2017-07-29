@@ -59,11 +59,13 @@ if (fs.existsSync(path.join(docFolder, 'doc-theme')) && fs.readdirSync(path.join
     themeFolder = path.join(docFolder, 'doc-theme', themeName);
 }
 
-const excludeFilesRegExp = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
+const shouldNotCreatePagesReg = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
+const shouldNotShowReg = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
 const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
-const isExcludedFile = (filePath) => {
-    if (excludeFilesRegExp.test(filePath)) {
+const shouldNotShow = (filePath) => {
+
+    if (shouldNotShowReg.test(filePath)) {
         return true;
     }
 
@@ -107,7 +109,7 @@ const createHtmlInBuildFolder = () => {
                 const filePath = path.join(srcFolder, foldername, subname);
                 const subStats = fs.statSync(filePath);
 
-                if (subStats.isFile() && /\.html$/.test(filePath) && !isExcludedFile(filePath)) {
+                if (subStats.isFile() && /\.html$/.test(filePath) && !shouldNotShow(filePath)) {
                     try {
                         fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
                     } catch(err) {
@@ -179,10 +181,10 @@ const getFormatedDirTree = (currentDocFolder) => {
           tree.path = tree.path.replace(currentDocFolder, '');
 
           // should be exluded
-          if (isExcludedFile(item.path)) {
+          if (shouldNotShow(item.path)) {
               item.shouldNotShow = true;
           }
-          if (isExcludedFile(tree.path)) {
+          if (shouldNotShow(tree.path)) {
               tree.shouldNotShow = true;
           }
 
@@ -244,9 +246,7 @@ const getFilesMapByDirTree = (dirTree) => {
       }
       tree.children.forEach((item, index) => {
 
-          if (!item.shouldNotShow) {
-              filesMap[item.path] = item;
-          }
+          filesMap[item.path] = item;
 
           if (item.children) {
               act(item, item.index);
@@ -276,14 +276,17 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
     const shownFilePath = path.join(shownVueFolder, md5String + '.vue');
 
     const isFile = !fs.statSync(filesMapItem.absolutePath).isDirectory();
-    let absoluteLoadedFilePath = filesMapItem.absolutePath;
+
+    const processedDocFolder = path.join(shownVueFolder, 'processed-doc');
+    let absoluteLoadedFilePath = path.join(processedDocFolder, relativeDocFilePath);
+
+    fse.copySync(filesMapItem.absolutePath, absoluteLoadedFilePath);
 
     // 如果是文件类型
     if (isFile) {
+
       // create doc files that can be loaded.
       if (/\.((jpg)|(png)|(gif))$/.test(absoluteLoadedFilePath)) {
-
-          absoluteLoadedFilePath = path.join(shownVueFolder, 'loaded-doc', relativeDocFilePath);
 
           absoluteLoadedFilePath += '.md';
 
@@ -296,8 +299,8 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
           fs.close(fd);
       } else if (!/\.md$/.test(absoluteLoadedFilePath)) {
 
-          absoluteLoadedFilePath = path.join(shownVueFolder, 'loaded-doc', relativeDocFilePath);
           const extname = path.extname(absoluteLoadedFilePath).replace('.', '');
+
           absoluteLoadedFilePath += '.md';
 
           const content = fs.readFileSync(filesMapItem.absolutePath).toString();
@@ -306,6 +309,37 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
           const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
           fs.writeFileSync(absoluteLoadedFilePath, '```' + extname + '\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
           fs.close(fd);
+
+      } else {
+
+          // read keywords and replace
+          const originalContent = fs.readFileSync(absoluteLoadedFilePath).toString();
+          let newContent = originalContent;
+
+          if (/\<iframe\-doc/.test(newContent)) {
+              newContent = newContent.replace(/\<iframe\-doc/g, '<iframe src="/demo.html#/demo"');
+          }
+
+          if (/\<\/iframe\-doc\>/.test(newContent)) {
+              newContent = newContent.replace(/\<\/iframe\-doc\>/g, '</iframe>');
+          }
+
+          // rewrite md file
+          if (newContent !== originalContent) {
+            const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
+            fs.writeFileSync(absoluteLoadedFilePath, newContent);
+            fs.close(fd);
+          }
+
+          // create iframe file
+          // if (true) {
+          //     const fd = fs.openSync(path.join(), 'w+');
+          //     fs.writeFileSync(absoluteLoadedFilePath, newContent);
+          //     fs.close(fd);
+          // }
+
+          // add routes
+
       }
 
     }
@@ -406,7 +440,7 @@ const clearSrcFolder = () => {
 const prepareSrcFolder = (envString) => {
     fs.readdirSync(docFolder).forEach((docName) => {
 
-        if (isExcludedFile(docName)) {
+        if (shouldNotCreatePagesReg.test(docName)) {
             return;
         }
 

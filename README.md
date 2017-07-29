@@ -14,7 +14,7 @@
 
 ## demo
 
-https://hoperyy.github.io/vue-markdown-book/demo.html#/demo.md
+https://hoperyy.github.io/vue-markdown-book/demo.html#/demo
 
 ## todo
 
