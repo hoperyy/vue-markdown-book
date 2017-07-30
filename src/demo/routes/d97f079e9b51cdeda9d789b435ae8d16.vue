@@ -2,7 +2,7 @@
     <div class="theme-default-body">
         <Mheader></Mheader>
         <div class="theme-default-content">
-            <Mmenu :currentIndex="['6']"></Mmenu>
+            <Mmenu :currentIndex="['7']"></Mmenu>
             <div class="common-theme-markdown-doc theme-default-markdown-doc">
                 <Doc></Doc>
             </div>
