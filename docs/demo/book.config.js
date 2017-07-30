@@ -12,7 +12,7 @@ module.exports = () => {
         userName: 'xxx',
 
         // ignore files
-        ignored: /assets/i
+        ignored: /assets2/i
 
     };
 

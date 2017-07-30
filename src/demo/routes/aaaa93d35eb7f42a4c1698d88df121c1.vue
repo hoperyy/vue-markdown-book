@@ -2,7 +2,7 @@
     <div class="theme-default-body">
         <Mheader></Mheader>
         <div class="theme-default-content">
-            <Mmenu :currentIndex="['5']"></Mmenu>
+            <Mmenu :currentIndex="['1']"></Mmenu>
             <div class="common-theme-markdown-doc theme-default-markdown-doc">
                 <Doc></Doc>
             </div>
@@ -15,7 +15,7 @@ import Mheader from '../components/common/Header.vue';
 import Mfooter from '../components/common/Footer.vue';
 import Mmenu from '../components/Menu.vue';
 
-import Doc from "./processed-doc/index.js.md";
+import Doc from "./processed-doc/book.config.js.md";
 
 export default {
     components: {

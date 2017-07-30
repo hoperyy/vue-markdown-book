@@ -18,50 +18,60 @@ const readdirSync = (dir) => {
   });
 };
 
-// merge user config
-let themeName = 'default';
-let userName = '';
 let buildFolder = path.join(__dirname, 'build');
-let userExcludedFileReg = null;
 
-// merge user config
-const userConfigFilePath = path.join(__dirname, './book.config.js');
-if (fs.existsSync(userConfigFilePath)) {
+const srcFolder = path.join(__dirname, 'src');
+const docFolder = path.join(__dirname, 'docs');
+
+const shouldNotCreatePagesReg = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
+const shouldNotShowReg = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
+const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
+
+const defaultUserConfig = {
+    themeName: 'default',
+    username: '',
+    ignored: null
+};
+
+const getUserConfig = (folder) => {
+
+    // merge user config
+    const userConfigFilePath = path.join(__dirname, folder, './book.config.js');
+
+    if (!fs.existsSync(userConfigFilePath)) {
+        return null;
+    }
+
+    // set default
+    const config = {
+        themeName: 'default',
+        username: '',
+        ignored: null
+    };
 
     const userConfig = require(userConfigFilePath)();
 
     if (userConfig) {
 
         if (userConfig.theme) {
-            themeName = userConfig.theme;
+            config.themeName = userConfig.theme;
         }
 
         if (userConfig.userName) {
-            userName = userConfig.userName;
+            config.userName = userConfig.userName;
         }
 
         if (userConfig.buildFolder) {
-            buildFolder = userConfig.buildFolder;
+            config.buildFolder = userConfig.buildFolder;
         }
 
         if (userConfig.ignored) {
-            userExcludedFileReg = userConfig.ignored;
+            config.ignored = userConfig.ignored;
         }
     }
 
-}
-
-const srcFolder = path.join(__dirname, 'src');
-const docFolder = path.join(__dirname, 'docs');
-let themeFolder = path.join(__dirname, 'theme', themeName);
-
-if (fs.existsSync(path.join(docFolder, 'doc-theme')) && fs.readdirSync(path.join(docFolder, 'doc-theme')).length) {
-    themeFolder = path.join(docFolder, 'doc-theme', themeName);
-}
-
-const shouldNotCreatePagesReg = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
-const shouldNotShowReg = /(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
-const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
+    return config;
+};
 
 const shouldNotShow = (filePath) => {
 
@@ -69,9 +79,9 @@ const shouldNotShow = (filePath) => {
         return true;
     }
 
-    if (userExcludedFileReg && userExcludedFileReg.test(filePath)) {
-        return true;
-    }
+    // if (ignored && ignored.test(filePath)) {
+    //     return true;
+    // }
 
     return false;
 };
@@ -93,37 +103,39 @@ const emptyBuildFolder = () => {
     });
 };
 
-const createHtmlInBuildFolder = () => {
+const createHtmlInBuildFolder = (docInfo) => {
+
+    let filename = docInfo.docName;
 
     // create *.html in build folder
-    fs.readdirSync(srcFolder).forEach((filename) => {
-        const stats = fs.statSync(path.join(srcFolder, filename));
+    const stats = fs.statSync(path.join(srcFolder, filename));
 
-        // only working for .html file in folders
-        if (stats.isDirectory()) {
-            const foldername = filename;
-            const subFiles = fs.readdirSync(path.join(srcFolder, foldername));
+    // only working for .html file in folders
+    if (stats.isDirectory()) {
+        const foldername = filename;
+        const subFiles = fs.readdirSync(path.join(srcFolder, foldername));
 
-            subFiles.forEach((subname) => {
+        subFiles.forEach((subname) => {
 
-                const filePath = path.join(srcFolder, foldername, subname);
-                const subStats = fs.statSync(filePath);
+            const filePath = path.join(srcFolder, foldername, subname);
+            const subStats = fs.statSync(filePath);
 
-                if (subStats.isFile() && /\.html$/.test(filePath) && !shouldNotShow(filePath)) {
-                    try {
-                        fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
-                    } catch(err) {
-                        console.log('error: ', err, ' \n and subname is: ', subname);
-                    }
-                  }
-            });
-        }
-
-    });
+            if (subStats.isFile() && /\.html$/.test(filePath) && !shouldNotShow(filePath)) {
+                try {
+                    fse.copySync(path.join(srcFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
+                } catch(err) {
+                    console.log('error: ', err, ' \n and subname is: ', subname);
+                }
+              }
+        });
+    }
 
 };
 
-const replaceHtmlKeywords = (docName, currentEnv) => {
+const replaceHtmlKeywords = (docInfo, currentEnv) => {
+
+    const docName = docInfo.docName;
+
     const targetFolder = path.join(srcFolder, docName);
     const htmlPath = path.join(targetFolder, 'index.html');
     const fd = fs.openSync(htmlPath, 'r');
@@ -139,7 +151,10 @@ const replaceHtmlKeywords = (docName, currentEnv) => {
     });
 };
 
-const createPageFromDemo = (docName) => {
+const createPageFromDemo = (docInfo) => {
+
+  const docName = docInfo.docName;
+  const themeFolder = docInfo.themeFolder;
   const targetFolder = path.join(srcFolder, docName);
   if (fs.existsSync(targetFolder)) {
     fse.removeSync(targetFolder);
@@ -261,7 +276,11 @@ const getFilesMapByDirTree = (dirTree) => {
   return filesMap;
 };
 
-const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
+const createShownVueFile = (relativeDocFilePath, docInfo) => {
+    const docName = docInfo.docName;
+    const themeFolder = docInfo.themeFolder;
+    const filesMap = docInfo.filesMap;
+
     const filesMapItem = filesMap[relativeDocFilePath];
 
     const filename = path.basename(relativeDocFilePath);
@@ -313,23 +332,23 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
       } else {
 
           // read keywords and replace
-          const originalContent = fs.readFileSync(absoluteLoadedFilePath).toString();
-          let newContent = originalContent;
-
-          if (/\<iframe\-doc/.test(newContent)) {
-              newContent = newContent.replace(/\<iframe\-doc/g, '<iframe src="/demo.html#/demo"');
-          }
-
-          if (/\<\/iframe\-doc\>/.test(newContent)) {
-              newContent = newContent.replace(/\<\/iframe\-doc\>/g, '</iframe>');
-          }
-
-          // rewrite md file
-          if (newContent !== originalContent) {
-            const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
-            fs.writeFileSync(absoluteLoadedFilePath, newContent);
-            fs.close(fd);
-          }
+          // const originalContent = fs.readFileSync(absoluteLoadedFilePath).toString();
+          // let newContent = originalContent;
+          //
+          // if (/\<iframe\-doc/.test(newContent)) {
+          //     newContent = newContent.replace(/\<iframe\-doc/g, '<iframe src="/demo.html#/demo"');
+          // }
+          //
+          // if (/\<\/iframe\-doc\>/.test(newContent)) {
+          //     newContent = newContent.replace(/\<\/iframe\-doc\>/g, '</iframe>');
+          // }
+          //
+          // // rewrite md file
+          // if (newContent !== originalContent) {
+          //   const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
+          //   fs.writeFileSync(absoluteLoadedFilePath, newContent);
+          //   fs.close(fd);
+          // }
 
           // create iframe file
           // if (true) {
@@ -364,16 +383,20 @@ const createShownVueFile = (relativeDocFilePath, filesMap, docName) => {
 };
 
 // create shown-vue in src for sources to load
-const createShownVue = (docName, filesMap) => {
+const createShownVue = (docInfo) => {
+
+  const filesMap = docInfo.filesMap;
 
   for (let relativeDocFilePath in filesMap) {
-      createShownVueFile(relativeDocFilePath, filesMap, docName);
+      createShownVueFile(relativeDocFilePath, docInfo);
   }
 
 };
 
 // create file-tree.js
-const createFileTreeJsFile = (docName, dirTree) => {
+const createFileTreeJsFile = (docInfo, dirTree) => {
+
+    const docName = docInfo.docName;
 
     const dirTreeFilePath = path.join(path.join(srcFolder, docName, 'file-tree.js'));
     fse.ensureFileSync(dirTreeFilePath);
@@ -387,7 +410,10 @@ const createFileTreeJsFile = (docName, dirTree) => {
 };
 
 // create vue routes
-const createRouteFiles = (docName, filesMap) => {
+const createRouteFiles = (docInfo, filesMap) => {
+
+    const docName = docInfo.docName;
+
     // 创建 routes.js
     const routesFilePath = path.join(srcFolder, docName, 'routes.js');
     let routesContent = ``;
@@ -437,32 +463,53 @@ const clearSrcFolder = () => {
     });
 };
 
-const prepareSrcFolder = (envString) => {
+gulp.task('dev', () => {
+
+    clearSrcFolder();
+    emptyBuildFolder();
+
+    const docMap = {};
     fs.readdirSync(docFolder).forEach((docName) => {
 
         if (shouldNotCreatePagesReg.test(docName)) {
             return;
         }
 
-        createPageFromDemo(docName);
+        const globalUserConfig = getUserConfig('');
+        const currentDocUserConfig = getUserConfig('docs/' + docName);
+
+        let config = defaultUserConfig;
+        if (currentDocUserConfig) {
+            for (let i in currentDocUserConfig) {
+                config[i] = currentDocUserConfig[i];
+            }
+        } else if (globalUserConfig) {
+            for (let i in globalUserConfig) {
+                config[i] = globalUserConfig[i];
+            }
+        }
 
         const dirTree = getFormatedDirTree(path.join(docFolder, docName));
         const filesMap = getFilesMapByDirTree(dirTree);
-        createShownVue(docName, filesMap);
-        createRouteFiles(docName, filesMap);
-        createFileTreeJsFile(docName, dirTree);
 
-        replaceHtmlKeywords(docName, envString);
+        docMap[docName] = {
+            docName: docName,
+            themeName: config.themeName,
+            themeFolder: path.join(__dirname, 'theme', config.themeName),
+            username: config.username,
+            ignored: config.ignored,
+            dirTree: dirTree,
+            filesMap: filesMap
+        };
+
+        createPageFromDemo(docMap[docName]);
+        createShownVue(docMap[docName]);
+        createRouteFiles(docMap[docName], filesMap);
+        createFileTreeJsFile(docMap[docName], dirTree);
+        replaceHtmlKeywords(docMap[docName], 'is-dev');
+        createHtmlInBuildFolder(docMap[docName]);
 
     });
-};
-
-gulp.task('dev', () => {
-
-    clearSrcFolder();
-    prepareSrcFolder('is-dev');
-    emptyBuildFolder();
-    createHtmlInBuildFolder();
 
     gulpWatch([path.join(docFolder, '**/*')], (stats) => {
         const filePath = stats.path;
@@ -474,17 +521,17 @@ gulp.task('dev', () => {
 
         switch(stats.event) {
             case 'change':
-              createShownVueFile(relativeDocFilePath, filesMap, docName);
+              createShownVueFile(relativeDocFilePath, docMap[docName]);
               break;
             case 'add':
-              createShownVue(docName, filesMap);
-              createRouteFiles(docName, filesMap);
-              createFileTreeJsFile(docName, dirTree);
+              createShownVue(docMap[docName]);
+              createRouteFiles(docMap[docName], filesMap);
+              createFileTreeJsFile(docMap[docName], dirTree);
               break;
             case 'unlink':
-              createShownVue(docName, filesMap);
-              createRouteFiles(docName, filesMap);
-              createFileTreeJsFile(docName, dirTree);
+              createShownVue(docMap[docName]);
+              createRouteFiles(docMap[docName], filesMap);
+              createFileTreeJsFile(docMap[docName], dirTree);
               break;
         }
 
@@ -543,9 +590,25 @@ gulp.task('dev', () => {
 gulp.task('build', () => {
 
     clearSrcFolder();
-    prepareSrcFolder('is-build');
     emptyBuildFolder();
-    createHtmlInBuildFolder();
+
+    fs.readdirSync(docFolder).forEach((docName) => {
+
+        if (shouldNotCreatePagesReg.test(docName)) {
+            return;
+        }
+
+        const dirTree = getFormatedDirTree(path.join(docFolder, docName));
+        const filesMap = getFilesMapByDirTree(dirTree);
+        createShownVue(docName, filesMap);
+        createRouteFiles(docName, filesMap);
+        createFileTreeJsFile(docName, dirTree);
+
+        replaceHtmlKeywords(docName, 'is-build');
+
+        createHtmlInBuildFolder(docName);
+
+    });
 
     // get default webpack config
     const webpackConfig = require('./webpack.config')(srcFolder, buildFolder);
