@@ -6,7 +6,7 @@ module.exports = () => {
         buildFolder: require('path').join(__dirname, '../vue-markdown-book-ghpages'),
 
         // theme
-        theme: 'default',
+        theme: 'vdian-iframe',
 
         // user name
         userName: 'xxx',

@@ -24,7 +24,7 @@
 
 + 可以插入 iframe
 
-  <iframe src="/demo.html#/index.js"></iframe>
+  <iframe src="/other.html#/demo"></iframe>
 
 + 可以随时插入 vue 编写的 demo
 
