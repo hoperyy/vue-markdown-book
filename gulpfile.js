@@ -33,7 +33,7 @@ const defaultUserConfig = {
     ignored: null
 };
 
-const getUserConfig = (folder) => {
+const getConfigInFolder = (folder) => {
 
     // merge user config
     const userConfigFilePath = path.join(__dirname, folder, './book.config.js');
@@ -67,6 +67,24 @@ const getUserConfig = (folder) => {
 
         if (userConfig.ignored) {
             config.ignored = userConfig.ignored;
+        }
+    }
+
+    return config;
+};
+
+const getFinalConfig = (docName) => {
+    const globalUserConfig = getConfigInFolder('');
+    const currentDocUserConfig = getConfigInFolder('docs/' + docName);
+
+    let config = defaultUserConfig;
+    if (currentDocUserConfig) {
+        for (let i in currentDocUserConfig) {
+            config[i] = currentDocUserConfig[i];
+        }
+    } else if (globalUserConfig) {
+        for (let i in globalUserConfig) {
+            config[i] = globalUserConfig[i];
         }
     }
 
@@ -394,9 +412,10 @@ const createShownVue = (docInfo) => {
 };
 
 // create file-tree.js
-const createFileTreeJsFile = (docInfo, dirTree) => {
+const createFileTreeJsFile = (docInfo) => {
 
     const docName = docInfo.docName;
+    const dirTree = docInfo.dirTree;
 
     const dirTreeFilePath = path.join(path.join(srcFolder, docName, 'file-tree.js'));
     fse.ensureFileSync(dirTreeFilePath);
@@ -410,9 +429,10 @@ const createFileTreeJsFile = (docInfo, dirTree) => {
 };
 
 // create vue routes
-const createRouteFiles = (docInfo, filesMap) => {
+const createRouteFiles = (docInfo) => {
 
     const docName = docInfo.docName;
+    const filesMap = docInfo.filesMap;
 
     // 创建 routes.js
     const routesFilePath = path.join(srcFolder, docName, 'routes.js');
@@ -475,37 +495,26 @@ gulp.task('dev', () => {
             return;
         }
 
-        const globalUserConfig = getUserConfig('');
-        const currentDocUserConfig = getUserConfig('docs/' + docName);
-
-        let config = defaultUserConfig;
-        if (currentDocUserConfig) {
-            for (let i in currentDocUserConfig) {
-                config[i] = currentDocUserConfig[i];
-            }
-        } else if (globalUserConfig) {
-            for (let i in globalUserConfig) {
-                config[i] = globalUserConfig[i];
-            }
-        }
+        const config = getFinalConfig(docName);
 
         const dirTree = getFormatedDirTree(path.join(docFolder, docName));
         const filesMap = getFilesMapByDirTree(dirTree);
 
         docMap[docName] = {
             docName: docName,
+            dirTree: dirTree,
+            filesMap: filesMap,
             themeName: config.themeName,
-            themeFolder: path.join(__dirname, 'theme', config.themeName),
             username: config.username,
             ignored: config.ignored,
-            dirTree: dirTree,
-            filesMap: filesMap
+
+            themeFolder: path.join(__dirname, 'theme', config.themeName)
         };
 
         createPageFromDemo(docMap[docName]);
         createShownVue(docMap[docName]);
-        createRouteFiles(docMap[docName], filesMap);
-        createFileTreeJsFile(docMap[docName], dirTree);
+        createRouteFiles(docMap[docName]);
+        createFileTreeJsFile(docMap[docName]);
         replaceHtmlKeywords(docMap[docName], 'is-dev');
         createHtmlInBuildFolder(docMap[docName]);
 
@@ -525,13 +534,13 @@ gulp.task('dev', () => {
               break;
             case 'add':
               createShownVue(docMap[docName]);
-              createRouteFiles(docMap[docName], filesMap);
-              createFileTreeJsFile(docMap[docName], dirTree);
+              createRouteFiles(docMap[docName]);
+              createFileTreeJsFile(docMap[docName]);
               break;
             case 'unlink':
               createShownVue(docMap[docName]);
-              createRouteFiles(docMap[docName], filesMap);
-              createFileTreeJsFile(docMap[docName], dirTree);
+              createRouteFiles(docMap[docName]);
+              createFileTreeJsFile(docMap[docName]);
               break;
         }
 
