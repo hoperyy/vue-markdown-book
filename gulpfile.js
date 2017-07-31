@@ -29,7 +29,6 @@ const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
 const defaultUserConfig = {
     themeName: 'default',
-    username: '',
     ignored: null
 };
 
@@ -45,7 +44,6 @@ const getConfigInFolder = (folder) => {
     // set default
     const config = {
         themeName: 'default',
-        username: '',
         ignored: null
     };
 
@@ -55,10 +53,6 @@ const getConfigInFolder = (folder) => {
 
         if (userConfig.theme) {
             config.themeName = userConfig.theme;
-        }
-
-        if (userConfig.userName) {
-            config.userName = userConfig.userName;
         }
 
         if (userConfig.buildFolder) {
@@ -156,13 +150,13 @@ const replaceHtmlKeywords = (docInfo, currentEnv) => {
 
     const targetFolder = path.join(srcFolder, docName);
     const htmlPath = path.join(targetFolder, 'index.html');
-    const fd = fs.openSync(htmlPath, 'r');
+
     const newHtmlContent = fs.readFileSync(htmlPath)
                               .toString()
                               .replace(/\$\$\_DOCNAME\_\$\$/g, docName)
                               .replace(/\$\$\_CDNURL\_\$\$/g, currentEnv === 'is-build' ? './static' : './website/static');
-    fs.writeFileSync(htmlPath, newHtmlContent);
-    fs.close(fd);
+
+    writeFileSync(htmlPath, newHtmlContent);
 
     readdirSync(targetFolder).forEach((filePath) => {
       utime(filePath);
@@ -203,7 +197,7 @@ const getFormatedDirTree = (currentDocFolder) => {
     // format dir tree path
     const formateDirTree = (tree, fileIndex) => {
 
-      if (!tree.children) {
+      if (!tree || !tree.children) {
           return;
       }
 
@@ -267,6 +261,115 @@ const getFormatedDirTree = (currentDocFolder) => {
     return dirTree;
 };
 
+const writeFileSync = (filePath, content) => {
+
+    let mode = 'w';
+
+    if (fs.existsSync(filePath)) {
+        mode = 'r';
+    }
+
+    const fd = fs.openSync(filePath, mode);
+    fs.writeFileSync(filePath, content);
+    fs.close(fd);
+    utime(filePath);
+};
+
+const createIframeFileFromContent = (processedFilePath, originalFilePath) => {
+
+    const fileContent = fs.readFileSync(processedFilePath).toString();
+    const matchedArr = fileContent.match(/\<iframe\-doc[\s\S]+?\<\/iframe\-doc\>/g);
+
+    if (!matchedArr || !matchedArr.length) {
+        return;
+    }
+
+    const processedFolderName = path.dirname(processedFilePath);
+    const originalFolderName = path.dirname(originalFilePath);
+
+    let replacedContent = fileContent;
+    matchedArr.forEach((matchedItem) => {
+
+        // get src path
+        let src = matchedItem.match(/src=\"[\S]*?\"/);
+        if (src) {
+            // get the last one
+            src = src.pop().replace(/^src=\"/, '').replace(/\"$/, '');
+        } else {
+            src = '';
+        }
+
+        // create iframe src file (relative file path)
+        const srcFilePath = path.join(originalFolderName, src);
+        let targetFilePath = '';
+
+        if (!src) {
+            console.log('iframe-doc "src" attribute should be vue or md file');
+
+            // replace iframe-doc to iframe
+            const replaced = matchedItem
+                              .replace('<iframe-doc', '<iframe')
+                              .replace('</iframe-doc>', '</iframe>');
+
+            while(replacedContent.indexOf(matchedItem) !== -1) {
+                replacedContent = replacedContent.replace(matchedItem, replaced);
+            }
+
+            // rewrite processedFilePath
+            writeFileSync(processedFilePath, replacedContent);
+
+            return;
+        }
+
+        if (/\.vue$/.test(src)) {
+            targetFilePath = path.join(processedFolderName, src + '.iframe-file.md');
+        } else if (/\.md$/.test(src)) {
+            targetFilePath = path.join(processedFolderName, src + '.iframe-file.md');
+        }
+
+        const md5String = md5(targetFilePath);
+
+        if (!fs.existsSync(targetFilePath)) {
+            fse.copySync(srcFilePath, targetFilePath);
+        }
+
+        // replace iframe-doc to iframe
+        const replaced = matchedItem
+                          .replace('<iframe-doc', '<iframe')
+                          .replace('</iframe-doc>', '</iframe>')
+                          .replace(src, `/vdian-iframe.html#/${md5String}`);
+
+        while(replacedContent.indexOf(matchedItem) !== -1) {
+            replacedContent = replacedContent.replace(matchedItem, replaced);
+        }
+
+        // rewrite processedFilePath
+        writeFileSync(processedFilePath, replacedContent);
+
+        // update iframe routes
+        const iframeRouteFileInSrc = path.join(srcFolder, 'vdian-iframe/routes.js');
+
+        let content = fs.readFileSync(iframeRouteFileInSrc).toString();
+        const loadedName = md5String + '.md';
+
+        // write routes
+        if (!/module\.exports/.test(content)) {
+            content = `module.exports = [];`;
+        }
+
+        if (content.indexOf(md5String) === -1) {
+            content = `import doc_${md5String} from '${relative(iframeRouteFileInSrc, targetFilePath)}';\n` + content;
+            content = content.replace(
+              'module.exports = [',
+              `module.exports = [\n{\n  path: '/${md5String}',\n  component: doc_${md5String}\n},\n`
+            );
+
+            writeFileSync(iframeRouteFileInSrc, content);
+        }
+    });
+
+};
+
 // get files map: {'/xx/xx..': {...}}
 const getFilesMapByDirTree = (dirTree) => {
 
@@ -274,7 +377,7 @@ const getFilesMapByDirTree = (dirTree) => {
 
     const act = (tree) => {
 
-      if (!tree.children) {
+      if (!tree || !tree.children) {
           return;
       }
       tree.children.forEach((item, index) => {
@@ -326,14 +429,9 @@ const createShownVueFile = (relativeDocFilePath, docInfo) => {
       if (/\.((jpg)|(png)|(gif))$/.test(absoluteLoadedFilePath)) {
 
           absoluteLoadedFilePath += '.md';
-
           fse.ensureFileSync(absoluteLoadedFilePath);
-          const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
-
           const content = `![img](${relative(absoluteLoadedFilePath, filesMapItem.absolutePath)}) \n<style scoped>p {text-align: center;}</style>`;
-
-          fs.writeFileSync(absoluteLoadedFilePath, content);
-          fs.close(fd);
+          writeFileSync(absoluteLoadedFilePath, content);
       } else if (!/\.md$/.test(absoluteLoadedFilePath)) {
 
           const extname = path.extname(absoluteLoadedFilePath).replace('.', '');
@@ -343,40 +441,10 @@ const createShownVueFile = (relativeDocFilePath, docInfo) => {
           const content = fs.readFileSync(filesMapItem.absolutePath).toString();
 
           fse.ensureFileSync(absoluteLoadedFilePath);
-          const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
-          fs.writeFileSync(absoluteLoadedFilePath, '```' + extname + '\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
-          fs.close(fd);
+          writeFileSync(absoluteLoadedFilePath, '```' + extname + '\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
 
       } else {
-
-          // read keywords and replace
-          // const originalContent = fs.readFileSync(absoluteLoadedFilePath).toString();
-          // let newContent = originalContent;
-          //
-          // if (/\<iframe\-doc/.test(newContent)) {
-          //     newContent = newContent.replace(/\<iframe\-doc/g, '<iframe src="/demo.html#/demo"');
-          // }
-          //
-          // if (/\<\/iframe\-doc\>/.test(newContent)) {
-          //     newContent = newContent.replace(/\<\/iframe\-doc\>/g, '</iframe>');
-          // }
-          //
-          // // rewrite md file
-          // if (newContent !== originalContent) {
-          //   const fd = fs.openSync(absoluteLoadedFilePath, 'w+');
-          //   fs.writeFileSync(absoluteLoadedFilePath, newContent);
-          //   fs.close(fd);
-          // }
-
-          // create iframe file
-          // if (true) {
-          //     const fd = fs.openSync(path.join(), 'w+');
-          //     fs.writeFileSync(absoluteLoadedFilePath, newContent);
-          //     fs.close(fd);
-          // }
-
-          // add routes
-
+          createIframeFileFromContent(absoluteLoadedFilePath, filesMapItem.absolutePath);
       }
 
     }
@@ -392,12 +460,9 @@ const createShownVueFile = (relativeDocFilePath, docInfo) => {
     }
 
     fse.ensureFileSync(shownFilePath);
-    const fd = fs.openSync(shownFilePath, 'w+');
-    fs.writeFileSync(shownFilePath, shownVueContent);
 
-    // prevent multi callback in webpack
-    utime(shownFilePath);
-    fs.close(fd);
+    writeFileSync(shownFilePath, shownVueContent);
+
 };
 
 // create shown-vue in src for sources to load
@@ -419,13 +484,11 @@ const createFileTreeJsFile = (docInfo) => {
 
     const dirTreeFilePath = path.join(path.join(srcFolder, docName, 'file-tree.js'));
     fse.ensureFileSync(dirTreeFilePath);
-    const fd = fs.openSync(dirTreeFilePath, 'w');
 
     const contentStr = JSON.stringify(dirTree);
 
-    fs.writeFileSync(dirTreeFilePath, `module.exports=${contentStr}`);
-    fs.utimesSync(dirTreeFilePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
-    fs.close(fd);
+    writeFileSync(dirTreeFilePath, `module.exports=${contentStr}`);
+
 };
 
 // create vue routes
@@ -452,14 +515,8 @@ const createRouteFiles = (docInfo) => {
     routesContent += '\n];';
 
     fse.ensureFileSync(routesFilePath);
-    const fd = fs.openSync(routesFilePath, 'w+');
 
-    fs.writeFileSync(routesFilePath, routesContent);
-
-    // prevent multi callback in webpack
-    utime(routesFilePath);
-
-    fs.close(fd);
+    writeFileSync(routesFilePath, routesContent);
 };
 
 const getFilesData = (docFolder, docName) => {
@@ -483,41 +540,49 @@ const clearSrcFolder = () => {
     });
 };
 
+const handleByDocName = (docName, docMap, env) => {
+    if (shouldNotCreatePagesReg.test(docName)) {
+        return;
+    }
+
+    const config = getFinalConfig(docName);
+
+    const dirTree = getFormatedDirTree(path.join(docFolder, docName));
+    const filesMap = getFilesMapByDirTree(dirTree);
+
+    if (docName === 'vdian-iframe') {
+        config.themeName = 'vdian-iframe';
+    }
+
+    docMap[docName] = {
+        docName: docName,
+        dirTree: dirTree,
+        filesMap: filesMap,
+        themeName: config.themeName,
+        ignored: config.ignored,
+
+        themeFolder: path.join(__dirname, 'theme', config.themeName)
+    };
+
+    createPageFromDemo(docMap[docName]);
+    createShownVue(docMap[docName]);
+    createRouteFiles(docMap[docName]);
+    createFileTreeJsFile(docMap[docName]);
+    replaceHtmlKeywords(docMap[docName], 'is-dev');
+    createHtmlInBuildFolder(docMap[docName]);
+};
+
 gulp.task('dev', () => {
 
     clearSrcFolder();
     emptyBuildFolder();
 
     const docMap = {};
-    fs.readdirSync(docFolder).forEach((docName) => {
-
-        if (shouldNotCreatePagesReg.test(docName)) {
-            return;
-        }
-
-        const config = getFinalConfig(docName);
-
-        const dirTree = getFormatedDirTree(path.join(docFolder, docName));
-        const filesMap = getFilesMapByDirTree(dirTree);
-
-        docMap[docName] = {
-            docName: docName,
-            dirTree: dirTree,
-            filesMap: filesMap,
-            themeName: config.themeName,
-            username: config.username,
-            ignored: config.ignored,
-
-            themeFolder: path.join(__dirname, 'theme', config.themeName)
-        };
-
-        createPageFromDemo(docMap[docName]);
-        createShownVue(docMap[docName]);
-        createRouteFiles(docMap[docName]);
-        createFileTreeJsFile(docMap[docName]);
-        replaceHtmlKeywords(docMap[docName], 'is-dev');
-        createHtmlInBuildFolder(docMap[docName]);
-
+    const docNames = fs.readdirSync(docFolder);
+    // prepare iframe things
+    handleByDocName('vdian-iframe', docMap, 'is-dev');
+    docNames.forEach((docName) => {
+        handleByDocName(docName, docMap, 'is-dev');
     });
 
     gulpWatch([path.join(docFolder, '**/*')], (stats) => {
