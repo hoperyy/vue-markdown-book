@@ -24,7 +24,7 @@
 
 + 可以插入 iframe
 
-  <iframe src="/vdian-iframe.html#/4ea21efda4bca97a56d99625194afae8"></iframe>
+  <iframe src="/vdian-iframe.html#/6b9e3ccc4c2540859f5cf4dd73989206"></iframe>
 
 + 可以随时插入 vue 编写的 demo
 
