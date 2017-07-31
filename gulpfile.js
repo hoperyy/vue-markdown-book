@@ -32,6 +32,8 @@ const defaultUserConfig = {
     ignored: null
 };
 
+const watchList = {};
+
 const getConfigInFolder = (folder) => {
 
     // merge user config
@@ -275,6 +277,10 @@ const writeFileSync = (filePath, content) => {
     utime(filePath);
 };
 
+const createIframeFile = (filePath) => {
+    fse.copySync(filePath, filePath + '.iframe-file.md');
+};
+
 const createIframeFileFromContent = (processedFilePath, originalFilePath) => {
 
     const fileContent = fs.readFileSync(processedFilePath).toString();
@@ -304,7 +310,7 @@ const createIframeFileFromContent = (processedFilePath, originalFilePath) => {
         let targetFilePath = '';
 
         if (!src) {
-            console.log('iframe-doc "src" attribute should be vue or md file');
+            console.log('iframe-doc "src" attribute should be a vue or md file');
 
             // replace iframe-doc to iframe
             const replaced = matchedItem
@@ -331,6 +337,12 @@ const createIframeFileFromContent = (processedFilePath, originalFilePath) => {
 
         if (!fs.existsSync(targetFilePath)) {
             fse.copySync(srcFilePath, targetFilePath);
+
+            // add into watch list
+            watchList[srcFilePath] = {
+                target: targetFilePath
+            }
+
         }
 
         // replace iframe-doc to iframe
@@ -589,6 +601,10 @@ gulp.task('dev', () => {
         const filePath = stats.path;
         const docName = filePath.replace(docFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
         const relativeDocFilePath = filePath.replace(docFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
+
+        if (watchList[filePath]) {
+            fse.copySync(filePath, watchList[filePath].target);
+        }
 
         const dirTree = getFormatedDirTree(path.join(docFolder, docName));
         const filesMap = getFilesMapByDirTree(dirTree);
