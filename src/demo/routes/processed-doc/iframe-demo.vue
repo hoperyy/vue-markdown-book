@@ -1,5 +1,5 @@
 <template>
-  <div>iframe 方式插入的 dom</div>
+  <div>iframe 方式插入的 dom2</div>
 </template>
 
 <style lang="less" scoped>
