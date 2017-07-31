@@ -4,8 +4,8 @@
   "description": "",
   "main": "webpack.config.js",
   "scripts": {
-    "dev": "gulp dev",
-    "build": "gulp build"
+    "dev": "gulp --gulpfile ./processer/gulpfile.js dev",
+    "build": "gulp --gulpfile ./processer/gulpfile.js build"
   },
   "author": "",
   "license": "ISC",
