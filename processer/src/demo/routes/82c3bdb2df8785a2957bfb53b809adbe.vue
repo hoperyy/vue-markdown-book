@@ -1,9 +1,9 @@
 <template>
-    <div class="theme-default-body">
+    <div class="theme-vdianh5doc-body">
         <Mheader></Mheader>
-        <div class="theme-default-content">
+        <div class="theme-vdianh5doc-content">
             <Mmenu :currentIndex="['0']"></Mmenu>
-            <div class="common-theme-markdown-doc theme-default-markdown-doc"></div>
+            <div class="common-theme-markdown-doc theme-vdianh5doc-markdown-doc"></div>
         </div>
     </div>
 </template>
