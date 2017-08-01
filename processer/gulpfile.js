@@ -25,8 +25,8 @@ function processer(context) {
 
     const srcCodeFolder = path.join(__dirname, 'src');
 
-    const shouldNotCreatePagesReg = /(\/build\/)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
-    const shouldNotShowReg = /(\/build\/)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)/i;
+    const shouldNotCreatePagesReg = /(\/build\/)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(book\.config\.js)/i;
+    const shouldNotShowReg = /(\/build\/)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(book\.config\.js)/i;
     const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
     const defaultUserConfig = {
@@ -75,7 +75,7 @@ function processer(context) {
         const globalUserConfig = getConfigInFolder(__dirname);
         const currentDocUserConfig = getConfigInFolder(path.join(srcDocFolder, docName));
 
-        let config = defaultUserConfig;
+        let config = {};
         if (currentDocUserConfig) {
             for (let i in currentDocUserConfig) {
                 config[i] = currentDocUserConfig[i];
@@ -83,6 +83,10 @@ function processer(context) {
         } else if (globalUserConfig) {
             for (let i in globalUserConfig) {
                 config[i] = globalUserConfig[i];
+            }
+        } else {
+            for (let i in defaultUserConfig) {
+                config[i] = defaultUserConfig[i];
             }
         }
 
@@ -283,7 +287,7 @@ function processer(context) {
         fse.copySync(filePath, filePath + '.iframe-file.md');
     };
 
-    const createIframeFileFromContent = (processedFilePath, originalFilePath) => {
+    const processIframeFromContent = (processedFilePath, originalFilePath) => {
 
         const fileContent = fs.readFileSync(processedFilePath).toString();
         const matchedArr = fileContent.match(/\<iframe\-doc[\s\S]+?\<\/iframe\-doc\>/g);
@@ -434,18 +438,19 @@ function processer(context) {
         const processedDocFolder = path.join(shownVueFolder, 'processed-doc');
         let absoluteLoadedFilePath = path.join(processedDocFolder, relativeDocFilePath);
 
+        // copy to src/**
         fse.copySync(filesMapItem.absolutePath, absoluteLoadedFilePath);
 
-        // 如果是文件类型
+        // create new file in src/**
         if (isFile) {
 
-          // create doc files that can be loaded.
           if (/\.((jpg)|(png)|(gif))$/.test(absoluteLoadedFilePath)) {
 
               absoluteLoadedFilePath += '.md';
               fse.ensureFileSync(absoluteLoadedFilePath);
               const content = `![img](${relative(absoluteLoadedFilePath, filesMapItem.absolutePath)}) \n<style scoped>p {text-align: center;}</style>`;
               writeFileSync(absoluteLoadedFilePath, content);
+
           } else if (!/\.md$/.test(absoluteLoadedFilePath)) {
 
               const extname = path.extname(absoluteLoadedFilePath).replace('.', '');
@@ -458,7 +463,7 @@ function processer(context) {
               writeFileSync(absoluteLoadedFilePath, '```' + extname + '\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
 
           } else {
-              createIframeFileFromContent(absoluteLoadedFilePath, filesMapItem.absolutePath);
+              processIframeFromContent(absoluteLoadedFilePath, filesMapItem.absolutePath);
           }
 
         }
@@ -533,13 +538,6 @@ function processer(context) {
         writeFileSync(routesFilePath, routesContent);
     };
 
-    const getFilesData = (srcDocFolder, docName) => {
-      const currentDocFolder = path.join(srcDocFolder, docName);
-      const relativeDocFilePath = getRelativeDocFilePath(currentDocFolder);
-      const dirTree = getFormatedDirTree(currentDocFolder);
-      const filesMap = getFilesMapByDirTree(dirTree);
-    };
-
     const clearSrcCodeFolder = () => {
         const srcFiles = fs.readdirSync(srcCodeFolder);
 
@@ -587,8 +585,6 @@ function processer(context) {
     };
 
     const handlers = {};
-
-    handlers['dev'] =
 
     handlers['dev'] = () => {
 
