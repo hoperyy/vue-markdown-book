@@ -30,7 +30,8 @@ function processer(context) {
     const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
     const defaultUserConfig = {
-        themeName: 'default',
+        theme: 'default',
+        iframeTheme: 'vdian-iframe',
         ignored: null
     };
 
@@ -54,7 +55,7 @@ function processer(context) {
 
         // set default
         const config = {
-            themeName: 'default',
+            theme: 'default',
             ignored: null
         };
 
@@ -63,7 +64,7 @@ function processer(context) {
         if (userConfig) {
 
             if (userConfig.theme) {
-                config.themeName = userConfig.theme;
+                config.theme = userConfig.theme;
             }
 
             if (userConfig.buildFolder) {
@@ -72,28 +73,6 @@ function processer(context) {
 
             if (userConfig.ignored) {
                 config.ignored = userConfig.ignored;
-            }
-        }
-
-        return config;
-    };
-
-    const getFinalConfig = (docName) => {
-        const globalUserConfig = getConfigInFolder(__dirname);
-        const currentDocUserConfig = getConfigInFolder(path.join(rootDocFolder, docName));
-
-        let config = {};
-        if (currentDocUserConfig) {
-            for (let i in currentDocUserConfig) {
-                config[i] = currentDocUserConfig[i];
-            }
-        } else if (globalUserConfig) {
-            for (let i in globalUserConfig) {
-                config[i] = globalUserConfig[i];
-            }
-        } else {
-            for (let i in defaultUserConfig) {
-                config[i] = defaultUserConfig[i];
             }
         }
 
@@ -183,6 +162,7 @@ function processer(context) {
         const docName = docInfo.docName;
         const themeFolder = docInfo.themeFolder;
         const targetFolder = path.join(codeFolder, docName);
+
         if (fs.existsSync(targetFolder)) {
           fse.removeSync(targetFolder);
         }
@@ -196,7 +176,7 @@ function processer(context) {
         });
 
         readdirSync(targetFolder).forEach((filePath) => {
-          utime(filePath);
+            utime(filePath);
         });
 
     };
@@ -495,8 +475,6 @@ function processer(context) {
 
         const filesMapItem = docInfo.filesMap[relativeDocFilePath];
 
-        console.log('~~~~filesMapItem: ', !!filesMapItem);
-
         // create shown vue pages
         const shownFilePath = path.join(codeFolder, docInfo.docName, 'routes', filesMapItem.md5String + '.vue');
 
@@ -514,8 +492,6 @@ function processer(context) {
         }
 
         fse.ensureFileSync(shownFilePath);
-
-        console.log('创建 vue shown file: ', relative(shownFilePath, processedFilePath));
 
         writeFileSync(shownFilePath, shownVueContent);
 
@@ -605,10 +581,27 @@ function processer(context) {
     };
 
     const getFinalConfigByDocName = (docName) => {
-        const config = getFinalConfig(docName);
+
+        const globalUserConfig = getConfigInFolder(__dirname);
+        const currentDocUserConfig = getConfigInFolder(path.join(rootDocFolder, docName));
+
+        let config = {};
+        if (currentDocUserConfig) {
+            for (let i in currentDocUserConfig) {
+                config[i] = currentDocUserConfig[i];
+            }
+        } else if (globalUserConfig) {
+            for (let i in globalUserConfig) {
+                config[i] = globalUserConfig[i];
+            }
+        } else {
+            for (let i in defaultUserConfig) {
+                config[i] = defaultUserConfig[i];
+            }
+        }
 
         if (docName === 'vdian-iframe') {
-            config.themeName = 'vdian-iframe';
+            config.theme = 'vdian-iframe';
         }
 
         return config;
@@ -622,13 +615,18 @@ function processer(context) {
 
         return {
             docName: docName,
+
             dirTree: dirTree,
             filesMap: filesMap,
-            themeName: config.themeName,
-            ignored: config.ignored,
+
             docFolderWithDocName: path.join(rootDocFolder, docName),
             processedDocFolderWithDocName: path.join(codeFolder, docName, 'routes', 'processed-doc'),
-            themeFolder: path.join(__dirname, 'theme', config.themeName)
+
+            theme: config.theme,
+            ignored: config.ignored,
+            iframeTheme: config.iframeTheme,
+
+            themeFolder: path.join(__dirname, 'theme', config.theme)
         };
 
 
@@ -671,10 +669,11 @@ function processer(context) {
 
     handlers['dev'] = () => {
 
+        const docMap = {};
+
         clearSrcCodeFolder();
         emptyBuildFolder();
 
-        const docMap = {};
         const docNames = fs.readdirSync(rootDocFolder);
         // prepare iframe things
         handleByDocName('vdian-iframe', docMap, 'is-dev');
@@ -719,11 +718,8 @@ function processer(context) {
                     break;
                 case 'unlink':
 
-                    const lastDocNameInfo = docMap[docName];
-
                     // reget dir tree and filesMap
-                    docMap[docName] = getDocInfoByDocName(docName);
-                    docNameInfo = docMap[docName];
+                    docNameInfo = getDocInfoByDocName(docName);
 
                     // write route file
                     writeRouteFile(docName, docNameInfo.filesMap);
@@ -731,8 +727,9 @@ function processer(context) {
                     // write filetree.js
                     writeFileTreeJsFile(docName, docNameInfo.dirTree);
 
-                    // removeShownVueFile(relativeDocFilePath, lastDocNameInfo);
-                    // removeDocFile(relativeDocFilePath, lastDocNameInfo);
+                    const lastDocNameInfo = docMap[docName];
+                    removeShownVueFile(relativeDocFilePath, lastDocNameInfo);
+                    removeDocFile(relativeDocFilePath, lastDocNameInfo);
                     break;
             }
 
