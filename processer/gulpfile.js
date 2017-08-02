@@ -25,9 +25,9 @@ function processer(context) {
 
     const codeFolder = path.join(__dirname, 'src');
 
-    const shouldNotCreatePagesReg = /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))\//i;
-    const shouldNotShowReg = /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets))\//i;
-    const shouldNotShowExtnameReg = /\.((md))$/i;
+    let shouldNotCreatePagesReg = /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))\//i;
+    let shouldNotShowReg = /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets))\//i;
+    let shouldNotShowExtnameReg = /\.((md))$/i;
     const shouldNotRemovedFilesReg = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
     const defaultUserConfig = {
@@ -639,11 +639,6 @@ function processer(context) {
                 config[i] = currentDocUserConfig[i];
             }
         }
-
-        // // the iframe-* folder is created for iframe, it cannot set theme;
-        // if (/^iframe\-/.test(docName)) {
-        //     config.theme = docName;
-        // }
 
         return config;
     };
