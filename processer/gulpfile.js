@@ -25,13 +25,14 @@ function processer(context) {
 
     const codeFolder = path.join(__dirname, 'src');
 
-    const shouldNotCreatePagesReg = /(\/build\/)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(book\.config\.js)/i;
-    const shouldNotShowReg = /(\/build\/)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(book\.config\.js)/i;
+    const shouldNotCreatePagesReg = /(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(book\.config\.js)/i;
+    const shouldNotShowReg = /(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(book\.config\.js)|(assets)/i;
+    const shouldNotShowExtname = /\.((md)|(vue)|(html))$/i;
     const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
     const defaultUserConfig = {
         theme: 'default',
-        iframeTheme: 'vdian-iframe',
+        iframeTheme: 'iframe-default',
         ignored: null
     };
 
@@ -138,41 +139,65 @@ function processer(context) {
 
     };
 
-    const replaceHtmlKeywords = (docInfo, currentEnv) => {
+    const replaceHtmlKeywords = (targetFile, pageName, currentEnv) => {
 
-        const docName = docInfo.docName;
-
-        const targetFolder = path.join(codeFolder, docName);
-        const htmlPath = path.join(targetFolder, 'index.html');
+        const htmlPath = targetFile;
 
         const newHtmlContent = fs.readFileSync(htmlPath)
                                   .toString()
-                                  .replace(/\$\$\_DOCNAME\_\$\$/g, docName)
+                                  .replace(/\$\$\_DOCNAME\_\$\$/g, pageName)
                                   .replace(/\$\$\_CDNURL\_\$\$/g, currentEnv === 'is-build' ? './static' : './website/static');
 
         writeFileSync(htmlPath, newHtmlContent);
-
-        readdirSync(targetFolder).forEach((filePath) => {
-          utime(filePath);
-        });
     };
 
-    const copyPageFromDemo = (docInfo) => {
+    const copyPageFromThemeTemplate = (srcFolder, targetFolder) => {
+
+        if (fs.existsSync(targetFolder)) {
+            fse.removeSync(targetFolder);
+        }
+
+        fs.readdirSync(srcFolder).forEach((filename) => {
+            if (filename === 'routes-template') {
+                return;
+            }
+
+            fse.copySync(path.join(srcFolder, filename), path.join(targetFolder, filename));
+        });
+
+        readdirSync(targetFolder).forEach((filePath) => {
+            utime(filePath);
+        });
+
+    };
+
+    const copyIframeFromDemo = (docInfo) => {
 
         const docName = docInfo.docName;
-        const themeFolder = docInfo.themeFolder;
+        const iframeTheme = docInfo.iframeTheme;
+        const themeTemplateFolder = docInfo.themeTemplateFolder;
+        const iframeThemeTemplateFolder = docInfo.themeTemplateFolder;
         const targetFolder = path.join(codeFolder, docName);
 
         if (fs.existsSync(targetFolder)) {
           fse.removeSync(targetFolder);
         }
 
-        fs.readdirSync(themeFolder).forEach((filename) => {
+        fs.readdirSync(themeTemplateFolder).forEach((filename) => {
             if (filename === 'routes-template') {
                 return;
             }
 
-            fse.copySync(path.join(themeFolder, filename), path.join(targetFolder, filename));
+            fse.copySync(path.join(themeTemplateFolder, filename), path.join(targetFolder, filename));
+        });
+
+        // copy iframe template for this doc folder
+        fs.readdirSync(iframeThemeTemplateFolder).forEach((filename) => {
+            if (filename === 'routes-template') {
+                return;
+            }
+
+            fse.copySync(path.join(iframeThemeTemplateFolder, filename), path.join(path.join(codeFolder, docInfo.md5IframeTheme), filename));
         });
 
         readdirSync(targetFolder).forEach((filePath) => {
@@ -233,7 +258,7 @@ function processer(context) {
               tree.md5String = md5(tree.absolutePath);
 
               // item routerPath
-              item.routerPath = item.path.replace(/\.md$/, '');
+              item.routerPath = item.path.replace(shouldNotShowExtname, '');
 
               // add index
               item.index = fileIndex + '-' + index;
@@ -274,7 +299,7 @@ function processer(context) {
         fse.copySync(filePath, filePath + '.iframe-file.md');
     };
 
-    const processIframeFromContent = (processedFilePath, originalFilePath) => {
+    const processIframeFromContent = (processedFilePath, originalFilePath, iframeName) => {
 
         const fileContent = fs.readFileSync(processedFilePath).toString();
         const matchedArr = fileContent.match(/\<iframe\-doc[\s\S]+?\<\/iframe\-doc\>/g);
@@ -331,6 +356,8 @@ function processer(context) {
             if (!fs.existsSync(targetFilePath)) {
                 fse.copySync(srcFilePath, targetFilePath);
 
+                utime(targetFilePath);
+
                 // add into watch list
                 watchList[srcFilePath] = {
                     target: targetFilePath
@@ -342,7 +369,7 @@ function processer(context) {
             const replaced = matchedItem
                               .replace('<iframe-doc', '<iframe')
                               .replace('</iframe-doc>', '</iframe>')
-                              .replace(src, `/vdian-iframe.html#/${md5String}`);
+                              .replace(src, `/${iframeName}.html#/${md5String}`);
 
             while(replacedContent.indexOf(matchedItem) !== -1) {
                 replacedContent = replacedContent.replace(matchedItem, replaced);
@@ -352,7 +379,7 @@ function processer(context) {
             writeFileSync(processedFilePath, replacedContent);
 
             // update iframe routes
-            const iframeRouteFileInSrc = path.join(codeFolder, 'vdian-iframe/routes.js');
+            const iframeRouteFileInSrc = path.join(codeFolder, `${iframeName}/routes.js`);
 
             let content = fs.readFileSync(iframeRouteFileInSrc).toString();
             const loadedName = md5String + '.md';
@@ -438,7 +465,10 @@ function processer(context) {
         };
     };
 
-    const copyDocFile = (docName, relativeDocFilePath) => {
+    const copyDocFile = (docNameInfo, relativeDocFilePath) => {
+
+        const docName = docNameInfo.docName;
+        const iframeTheme = docNameInfo.iframeTheme;
 
         const transforedFilePath = transforFilePath(docName, relativeDocFilePath);
         const docFilePath = transforedFilePath.docFilePath;
@@ -446,6 +476,8 @@ function processer(context) {
         const processedFilePath = transforedFilePath.processedFilePath;
 
         fse.copySync(docFilePath, copiedDocFilePath);
+
+        utime(copiedDocFilePath);
 
         // step: create new file in src/** by file type
         if (fs.statSync(docFilePath).isFile()) {
@@ -460,7 +492,7 @@ function processer(context) {
                 fse.ensureFileSync(processedFilePath);
                 writeFileSync(processedFilePath, '```' + extname + '\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
             } else if (transforedFilePath.isMd) {
-                processIframeFromContent(copiedDocFilePath, docFilePath);
+                processIframeFromContent(copiedDocFilePath, docFilePath, docNameInfo.md5IframeTheme);
             }
         }
 
@@ -483,11 +515,11 @@ function processer(context) {
 
         let shownVueContent = '';
         if (fs.statSync(transforedFilePath.docFilePath).isFile()) {
-            const templateContent = fs.readFileSync(path.join(docInfo.themeFolder, 'routes-template/file-template.vue')).toString();
+            const templateContent = fs.readFileSync(path.join(docInfo.themeTemplateFolder, 'routes-template/file-template.vue')).toString();
             shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex))
                                              .replace(/\$\$\_DOC\_PATH\_\$\$/g, JSON.stringify('./' + relative(shownFilePath, processedFilePath)));
         } else {
-            const templateContent = fs.readFileSync(path.join(docInfo.themeFolder, 'routes-template/dir-template.vue')).toString();
+            const templateContent = fs.readFileSync(path.join(docInfo.themeTemplateFolder, 'routes-template/dir-template.vue')).toString();
             shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex));
         }
 
@@ -523,29 +555,26 @@ function processer(context) {
       const filesMap = docInfo.filesMap;
 
       for (let relativeDocFilePath in filesMap) {
-          copyDocFile(docInfo.docName, relativeDocFilePath);
+          copyDocFile(docInfo, relativeDocFilePath);
           createShownVueFile(relativeDocFilePath, docInfo);
       }
 
     };
 
     // create file-tree.js
-    const writeFileTreeJsFile = (docName, dirTree) => {
-
-        const dirTreeFilePath = path.join(path.join(codeFolder, docName, 'file-tree.js'));
-        fse.ensureFileSync(dirTreeFilePath);
-
+    const writeFileTreeJsFile = (targetFile, dirTree) => {
+        fse.ensureFileSync(targetFile);
         const contentStr = JSON.stringify(dirTree);
+        writeFileSync(targetFile, `module.exports=${contentStr}`);
 
-        writeFileSync(dirTreeFilePath, `module.exports=${contentStr}`);
-
+        utime(targetFile);
     };
 
     // create vue routes
-    const writeRouteFile = (docName, filesMap) => {
+    const writeRouteFile = (targetRouteFile, filesMap) => {
 
         // 创建 routes.js
-        const routesFilePath = path.join(codeFolder, docName, 'routes.js');
+        const routesFilePath = targetRouteFile;
         let routesContent = ``;
         for (relativeDocFilePath in filesMap) {
             routesContent += `\nimport ${'doc_' + filesMap[relativeDocFilePath].md5String} from './routes/${filesMap[relativeDocFilePath].md5String}.vue';`;
@@ -586,23 +615,27 @@ function processer(context) {
         const currentDocUserConfig = getConfigInFolder(path.join(rootDocFolder, docName));
 
         let config = {};
+
+        for (let i in defaultUserConfig) {
+            config[i] = defaultUserConfig[i];
+        }
+
+        if (globalUserConfig) {
+            for (let i in globalUserConfig) {
+                config[i] = globalUserConfig[i];
+            }
+        }
+
         if (currentDocUserConfig) {
             for (let i in currentDocUserConfig) {
                 config[i] = currentDocUserConfig[i];
             }
-        } else if (globalUserConfig) {
-            for (let i in globalUserConfig) {
-                config[i] = globalUserConfig[i];
-            }
-        } else {
-            for (let i in defaultUserConfig) {
-                config[i] = defaultUserConfig[i];
-            }
         }
 
-        if (docName === 'vdian-iframe') {
-            config.theme = 'vdian-iframe';
-        }
+        // // the iframe-* folder is created for iframe, it cannot set theme;
+        // if (/^iframe\-/.test(docName)) {
+        //     config.theme = docName;
+        // }
 
         return config;
     };
@@ -625,44 +658,13 @@ function processer(context) {
             theme: config.theme,
             ignored: config.ignored,
             iframeTheme: config.iframeTheme,
+            md5IframeTheme: md5(docName + '-' + config.iframeTheme),
 
-            themeFolder: path.join(__dirname, 'theme', config.theme)
+            themeTemplateFolder: path.join(__dirname, 'theme', config.theme),
+            iframeThemeTemplateFolder: path.join(__dirname, 'theme', config.theme)
         };
 
 
-    };
-
-    const handleByDocName = (docName, docMap, env) => {
-        if (shouldNotCreatePagesReg.test(docName)) {
-            return;
-        }
-
-        docMap[docName] = getDocInfoByDocName(docName);
-
-        const docNameInfo = docMap[docName];
-
-        // create pages
-        copyPageFromDemo(docNameInfo);
-
-        for (let relativeDocFilePath in docNameInfo.filesMap) {
-
-            // copy doc file
-            copyDocFile(docNameInfo.docName, relativeDocFilePath);
-
-            // create shown vue file
-            createShownVueFile(relativeDocFilePath, docNameInfo);
-
-        }
-
-        // write route file
-        writeRouteFile(docName, docNameInfo.filesMap);
-
-        // write filetree.js
-        writeFileTreeJsFile(docName, docNameInfo.dirTree);
-
-        replaceHtmlKeywords(docNameInfo, 'is-dev');
-
-        createHtmlInBuildFolder(docName);
     };
 
     const handlers = {};
@@ -675,13 +677,46 @@ function processer(context) {
         emptyBuildFolder();
 
         const docNames = fs.readdirSync(rootDocFolder);
-        // prepare iframe things
-        handleByDocName('vdian-iframe', docMap, 'is-dev');
+        // handleByDocName('iframe-default', docMap, 'is-dev');
         docNames.forEach((docName) => {
             if (shouldNotCreatePagesReg.test(docName)) {
                 return;
             }
-            handleByDocName(docName, docMap, 'is-dev');
+
+            docMap[docName] = getDocInfoByDocName(docName);
+
+            const docNameInfo = docMap[docName];
+
+            // create pages
+            copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(codeFolder, docName));
+
+            // copy iframe defined in doc
+            copyPageFromThemeTemplate(path.join(__dirname, 'theme', docNameInfo.iframeTheme), path.join(codeFolder, docNameInfo.md5IframeTheme));
+
+            for (let relativeDocFilePath in docNameInfo.filesMap) {
+
+                // copy doc file
+                copyDocFile(docNameInfo, relativeDocFilePath);
+
+                // create shown vue file
+                createShownVueFile(relativeDocFilePath, docNameInfo);
+
+            }
+
+            // write route file
+            writeRouteFile(path.join(codeFolder, docName, 'routes.js'), docNameInfo.filesMap);
+
+            // write filetree.js
+            writeFileTreeJsFile(path.join(path.join(codeFolder, docName, 'file-tree.js')), docNameInfo.dirTree);
+
+            replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), docName, 'is-dev');
+            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, 'is-dev');
+
+            fse.copySync(path.join(codeFolder, docName, 'index.html'), path.join(buildFolder, docName + '.html'));
+            fse.copySync(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
+
+            utime(path.join(buildFolder, docName + '.html'));
+            utime(path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
         });
 
         gulpWatch([path.join(rootDocFolder, '**/*')], (stats) => {
@@ -693,11 +728,11 @@ function processer(context) {
                 fse.copySync(filePath, watchList[filePath].target);
             }
 
-            let docNameInfo;
+            let docNameInfo = getDocInfoByDocName(docName);
 
             switch(stats.event) {
                 case 'change':
-                    copyDocFile(docName, relativeDocFilePath);
+                    copyDocFile(docNameInfo, relativeDocFilePath);
                     break;
                 case 'add':
 
@@ -705,16 +740,16 @@ function processer(context) {
                     docNameInfo = getDocInfoByDocName(docName);
 
                     // copy doc file
-                    copyDocFile(docName, relativeDocFilePath);
+                    copyDocFile(docNameInfo, relativeDocFilePath);
 
                     // create shown vue file
                     createShownVueFile(relativeDocFilePath, docNameInfo);
 
                     // write route file
-                    writeRouteFile(docName, docNameInfo.filesMap);
+                    writeRouteFile(path.join(codeFolder, docName, 'routes.js'), docNameInfo.filesMap);
 
                     // write filetree.js
-                    writeFileTreeJsFile(docName, docNameInfo.dirTree);
+                    writeFileTreeJsFile(path.join(path.join(codeFolder, docName, 'file-tree.js')), docNameInfo.dirTree);
                     break;
                 case 'unlink':
 
@@ -722,10 +757,10 @@ function processer(context) {
                     docNameInfo = getDocInfoByDocName(docName);
 
                     // write route file
-                    writeRouteFile(docName, docNameInfo.filesMap);
+                    writeRouteFile(path.join(codeFolder, docName, 'routes.js'), docNameInfo.filesMap);
 
                     // write filetree.js
-                    writeFileTreeJsFile(docName, docNameInfo.dirTree);
+                    writeFileTreeJsFile(path.join(path.join(codeFolder, docName, 'file-tree.js')), docNameInfo.dirTree);
 
                     const lastDocNameInfo = docMap[docName];
                     removeShownVueFile(relativeDocFilePath, lastDocNameInfo);
@@ -799,7 +834,7 @@ function processer(context) {
             const filesMap = getFilesMapByDirTree(dirTree);
             createShownVue(docName, filesMap);
             writeRouteFile(docName, filesMap);
-            writeFileTreeJsFile(docName, dirTree);
+            writeFileTreeJsFile(path.join(path.join(codeFolder, docName, 'file-tree.js')), dirTree);
 
             replaceHtmlKeywords(docName, 'is-build');
 
