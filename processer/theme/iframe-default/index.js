@@ -4,7 +4,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import routes from './routes';
 
-// 子页面
+// iframe子页面
 import Main from './routes/Index.vue';
 
 // 初始化
