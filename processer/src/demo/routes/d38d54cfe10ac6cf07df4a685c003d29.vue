@@ -15,7 +15,7 @@ import Mheader from '../components/common/Header.vue';
 import Mfooter from '../components/common/Footer.vue';
 import Mmenu from '../components/Menu.vue';
 
-import Doc from "./processed-doc/book.config.js.md";
+import Doc from "./processed-doc/bookconfig.js.md";
 
 export default {
     components: {

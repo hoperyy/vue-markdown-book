@@ -25,9 +25,9 @@ function processer(context) {
 
     const codeFolder = path.join(__dirname, 'src');
 
-    const shouldNotCreatePagesReg = /(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(book\.config\.js)/i;
-    const shouldNotShowReg = /(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(book\.config\.js)|(assets)/i;
-    const shouldNotShowExtname = /\.((md)|(vue)|(html))$/i;
+    const shouldNotCreatePagesReg = /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))\//i;
+    const shouldNotShowReg = /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets))\//i;
+    const shouldNotShowExtname = /\.((md))$/i;
     const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
     const defaultUserConfig = {
@@ -48,7 +48,7 @@ function processer(context) {
     const getConfigInFolder = (folder) => {
 
         // merge user config
-        const userConfigFilePath = path.join(folder, './book.config.js');
+        const userConfigFilePath = path.join(folder, './bookconfig.js');
 
         if (!fs.existsSync(userConfigFilePath)) {
             return null;
@@ -82,6 +82,14 @@ function processer(context) {
 
     const shouldNotShow = (filePath) => {
 
+        if (!/^\//.test(filePath)) {
+            filePath = '/' + filePath;
+        }
+
+        if (!/\/$/.test(filePath)) {
+            filePath = filePath + '/';
+        }
+
         if (shouldNotShowReg.test(filePath)) {
             return true;
         }
@@ -100,7 +108,7 @@ function processer(context) {
     const emptyBuildFolder = () => {
         fse.ensureDirSync(buildFolder);
         fs.readdirSync(buildFolder).forEach((filename) => {
-          if (!shouldNotRemovedFilesRegExp.test(filename)) {
+          if (!shouldNotRemovedFilesRegExp.test('/' + filename + '/')) {
             try {
               fse.removeSync(path.join(buildFolder, filename));
             } catch(err) {
@@ -679,7 +687,7 @@ function processer(context) {
         const docNames = fs.readdirSync(rootDocFolder);
         // handleByDocName('iframe-default', docMap, 'is-dev');
         docNames.forEach((docName) => {
-            if (shouldNotCreatePagesReg.test(docName)) {
+            if (shouldNotCreatePagesReg.test('/' + docName + '/')) {
                 return;
             }
 
