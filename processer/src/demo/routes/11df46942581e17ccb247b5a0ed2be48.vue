@@ -2,7 +2,7 @@
     <div class="theme-vdianh5doc-body">
         <Mheader></Mheader>
         <div class="theme-vdianh5doc-content">
-            <Mmenu :currentIndex="['6']"></Mmenu>
+            <Mmenu :currentIndex="['5']"></Mmenu>
             <div class="common-theme-markdown-doc theme-vdianh5doc-markdown-doc">
                 <Doc></Doc>
             </div>
