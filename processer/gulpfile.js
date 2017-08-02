@@ -27,8 +27,8 @@ function processer(context) {
 
     const shouldNotCreatePagesReg = /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))\//i;
     const shouldNotShowReg = /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets))\//i;
-    const shouldNotShowExtname = /\.((md))$/i;
-    const shouldNotRemovedFilesRegExp = /(\.idea)|(\.DS_Store)|(\.git)/i;
+    const shouldNotShowExtnameReg = /\.((md))$/i;
+    const shouldNotRemovedFilesReg = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
     const defaultUserConfig = {
         theme: 'default',
@@ -108,7 +108,7 @@ function processer(context) {
     const emptyBuildFolder = () => {
         fse.ensureDirSync(buildFolder);
         fs.readdirSync(buildFolder).forEach((filename) => {
-          if (!shouldNotRemovedFilesRegExp.test('/' + filename + '/')) {
+          if (!shouldNotRemovedFilesReg.test('/' + filename + '/')) {
             try {
               fse.removeSync(path.join(buildFolder, filename));
             } catch(err) {
@@ -266,7 +266,7 @@ function processer(context) {
               tree.md5String = md5(tree.absolutePath);
 
               // item routerPath
-              item.routerPath = item.path.replace(shouldNotShowExtname, '');
+              item.routerPath = item.path.replace(shouldNotShowExtnameReg, '');
 
               // add index
               item.index = fileIndex + '-' + index;
@@ -770,9 +770,9 @@ function processer(context) {
                     // write filetree.js
                     writeFileTreeJsFile(path.join(path.join(codeFolder, docName, 'file-tree.js')), docNameInfo.dirTree);
 
-                    const lastDocNameInfo = docMap[docName];
-                    removeShownVueFile(relativeDocFilePath, lastDocNameInfo);
-                    removeDocFile(relativeDocFilePath, lastDocNameInfo);
+                    // const lastDocNameInfo = docMap[docName];
+                    // removeShownVueFile(relativeDocFilePath, lastDocNameInfo);
+                    // removeDocFile(relativeDocFilePath, lastDocNameInfo);
                     break;
             }
 

@@ -1,6 +1,6 @@
 ```vue
 <template>
-  <div>iframe 方式插入的 dom</div>
+  <div>iframe00 方式插入的 dom</div>
 </template>
 
 <style lang="less" scoped>
