@@ -22,7 +22,7 @@ module.exports = [
               path: '/demo',
               component: doc_b4c2adec87f689b03a9ac7adc53e2907
             },{
-              path: '/iframe-demo.vue',
+              path: '/iframe-demo',
               component: doc_4d2b4017ac4b1a2b3f88f3bf58fa7bfb
             },{
               path: '/index.html',
@@ -31,7 +31,7 @@ module.exports = [
               path: '/package.json',
               component: doc_11df46942581e17ccb247b5a0ed2be48
             },{
-              path: '/test.vue',
+              path: '/test',
               component: doc_889a1b6187fb7c03a3c6f684e84c3995
             }
 ];

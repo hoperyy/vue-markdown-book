@@ -25,18 +25,14 @@ function processer(context) {
 
     const codeFolder = path.join(__dirname, 'src');
 
-    let shouldNotCreatePagesReg = /\/((iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock\.json)|(\.git)|(\.gitignore)|(doc\-theme)|(bookconfig\.js))\//i;
-    let shouldNotShowReg = /\/((iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock\.json)|(\.git)|(\.gitignore)|(doc\-theme)|(bookconfig\.js)|(assets))\//i;
-    // let shouldNotShowExtnameReg = /\.((md))$/i;
-
     const shouldNotRemovedFilesReg = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
     const defaultUserConfig = {
         theme: 'default',
         iframeTheme: 'iframe-default',
 
-        shouldNotCreatePagesReg: /\/((iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))\//i,
-        shouldNotShowReg: /\/((iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets))\//i,
+        _shouldNotCreatePagesReg: /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))/i,
+        _shouldNotShowReg: /\/((iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets))/i,
         shouldNotShowExtnameReg: /\.((md))$/i
     };
 
@@ -65,17 +61,20 @@ function processer(context) {
         return userConfig;
     };
 
-    const shouldNotShow = (filePath) => {
+    const shouldNotShow = (filePath, config) => {
 
         if (!/^\//.test(filePath)) {
             filePath = '/' + filePath;
         }
 
-        if (!/\/$/.test(filePath)) {
-            filePath = filePath + '/';
+        // default config
+        if (config._shouldNotShowReg.test(filePath)) {
+            return true;
         }
 
-        if (shouldNotShowReg.test(filePath)) {
+        // user config
+        console.log(config.shouldNotShowReg, filePath);
+        if (config.shouldNotShowReg && config.shouldNotShowReg.test(filePath)) {
             return true;
         }
 
@@ -116,7 +115,7 @@ function processer(context) {
                 const filePath = path.join(codeFolder, foldername, subname);
                 const subStats = fs.statSync(filePath);
 
-                if (subStats.isFile() && /\.html$/.test(filePath) && !shouldNotShow(filePath)) {
+                if (subStats.isFile() && /\.html$/.test(filePath) && !shouldNotShow(filePath, docName)) {
                     try {
                         fse.copySync(path.join(codeFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
                     } catch(err) {
@@ -196,7 +195,7 @@ function processer(context) {
     };
 
     // get dir tree
-    const getFormatedDirTree = (docName, userShouldNotShowExtnameReg) => {
+    const getFormatedDirTree = (docName, config) => {
 
         const currentDocFolder = path.join(rootDocFolder, docName);
 
@@ -219,10 +218,10 @@ function processer(context) {
               tree.path = tree.path.replace(currentDocFolder, '');
 
               // should be exluded
-              if (shouldNotShow(item.path)) {
+              if (shouldNotShow(item.path, config)) {
                   item.shouldNotShow = true;
               }
-              if (shouldNotShow(tree.path)) {
+              if (shouldNotShow(tree.path, config)) {
                   tree.shouldNotShow = true;
               }
 
@@ -249,8 +248,7 @@ function processer(context) {
               tree.md5String = md5(tree.absolutePath);
 
               // item routerPath
-              // item.routerPath = item.path.replace(shouldNotShowExtnameReg, '');
-              item.routerPath = item.path.replace(userShouldNotShowExtnameReg, '');
+              item.routerPath = item.path.replace(config.shouldNotShowExtnameReg, '');
 
               // add index
               item.index = fileIndex + '-' + index;
@@ -639,10 +637,10 @@ function processer(context) {
     const getDocInfoByDocName = (docName) => {
         const config = getFinalConfigByDocName(docName);
 
-        const dirTree = getFormatedDirTree(docName, config.shouldNotShowExtnameReg);
+        const dirTree = getFormatedDirTree(docName, config);
         const filesMap = getFilesMapByDirTree(dirTree);
 
-        return {
+        const finalConfig = {
             docName: docName,
 
             dirTree: dirTree,
@@ -659,7 +657,11 @@ function processer(context) {
             iframeThemeTemplateFolder: path.join(__dirname, 'theme', config.theme)
         };
 
+        for (let i in config) {
+            finalConfig[i] = config[i];
+        }
 
+        return finalConfig;
     };
 
     const handlers = {};
@@ -672,13 +674,21 @@ function processer(context) {
         const docNames = fs.readdirSync(rootDocFolder);
 
         docNames.forEach((docName) => {
-            if (shouldNotCreatePagesReg.test('/' + docName + '/')) {
+            const userConfig = getFinalConfigByDocName(docName);
+
+            // default config
+            if (userConfig._shouldNotCreatePagesReg.test('/' + docName + '/')) {
                 return;
             }
 
-            docMap[docName] = getDocInfoByDocName(docName);
+            // user config
+            if (userConfig.shouldNotCreatePagesReg && userConfig.shouldNotCreatePagesReg.test('/' + docName + '/')) {
+                return;
+            }
 
-            const docNameInfo = docMap[docName];
+            const docNameInfo = getDocInfoByDocName(docName);
+
+            docMap[docName] = docNameInfo;
 
             // create pages
             copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(codeFolder, docName));
@@ -715,6 +725,19 @@ function processer(context) {
         gulpWatch([path.join(rootDocFolder, '**/*')], (stats) => {
             const filePath = stats.path;
             const docName = filePath.replace(rootDocFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
+
+            const userConfig = getFinalConfigByDocName(docName);
+
+            // default config
+            if (userConfig._shouldNotCreatePagesReg.test('/' + docName + '/')) {
+                return;
+            }
+
+            // user config
+            if (userConfig.shouldNotCreatePagesReg && userConfig.shouldNotCreatePagesReg.test('/' + docName + '/')) {
+                return;
+            }
+
             const relativeDocFilePath = filePath.replace(rootDocFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
 
             if (watchList[filePath]) {
@@ -821,7 +844,7 @@ function processer(context) {
         const docNames = fs.readdirSync(rootDocFolder);
 
         docNames.forEach((docName) => {
-            if (shouldNotCreatePagesReg.test('/' + docName + '/')) {
+            if (_shouldNotCreatePagesReg.test('/' + docName + '/')) {
                 return;
             }
 
