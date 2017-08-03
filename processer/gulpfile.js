@@ -843,13 +843,21 @@ function processer(context) {
         const docNames = fs.readdirSync(rootDocFolder);
 
         docNames.forEach((docName) => {
-            if (_shouldNotCreatePagesReg.test('/' + docName + '/')) {
+            const userConfig = getFinalConfigByDocName(docName);
+
+            // default config
+            if (userConfig._shouldNotCreatePagesReg.test('/' + docName + '/')) {
                 return;
             }
 
-            docMap[docName] = getDocInfoByDocName(docName);
+            // user config
+            if (userConfig.shouldNotCreatePagesReg && userConfig.shouldNotCreatePagesReg.test('/' + docName + '/')) {
+                return;
+            }
 
-            const docNameInfo = docMap[docName];
+            const docNameInfo = getDocInfoByDocName(docName);
+
+            docMap[docName] = docNameInfo;
 
             // create pages
             copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(codeFolder, docName));
@@ -874,7 +882,7 @@ function processer(context) {
             writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
 
             replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), docName, 'is-dev');
-            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, 'is-build');
+            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, 'is-dev');
 
             fse.copySync(path.join(codeFolder, docName, 'index.html'), path.join(buildFolder, docName + '.html'));
             fse.copySync(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
