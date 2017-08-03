@@ -126,13 +126,14 @@ function processer(context) {
 
     };
 
-    const replaceHtmlKeywords = (targetFile, pageName, currentEnv) => {
+    const replaceHtmlKeywords = (targetFile, pageName, docName, currentEnv) => {
 
         const htmlPath = targetFile;
 
         const newHtmlContent = fs.readFileSync(htmlPath)
                                   .toString()
-                                  .replace(/\$\$\_DOCNAME\_\$\$/g, pageName)
+                                  .replace(/\$\$\_PAGENAME\_\$\$/g, pageName)
+                                  .replace(/\$\$\_DOCNAME\_\$\$/g, docName)
                                   .replace(/\$\$\_CDNURL\_\$\$/g, currentEnv === 'is-build' ? './static' : './website/static');
 
         writeFileSync(htmlPath, newHtmlContent);
@@ -708,8 +709,8 @@ function processer(context) {
             // write filetree.js
             writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
 
-            replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), docName, 'is-dev');
-            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, env);
+            replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), userConfig.pageName || docName, docName, 'is-dev');
+            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme, env);
 
             fse.copySync(path.join(codeFolder, docName, 'index.html'), path.join(buildFolder, docName + '.html'));
             fse.copySync(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
