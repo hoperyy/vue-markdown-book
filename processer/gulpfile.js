@@ -25,16 +25,22 @@ function processer(context) {
 
     const codeFolder = path.join(__dirname, 'src');
 
-    let shouldNotCreatePagesReg = /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))\//i;
-    let shouldNotShowReg = /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets))\//i;
-    let shouldNotShowExtnameReg = /\.((md))$/i;
+    let shouldNotCreatePagesReg = /\/((iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock\.json)|(\.git)|(\.gitignore)|(doc\-theme)|(bookconfig\.js))\//i;
+    let shouldNotShowReg = /\/((iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock\.json)|(\.git)|(\.gitignore)|(doc\-theme)|(bookconfig\.js)|(assets))\//i;
+    // let shouldNotShowExtnameReg = /\.((md))$/i;
+
     const shouldNotRemovedFilesReg = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
     const defaultUserConfig = {
         theme: 'default',
         iframeTheme: 'iframe-default',
-        ignored: null
+
+        shouldNotCreatePagesReg: /\/((iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))\//i,
+        shouldNotShowReg: /\/((iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets))\//i,
+        shouldNotShowExtnameReg: /\.((md))$/i
     };
+
+    const docMap = {};
 
     const watchList = {};
 
@@ -54,30 +60,9 @@ function processer(context) {
             return null;
         }
 
-        // set default
-        const config = {
-            theme: 'default',
-            ignored: null
-        };
-
         const userConfig = require(userConfigFilePath)();
 
-        if (userConfig) {
-
-            if (userConfig.theme) {
-                config.theme = userConfig.theme;
-            }
-
-            if (userConfig.buildFolder) {
-                config.buildFolder = userConfig.buildFolder;
-            }
-
-            if (userConfig.ignored) {
-                config.ignored = userConfig.ignored;
-            }
-        }
-
-        return config;
+        return userConfig;
     };
 
     const shouldNotShow = (filePath) => {
@@ -93,10 +78,6 @@ function processer(context) {
         if (shouldNotShowReg.test(filePath)) {
             return true;
         }
-
-        // if (ignored && ignored.test(filePath)) {
-        //     return true;
-        // }
 
         return false;
     };
@@ -215,7 +196,9 @@ function processer(context) {
     };
 
     // get dir tree
-    const getFormatedDirTree = (currentDocFolder) => {
+    const getFormatedDirTree = (docName, userShouldNotShowExtnameReg) => {
+
+        const currentDocFolder = path.join(rootDocFolder, docName);
 
         const filteredDirTree = {};
 
@@ -266,7 +249,8 @@ function processer(context) {
               tree.md5String = md5(tree.absolutePath);
 
               // item routerPath
-              item.routerPath = item.path.replace(shouldNotShowExtnameReg, '');
+              // item.routerPath = item.path.replace(shouldNotShowExtnameReg, '');
+              item.routerPath = item.path.replace(userShouldNotShowExtnameReg, '');
 
               // add index
               item.index = fileIndex + '-' + index;
@@ -473,9 +457,9 @@ function processer(context) {
         };
     };
 
-    const copyDocFile = (docNameInfo, relativeDocFilePath) => {
+    const copyDocFile = (docName, relativeDocFilePath) => {
 
-        const docName = docNameInfo.docName;
+        const docNameInfo = docMap[docName];
         const iframeTheme = docNameInfo.iframeTheme;
 
         const transforedFilePath = transforFilePath(docName, relativeDocFilePath);
@@ -508,7 +492,9 @@ function processer(context) {
 
     };
 
-    const createShownVueFile = (relativeDocFilePath, docInfo) => {
+    const createShownVueFile = (docName, relativeDocFilePath) => {
+
+        const docInfo = docMap[docName];
 
         const transforedFilePath = transforFilePath(docInfo.docName, relativeDocFilePath);
         const processedFilePath = transforedFilePath.processedFilePath;
@@ -558,28 +544,35 @@ function processer(context) {
     };
 
     // create shown-vue in src for sources to load
-    const createShownVue = (docInfo) => {
+    const createShownVue = (docName) => {
+
+      const docInfo = docMap[docName];
 
       const filesMap = docInfo.filesMap;
 
       for (let relativeDocFilePath in filesMap) {
           copyDocFile(docInfo, relativeDocFilePath);
-          createShownVueFile(relativeDocFilePath, docInfo);
+          createShownVueFile(docName, relativeDocFilePath);
       }
 
     };
 
     // create file-tree.js
-    const writeFileTreeJsFile = (targetFile, dirTree) => {
+    const writeFileTreeJsFile = (docName, targetFile) => {
+
+        const docInfo = docMap[docName];
+        const dirTree = docInfo.dirTree;
+
         fse.ensureFileSync(targetFile);
         const contentStr = JSON.stringify(dirTree);
         writeFileSync(targetFile, `module.exports=${contentStr}`);
-
-        utime(targetFile);
     };
 
     // create vue routes
-    const writeRouteFile = (targetRouteFile, filesMap) => {
+    const writeRouteFile = (docName, targetRouteFile) => {
+
+        const docInfo = docMap[docName];
+        const filesMap = docInfo.filesMap;
 
         // 创建 routes.js
         const routesFilePath = targetRouteFile;
@@ -619,7 +612,7 @@ function processer(context) {
 
     const getFinalConfigByDocName = (docName) => {
 
-        const globalUserConfig = getConfigInFolder(__dirname);
+        const globalUserConfig = getConfigInFolder(rootDocFolder);
         const currentDocUserConfig = getConfigInFolder(path.join(rootDocFolder, docName));
 
         let config = {};
@@ -646,7 +639,7 @@ function processer(context) {
     const getDocInfoByDocName = (docName) => {
         const config = getFinalConfigByDocName(docName);
 
-        const dirTree = getFormatedDirTree(path.join(rootDocFolder, docName));
+        const dirTree = getFormatedDirTree(docName, config.shouldNotShowExtnameReg);
         const filesMap = getFilesMapByDirTree(dirTree);
 
         return {
@@ -659,7 +652,6 @@ function processer(context) {
             processedDocFolderWithDocName: path.join(codeFolder, docName, 'routes', 'processed-doc'),
 
             theme: config.theme,
-            ignored: config.ignored,
             iframeTheme: config.iframeTheme,
             md5IframeTheme: md5(docName + '-' + config.iframeTheme),
 
@@ -674,13 +666,11 @@ function processer(context) {
 
     handlers['dev'] = () => {
 
-        const docMap = {};
-
         clearSrcCodeFolder();
         emptyBuildFolder();
 
         const docNames = fs.readdirSync(rootDocFolder);
-        // handleByDocName('iframe-default', docMap, 'is-dev');
+
         docNames.forEach((docName) => {
             if (shouldNotCreatePagesReg.test('/' + docName + '/')) {
                 return;
@@ -699,18 +689,18 @@ function processer(context) {
             for (let relativeDocFilePath in docNameInfo.filesMap) {
 
                 // copy doc file
-                copyDocFile(docNameInfo, relativeDocFilePath);
+                copyDocFile(docName, relativeDocFilePath);
 
                 // create shown vue file
-                createShownVueFile(relativeDocFilePath, docNameInfo);
+                createShownVueFile(docName, relativeDocFilePath);
 
             }
 
             // write route file
-            writeRouteFile(path.join(codeFolder, docName, 'routes.js'), docNameInfo.filesMap);
+            writeRouteFile(docName, path.join(codeFolder, docName, 'routes.js'));
 
             // write filetree.js
-            writeFileTreeJsFile(path.join(path.join(codeFolder, docName, 'file-tree.js')), docNameInfo.dirTree);
+            writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
 
             replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), docName, 'is-dev');
             replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, 'is-dev');
@@ -735,7 +725,7 @@ function processer(context) {
 
             switch(stats.event) {
                 case 'change':
-                    copyDocFile(docNameInfo, relativeDocFilePath);
+                    copyDocFile(docName, relativeDocFilePath);
                     break;
                 case 'add':
 
@@ -743,16 +733,16 @@ function processer(context) {
                     docNameInfo = getDocInfoByDocName(docName);
 
                     // copy doc file
-                    copyDocFile(docNameInfo, relativeDocFilePath);
+                    copyDocFile(docName, relativeDocFilePath);
 
                     // create shown vue file
-                    createShownVueFile(relativeDocFilePath, docNameInfo);
+                    createShownVueFile(docName, relativeDocFilePath);
 
                     // write route file
-                    writeRouteFile(path.join(codeFolder, docName, 'routes.js'), docNameInfo.filesMap);
+                    writeRouteFile(docName, path.join(codeFolder, docName, 'routes.js'));
 
                     // write filetree.js
-                    writeFileTreeJsFile(path.join(path.join(codeFolder, docName, 'file-tree.js')), docNameInfo.dirTree);
+                    writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
                     break;
                 case 'unlink':
 
@@ -760,10 +750,10 @@ function processer(context) {
                     docNameInfo = getDocInfoByDocName(docName);
 
                     // write route file
-                    writeRouteFile(path.join(codeFolder, docName, 'routes.js'), docNameInfo.filesMap);
+                    writeRouteFile(docName, path.join(codeFolder, docName, 'routes.js'));
 
                     // write filetree.js
-                    writeFileTreeJsFile(path.join(path.join(codeFolder, docName, 'file-tree.js')), docNameInfo.dirTree);
+                    writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
 
                     // const lastDocNameInfo = docMap[docName];
                     // removeShownVueFile(relativeDocFilePath, lastDocNameInfo);
@@ -799,6 +789,7 @@ function processer(context) {
             webpackConfig.entry[i].unshift(`webpack-dev-server/client?http://127.0.0.1:${context.debugPort}`, 'webpack/hot/dev-server');
         }
 
+        console.log('webpack compiling...');
         const server = new WebpackDevServer(webpack(webpackConfig), {
             contentBase: buildFolder,
             hot: true,
@@ -827,22 +818,47 @@ function processer(context) {
         clearSrcCodeFolder();
         emptyBuildFolder();
 
-        fs.readdirSync(rootDocFolder).forEach((docName) => {
+        const docNames = fs.readdirSync(rootDocFolder);
 
-            if (shouldNotCreatePagesReg.test(docName)) {
+        docNames.forEach((docName) => {
+            if (shouldNotCreatePagesReg.test('/' + docName + '/')) {
                 return;
             }
 
-            const dirTree = getFormatedDirTree(path.join(rootDocFolder, docName));
-            const filesMap = getFilesMapByDirTree(dirTree);
-            createShownVue(docName, filesMap);
-            writeRouteFile(docName, filesMap);
-            writeFileTreeJsFile(path.join(path.join(codeFolder, docName, 'file-tree.js')), dirTree);
+            docMap[docName] = getDocInfoByDocName(docName);
 
-            replaceHtmlKeywords(docName, 'is-build');
+            const docNameInfo = docMap[docName];
 
-            createHtmlInBuildFolder(docName);
+            // create pages
+            copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(codeFolder, docName));
 
+            // copy iframe defined in doc
+            copyPageFromThemeTemplate(path.join(__dirname, 'theme', docNameInfo.iframeTheme), path.join(codeFolder, docNameInfo.md5IframeTheme));
+
+            for (let relativeDocFilePath in docNameInfo.filesMap) {
+
+                // copy doc file
+                copyDocFile(docName, relativeDocFilePath);
+
+                // create shown vue file
+                createShownVueFile(docName, relativeDocFilePath);
+
+            }
+
+            // write route file
+            writeRouteFile(docName, path.join(codeFolder, docName, 'routes.js'));
+
+            // write filetree.js
+            writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
+
+            replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), docName, 'is-dev');
+            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, 'is-build');
+
+            fse.copySync(path.join(codeFolder, docName, 'index.html'), path.join(buildFolder, docName + '.html'));
+            fse.copySync(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
+
+            utime(path.join(buildFolder, docName + '.html'));
+            utime(path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
         });
 
         // get default webpack config
