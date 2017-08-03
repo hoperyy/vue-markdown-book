@@ -31,8 +31,8 @@ function processer(context) {
         theme: 'default',
         iframeTheme: 'iframe-default',
 
-        _shouldNotCreatePagesReg: /\/((build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))/i,
-        _shouldNotShowReg: /\/((iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets))/i,
+        _shouldNotCreatePagesReg: /\/((book\-themes)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))/i,
+        _shouldNotShowReg: /\/((book\-themes)|(iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets))/i,
         shouldNotShowExtnameReg: /\.((md))$/i
     };
 
@@ -56,7 +56,15 @@ function processer(context) {
             return null;
         }
 
-        const userConfig = require(userConfigFilePath)();
+        const config = require(userConfigFilePath);
+
+        let userConfig;
+
+        if (typeof config === 'function') {
+            userConfig = config();
+        } else {
+            userConfig = config;
+        }
 
         return userConfig;
     };
@@ -429,16 +437,18 @@ function processer(context) {
 
         const isFile = true;//fs.statSync(docFilePath).isFile();
 
-        let processedFilePath = copiedDocFilePath;
+        let processedFilePath = docFilePath;
 
         let isImg = false;
         let isMd = false;
 
         if (isFile) {
             if (/\.((jpg)|(png)|(gif))$/.test(copiedDocFilePath)) {
+                processedFilePath = copiedDocFilePath;
                 processedFilePath += '.md';
                 isImg = true;
             } else if (!/\.md$/.test(copiedDocFilePath)) {
+                processedFilePath = copiedDocFilePath;
                 processedFilePath += '.md';
                 isMd = false;
             } else if (/\.md$/.test(copiedDocFilePath)) {
@@ -465,9 +475,9 @@ function processer(context) {
         const copiedDocFilePath = transforedFilePath.copiedDocFilePath;
         const processedFilePath = transforedFilePath.processedFilePath;
 
-        fse.copySync(docFilePath, copiedDocFilePath);
+        // fse.copySync(docFilePath, copiedDocFilePath);
 
-        utime(copiedDocFilePath);
+        // utime(copiedDocFilePath);
 
         // step: create new file in src/** by file type
         if (fs.statSync(docFilePath).isFile()) {
@@ -482,7 +492,7 @@ function processer(context) {
                 fse.ensureFileSync(processedFilePath);
                 writeFileSync(processedFilePath, '```' + extname + '\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
             } else if (transforedFilePath.isMd) {
-                processIframeFromContent(copiedDocFilePath, docFilePath, docNameInfo.md5IframeTheme);
+                processIframeFromContent(processedFilePath, docFilePath, docNameInfo.md5IframeTheme);
             }
         }
 
@@ -640,6 +650,21 @@ function processer(context) {
         const dirTree = getFormatedDirTree(docName, config);
         const filesMap = getFilesMapByDirTree(dirTree);
 
+        let themeTemplateFolder = path.join(__dirname, 'theme', config.theme);
+        let iframeThemeTemplateFolder = path.join(__dirname, 'theme', config.theme);
+
+        let themeTemplateFolderInDocFolder = path.join(rootDocFolder, 'book-theme', config.theme);
+        let iframeThemeTemplateFolderInDocFolder = path.join(rootDocFolder, 'book-theme', config.theme);
+
+        // prefer themes in doc
+        if (fs.existsSync(themeTemplateFolderInDocFolder)) {
+            themeTemplateFolder = themeTemplateFolderInDocFolder;
+        }
+
+        if (fs.existsSync(iframeThemeTemplateFolderInDocFolder)) {
+            iframeThemeTemplateFolder = iframeThemeTemplateFolderInDocFolder;
+        }
+
         const finalConfig = {
             docName: docName,
 
@@ -653,8 +678,8 @@ function processer(context) {
             iframeTheme: config.iframeTheme,
             md5IframeTheme: md5(docName + '-' + config.iframeTheme),
 
-            themeTemplateFolder: path.join(__dirname, 'theme', config.theme),
-            iframeThemeTemplateFolder: path.join(__dirname, 'theme', config.theme)
+            themeTemplateFolder: themeTemplateFolder,
+            iframeThemeTemplateFolder: iframeThemeTemplateFolder
         };
 
         for (let i in config) {

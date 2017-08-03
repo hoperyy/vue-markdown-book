@@ -24,7 +24,7 @@
 
 + 可以插入 iframe
 
-  <iframe-doc src="./iframe-demo.vue"></iframe-doc>
+  <iframe src="/8ac86a50c931407f250f2eb930549785.html#/6b5d66e4acd52d851667c38489ab8d1a"></iframe>
 
 + 可以随时插入 vue 编写的 demo
 
