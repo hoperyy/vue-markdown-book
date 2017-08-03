@@ -752,7 +752,7 @@ function processer(context) {
                 case 'add':
 
                     // reget dir tree and filesMap
-                    docNameInfo = getDocInfoByDocName(docName);
+                    docMap[docName] = getDocInfoByDocName(docName);
 
                     // copy doc file
                     copyDocFile(docName, relativeDocFilePath);
@@ -769,7 +769,7 @@ function processer(context) {
                 case 'unlink':
 
                     // reget dir tree and filesMap
-                    docNameInfo = getDocInfoByDocName(docName);
+                    docMap[docName] = getDocInfoByDocName(docName);
 
                     // write route file
                     writeRouteFile(docName, path.join(codeFolder, docName, 'routes.js'));
