@@ -663,10 +663,7 @@ function processer(context) {
         return finalConfig;
     };
 
-    const handlers = {};
-
-    handlers['dev'] = () => {
-
+    const processDocs = (env) => {
         clearSrcCodeFolder();
         emptyBuildFolder();
 
@@ -712,7 +709,7 @@ function processer(context) {
             writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
 
             replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), docName, 'is-dev');
-            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, 'is-dev');
+            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, env);
 
             fse.copySync(path.join(codeFolder, docName, 'index.html'), path.join(buildFolder, docName + '.html'));
             fse.copySync(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
@@ -720,6 +717,13 @@ function processer(context) {
             utime(path.join(buildFolder, docName + '.html'));
             utime(path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
         });
+    };
+
+    const handlers = {};
+
+    handlers['dev'] = () => {
+
+        processDocs('is-dev');
 
         gulpWatch([path.join(rootDocFolder, '**/*')], (stats) => {
             const filePath = stats.path;
@@ -837,59 +841,7 @@ function processer(context) {
 
     handlers['build'] = () => {
 
-        clearSrcCodeFolder();
-        emptyBuildFolder();
-
-        const docNames = fs.readdirSync(rootDocFolder);
-
-        docNames.forEach((docName) => {
-            const userConfig = getFinalConfigByDocName(docName);
-
-            // default config
-            if (userConfig._shouldNotCreatePagesReg.test('/' + docName + '/')) {
-                return;
-            }
-
-            // user config
-            if (userConfig.shouldNotCreatePagesReg && userConfig.shouldNotCreatePagesReg.test('/' + docName + '/')) {
-                return;
-            }
-
-            const docNameInfo = getDocInfoByDocName(docName);
-
-            docMap[docName] = docNameInfo;
-
-            // create pages
-            copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(codeFolder, docName));
-
-            // copy iframe defined in doc
-            copyPageFromThemeTemplate(path.join(__dirname, 'theme', docNameInfo.iframeTheme), path.join(codeFolder, docNameInfo.md5IframeTheme));
-
-            for (let relativeDocFilePath in docNameInfo.filesMap) {
-
-                // copy doc file
-                copyDocFile(docName, relativeDocFilePath);
-
-                // create shown vue file
-                createShownVueFile(docName, relativeDocFilePath);
-
-            }
-
-            // write route file
-            writeRouteFile(docName, path.join(codeFolder, docName, 'routes.js'));
-
-            // write filetree.js
-            writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
-
-            replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), docName, 'is-dev');
-            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, 'is-dev');
-
-            fse.copySync(path.join(codeFolder, docName, 'index.html'), path.join(buildFolder, docName + '.html'));
-            fse.copySync(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
-
-            utime(path.join(buildFolder, docName + '.html'));
-            utime(path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
-        });
+        processDocs('is-build');
 
         // get default webpack config
         const webpackConfig = require('./webpack.config')(codeFolder, buildFolder);
