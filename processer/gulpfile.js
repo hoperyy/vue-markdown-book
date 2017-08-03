@@ -811,7 +811,7 @@ function processer(context) {
             webpackConfig.entry[i].unshift(`webpack-dev-server/client?http://127.0.0.1:${context.debugPort}`, 'webpack/hot/dev-server');
         }
 
-        console.log('webpack compiling...');
+        console.log('\nwebpack compiling...');
         const server = new WebpackDevServer(webpack(webpackConfig), {
             contentBase: buildFolder,
             hot: true,

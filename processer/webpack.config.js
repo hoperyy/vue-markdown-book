@@ -28,8 +28,6 @@ module.exports = (docFolder, srcCodeFolder, buildFolder) => {
     // 获取入口
     const entry = getEntry(srcCodeFolder);
 
-    console.log(srcCodeFolder);
-
 		const config = {
 				entry: entry,
         output: {
