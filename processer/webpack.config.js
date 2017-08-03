@@ -23,10 +23,12 @@ function getEntry(root) {
     return entry;
 }
 
-module.exports = (srcFolder, buildFolder) => {
+module.exports = (docFolder, srcCodeFolder, buildFolder) => {
 
     // 获取入口
-    const entry = getEntry(srcFolder);
+    const entry = getEntry(srcCodeFolder);
+
+    console.log(srcCodeFolder);
 
 		const config = {
 				entry: entry,
@@ -40,7 +42,17 @@ module.exports = (srcFolder, buildFolder) => {
             mainFields: ['browser', 'module', 'jsnext:main', 'main'],
             alias: {
                 vue: 'vue/dist/vue.js',
-            }
+            },
+            modules: [
+                path.resolve(docFolder, 'node_modules/'),      // 工作目录的依赖
+                path.resolve(__dirname, '../node_modules/')    // 脚手架的依赖
+            ]
+        },
+        resolveLoader: {
+            modules: [
+                path.resolve(docFolder, 'node_modules/'),      // 工作目录的依赖
+                path.resolve(__dirname, '../node_modules/')     // 脚手架的依赖
+            ]
         },
 				module: {
 						rules: [{
@@ -104,7 +116,7 @@ module.exports = (srcFolder, buildFolder) => {
                     test: /\.js$/,
                     loader: 'babel-loader',
                     include: [
-                        srcFolder
+                        srcCodeFolder
                     ]
                 }]
 				},

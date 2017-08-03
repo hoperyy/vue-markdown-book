@@ -1,7 +1,7 @@
-node_modules/*
-build/*
-dynamic-files/*
+node_modules/
+build/
+dynamic-files/
 npm-debug.log
 package-lock.json
 .DS_Store
-.git/*
+.git/

@@ -73,7 +73,6 @@ function processer(context) {
         }
 
         // user config
-        console.log(config.shouldNotShowReg, filePath);
         if (config.shouldNotShowReg && config.shouldNotShowReg.test(filePath)) {
             return true;
         }
@@ -789,7 +788,7 @@ function processer(context) {
         const WebpackDevServer = require('webpack-dev-server');
 
         // get default webpack config
-        const webpackConfig = require('./webpack.config')(codeFolder, buildFolder);
+        const webpackConfig = require('./webpack.config')(rootDocFolder, codeFolder, buildFolder);
 
         // HMR
         webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());

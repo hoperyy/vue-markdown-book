@@ -1,5 +1,5 @@
 <template>
-  <div>iframe 方式插入的 dom</div>
+  <Overlay v-model="show"></Overlay>
 </template>
 
 <style lang="less" scoped>
@@ -13,9 +13,17 @@ div {
 
 <script>
 
-export default {
-  components: {
+import Overlay from '@vdian/h5-overlay';
+import _ from 'underscore';
 
+export default {
+  data() {
+      return {
+          show: true
+      }
+  },
+  components: {
+      Overlay
   }
 }
 </script>
