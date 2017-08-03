@@ -2,7 +2,7 @@
     <div class="theme-vdianh5doc-body">
         <Mheader></Mheader>
         <div class="theme-vdianh5doc-content">
-            <Mmenu :currentIndex="['2']"></Mmenu>
+            <Mmenu :currentIndex="['4']"></Mmenu>
             <div class="common-theme-markdown-doc theme-vdianh5doc-markdown-doc">
                 <Doc></Doc>
             </div>
@@ -15,7 +15,7 @@ import Mheader from '../components/common/Header.vue';
 import Mfooter from '../components/common/Footer.vue';
 import Mmenu from '../components/Menu.vue';
 
-import Doc from "./../../../../docs/demo/demo.md";
+import Doc from "./../../../../docs/demo/iframe-demo.vue.iframe-file.md";
 
 export default {
     components: {
