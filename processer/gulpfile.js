@@ -69,7 +69,7 @@ function getStringReplaceLoader(replaceMap, currentEnv){
 }
 
 // replace
-const replaceMap = {
+const globalReplaceMap = {
     '$$_CDNURL_$$': {
         'dev-daily': './website/static',
         'dev-pre': './website/static',
@@ -82,15 +82,15 @@ const replaceMap = {
 
 function processer(context) {
 
-    const currentEnv = context.currentEnv;
+    const globalCurrentEnv = context.currentEnv;
 
     // can be replaced
-    const rootDocFolder = context.rootDocFolder;
-    let buildFolder = context.buildFolder;
+    const globalDocFolder = context.docFolder;
+    let globalBuildFolder = context.buildFolder;
 
-    const codeFolder = path.join(__dirname, 'src');
+    const globalCodeFolder = path.join(__dirname, 'src');
 
-    const shouldNotRemovedFilesReg = /(\.idea)|(\.DS_Store)|(\.git)/i;
+    const globalShouldNotRemovedFilesReg = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
     const defaultUserConfig = {
         theme: 'default',
@@ -107,8 +107,8 @@ function processer(context) {
 
     const getDocFolderWithDocName = (docName) => {
         return {
-            docFolderWithDocName: path.join(rootDocFolder, docName),
-            processedDocFolderWithDocName: path.join(codeFolder, docName, 'routes', 'processed-doc')
+            docFolderWithDocName: path.join(globalDocFolder, docName),
+            processedDocFolderWithDocName: path.join(globalCodeFolder, docName, 'routes', 'processed-doc')
         };
     };
 
@@ -154,15 +154,15 @@ function processer(context) {
     };
 
     const utime = (filePath) => {
-      fs.utimesSync(filePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
+        fs.utimesSync(filePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
     };
 
     const emptyBuildFolder = () => {
-        fse.ensureDirSync(buildFolder);
-        fs.readdirSync(buildFolder).forEach((filename) => {
-          if (!shouldNotRemovedFilesReg.test('/' + filename + '/')) {
+        fse.ensureDirSync(globalBuildFolder);
+        fs.readdirSync(globalBuildFolder).forEach((filename) => {
+          if (!globalShouldNotRemovedFilesReg.test('/' + filename + '/')) {
             try {
-              fse.removeSync(path.join(buildFolder, filename));
+              fse.removeSync(path.join(globalBuildFolder, filename));
             } catch(err) {
 
             }
@@ -175,21 +175,21 @@ function processer(context) {
         let filename = docName;
 
         // create *.html in build folder
-        const stats = fs.statSync(path.join(codeFolder, filename));
+        const stats = fs.statSync(path.join(globalCodeFolder, filename));
 
         // only working for .html file in folders
         if (stats.isDirectory()) {
             const foldername = filename;
-            const subFiles = fs.readdirSync(path.join(codeFolder, foldername));
+            const subFiles = fs.readdirSync(path.join(globalCodeFolder, foldername));
 
             subFiles.forEach((subname) => {
 
-                const filePath = path.join(codeFolder, foldername, subname);
+                const filePath = path.join(globalCodeFolder, foldername, subname);
                 const subStats = fs.statSync(filePath);
 
                 if (subStats.isFile() && /\.html$/.test(filePath) && !shouldNotShow(filePath, docName)) {
                     try {
-                        fse.copySync(path.join(codeFolder, foldername, subname), path.join(buildFolder, foldername + '.html'));
+                        fse.copySync(path.join(globalCodeFolder, foldername, subname), path.join(globalBuildFolder, foldername + '.html'));
                     } catch(err) {
                         console.log('error: ', err, ' \n and subname is: ', subname);
                     }
@@ -203,13 +203,13 @@ function processer(context) {
 
         const htmlPath = targetFile;
 
-        console.log(replaceMap['$$_CDNURL_$$'][currentEnv], currentEnv);
+        console.log(globalReplaceMap['$$_CDNURL_$$'][globalCurrentEnv], globalCurrentEnv);
 
         const newHtmlContent = fs.readFileSync(htmlPath)
                                   .toString()
                                   .replace(/\$\$\_PAGENAME\_\$\$/g, pageName)
                                   .replace(/\$\$\_DOCNAME\_\$\$/g, docName)
-                                  .replace(/\$\$\_CDNURL\_\$\$/g, replaceMap['$$_CDNURL_$$'][currentEnv]);
+                                  .replace(/\$\$\_CDNURL\_\$\$/g, globalReplaceMap['$$_CDNURL_$$'][globalCurrentEnv]);
 
         writeFileSync(htmlPath, newHtmlContent);
     };
@@ -240,7 +240,7 @@ function processer(context) {
         const iframeTheme = docInfo.iframeTheme;
         const themeTemplateFolder = docInfo.themeTemplateFolder;
         const iframeThemeTemplateFolder = docInfo.themeTemplateFolder;
-        const targetFolder = path.join(codeFolder, docName);
+        const targetFolder = path.join(globalCodeFolder, docName);
 
         if (fs.existsSync(targetFolder)) {
           fse.removeSync(targetFolder);
@@ -260,7 +260,7 @@ function processer(context) {
                 return;
             }
 
-            fse.copySync(path.join(iframeThemeTemplateFolder, filename), path.join(path.join(codeFolder, docInfo.md5IframeTheme), filename));
+            fse.copySync(path.join(iframeThemeTemplateFolder, filename), path.join(path.join(globalCodeFolder, docInfo.md5IframeTheme), filename));
         });
 
         readdirSync(targetFolder).forEach((filePath) => {
@@ -272,7 +272,7 @@ function processer(context) {
     // get dir tree
     const getFormatedDirTree = (docName, config) => {
 
-        const currentDocFolder = path.join(rootDocFolder, docName);
+        const currentDocFolder = path.join(globalDocFolder, docName);
 
         const filteredDirTree = {};
 
@@ -444,7 +444,7 @@ function processer(context) {
             writeFileSync(processedFilePath, replacedContent);
 
             // update iframe routes
-            const iframeRouteFileInSrc = path.join(codeFolder, `${iframeName}/routes.js`);
+            const iframeRouteFileInSrc = path.join(globalCodeFolder, `${iframeName}/routes.js`);
 
             let content = fs.readFileSync(iframeRouteFileInSrc).toString();
             const loadedName = md5String + '.md';
@@ -577,7 +577,7 @@ function processer(context) {
         const filesMapItem = docInfo.filesMap[relativeDocFilePath];
 
         // create shown vue pages
-        const shownFilePath = path.join(codeFolder, docInfo.docName, 'routes', filesMapItem.md5String + '.vue');
+        const shownFilePath = path.join(globalCodeFolder, docInfo.docName, 'routes', filesMapItem.md5String + '.vue');
 
         // format 'x-x-x' to '[x, x, x]'
         const fileIndex = JSON.stringify(filesMapItem.index.split('-')).replace(/\"/g, "'");
@@ -601,7 +601,7 @@ function processer(context) {
     const removeShownVueFile = (relativeDocFilePath, docInfo) => {
 
         const filesMapItem = docInfo.filesMap[relativeDocFilePath];
-        const shownFilePath = path.join(codeFolder, docInfo.docName, 'routes', filesMapItem.md5String + '.vue');
+        const shownFilePath = path.join(globalCodeFolder, docInfo.docName, 'routes', filesMapItem.md5String + '.vue');
 
         fse.removeSync(shownFilePath);
 
@@ -672,12 +672,12 @@ function processer(context) {
     };
 
     const clearSrcCodeFolder = () => {
-        const srcFiles = fs.readdirSync(codeFolder);
+        const srcFiles = fs.readdirSync(globalCodeFolder);
 
         srcFiles.forEach((filename) => {
            if (!/(components)|(libs)/.test(filename)) {
              try {
-               fse.removeSync(path.join(codeFolder, filename));
+               fse.removeSync(path.join(globalCodeFolder, filename));
              } catch(err) {
 
              }
@@ -687,8 +687,8 @@ function processer(context) {
 
     const getFinalConfigByDocName = (docName) => {
 
-        const globalUserConfig = getConfigInFolder(rootDocFolder);
-        const currentDocUserConfig = getConfigInFolder(path.join(rootDocFolder, docName));
+        const globalUserConfig = getConfigInFolder(globalDocFolder);
+        const currentDocUserConfig = getConfigInFolder(path.join(globalDocFolder, docName));
 
         let config = {};
 
@@ -720,8 +720,8 @@ function processer(context) {
         let themeTemplateFolder = path.join(__dirname, 'theme', config.theme);
         let iframeThemeTemplateFolder = path.join(__dirname, 'theme', config.theme);
 
-        const themeTemplateFolderInDocFolder = path.join(rootDocFolder, 'book-theme', config.theme);
-        const iframeThemeTemplateFolderInDocFolder = path.join(rootDocFolder, 'book-theme', config.theme);
+        const themeTemplateFolderInDocFolder = path.join(globalDocFolder, 'book-theme', config.theme);
+        const iframeThemeTemplateFolderInDocFolder = path.join(globalDocFolder, 'book-theme', config.theme);
 
         // prefer themes in doc
         if (fs.existsSync(themeTemplateFolderInDocFolder)) {
@@ -738,8 +738,8 @@ function processer(context) {
             dirTree: dirTree,
             filesMap: filesMap,
 
-            docFolderWithDocName: path.join(rootDocFolder, docName),
-            processedDocFolderWithDocName: path.join(codeFolder, docName, 'routes', 'processed-doc'),
+            docFolderWithDocName: path.join(globalDocFolder, docName),
+            processedDocFolderWithDocName: path.join(globalCodeFolder, docName, 'routes', 'processed-doc'),
 
             theme: config.theme,
             iframeTheme: config.iframeTheme,
@@ -760,7 +760,7 @@ function processer(context) {
         clearSrcCodeFolder();
         emptyBuildFolder();
 
-        const docNames = fs.readdirSync(rootDocFolder);
+        const docNames = fs.readdirSync(globalDocFolder);
 
         docNames.forEach((docName) => {
             const userConfig = getFinalConfigByDocName(docName);
@@ -790,10 +790,10 @@ function processer(context) {
             }
 
             // create pages
-            copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(codeFolder, docName));
+            copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(globalCodeFolder, docName));
 
             // copy iframe defined in doc
-            copyPageFromThemeTemplate(path.join(__dirname, 'theme', docNameInfo.iframeTheme), path.join(codeFolder, docNameInfo.md5IframeTheme));
+            copyPageFromThemeTemplate(path.join(__dirname, 'theme', docNameInfo.iframeTheme), path.join(globalCodeFolder, docNameInfo.md5IframeTheme));
 
             for (let relativeDocFilePath in docNameInfo.filesMap) {
 
@@ -806,19 +806,19 @@ function processer(context) {
             }
 
             // write route file
-            writeRouteFile(docName, path.join(codeFolder, docName, 'routes.js'));
+            writeRouteFile(docName, path.join(globalCodeFolder, docName, 'routes.js'));
 
             // write filetree.js
-            writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
+            writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
 
-            replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), userConfig.pageName || docName, docName);
-            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme);
+            replaceHtmlKeywords(path.join(globalCodeFolder, docName, 'index.html'), userConfig.pageName || docName, docName);
+            replaceHtmlKeywords(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme);
 
-            fse.copySync(path.join(codeFolder, docName, 'index.html'), path.join(buildFolder, docName + '.html'));
-            fse.copySync(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
+            fse.copySync(path.join(globalCodeFolder, docName, 'index.html'), path.join(globalBuildFolder, docName + '.html'));
+            fse.copySync(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(globalBuildFolder, docNameInfo.md5IframeTheme + '.html'));
 
-            utime(path.join(buildFolder, docName + '.html'));
-            utime(path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
+            utime(path.join(globalBuildFolder, docName + '.html'));
+            utime(path.join(globalBuildFolder, docNameInfo.md5IframeTheme + '.html'));
         });
     };
 
@@ -826,9 +826,9 @@ function processer(context) {
 
         processDocs();
 
-        gulpWatch([path.join(rootDocFolder, '**/*')], (stats) => {
+        gulpWatch([path.join(globalDocFolder, '**/*')], (stats) => {
             const filePath = stats.path;
-            const docName = filePath.replace(rootDocFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
+            const docName = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
 
             const userConfig = getFinalConfigByDocName(docName);
 
@@ -842,7 +842,7 @@ function processer(context) {
                 return;
             }
 
-            const relativeDocFilePath = filePath.replace(rootDocFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
+            const relativeDocFilePath = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
 
             if (watchList[filePath]) {
                 fse.copySync(filePath, watchList[filePath].target);
@@ -866,10 +866,10 @@ function processer(context) {
                     createShownVueFile(docName, relativeDocFilePath);
 
                     // write route file
-                    writeRouteFile(docName, path.join(codeFolder, docName, 'routes.js'));
+                    writeRouteFile(docName, path.join(globalCodeFolder, docName, 'routes.js'));
 
                     // write filetree.js
-                    writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
+                    writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
                     break;
                 case 'unlink':
 
@@ -877,10 +877,10 @@ function processer(context) {
                     docMap[docName] = getDocInfoByDocName(docName);
 
                     // write route file
-                    writeRouteFile(docName, path.join(codeFolder, docName, 'routes.js'));
+                    writeRouteFile(docName, path.join(globalCodeFolder, docName, 'routes.js'));
 
                     // write filetree.js
-                    writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
+                    writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
 
                     // const lastDocNameInfo = docMap[docName];
                     // removeShownVueFile(relativeDocFilePath, lastDocNameInfo);
@@ -893,12 +893,13 @@ function processer(context) {
         const WebpackDevServer = require('webpack-dev-server');
 
         // get default webpack config
-        const webpackConfig = require('./webpack.config')(rootDocFolder, codeFolder, buildFolder);
+        const webpackConfig = require('./webpack.config')(globalDocFolder, globalCodeFolder, globalBuildFolder);
 
         // HMR
         webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
 
-        // webpackConfig.plugins.push(getStringReplaceLoader(replaceMap));
+        console.log(getStringReplaceLoader(globalReplaceMap, globalCurrentEnv));
+        // webpackConfig.plugins.push(getStringReplaceLoader(globalReplaceMap, globalCurrentEnv));
 
         // rules
         webpackConfig.module.rules.forEach((item) => {
@@ -920,7 +921,7 @@ function processer(context) {
 
         console.log('\nwebpack compiling...');
         const server = new WebpackDevServer(webpack(webpackConfig), {
-            contentBase: buildFolder,
+            contentBase: globalBuildFolder,
             hot: true,
             historyApiFallback: true,
             quiet: false,
@@ -947,7 +948,7 @@ function processer(context) {
         processDocs();
 
         // get default webpack config
-        const webpackConfig = require('./webpack.config')(codeFolder, buildFolder);
+        const webpackConfig = require('./webpack.config')(globalCodeFolder, globalBuildFolder);
 
         // rules
         webpackConfig.module.rules.forEach((item) => {
@@ -968,11 +969,11 @@ function processer(context) {
     };
 
     // run
-    if (/dev\-/.test(currentEnv)) {
+    if (/dev\-/.test(globalCurrentEnv)) {
         devHandler();
     }
 
-    if (/build\-/.test(currentEnv)) {
+    if (/build\-/.test(globalCurrentEnv)) {
         buildHandler();
     }
 
@@ -980,7 +981,7 @@ function processer(context) {
 
 gulp.task('dev', () => {
     processer({
-        rootDocFolder: path.join(__dirname, '../docs'),
+        docFolder: path.join(__dirname, '../docs'),
         buildFolder: path.join(__dirname, '../docs/build'),
         debugPort: 9000,
         currentEnv: 'dev-prod'
@@ -989,7 +990,7 @@ gulp.task('dev', () => {
 
 gulp.task('build', () => {
     processer({
-        rootDocFolder: path.join(__dirname, '../docs'),
+        docFolder: path.join(__dirname, '../docs'),
         buildFolder: path.join(__dirname, '../build'),
         currentEnv: 'build-prod'
     });
