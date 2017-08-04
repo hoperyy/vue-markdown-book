@@ -20,7 +20,7 @@ const readdirSync = (dir) => {
 };
 
 // 针对微店发布系统订制的方法，获取版本号
-const getGitlabVersion = () => {
+const getGitVersion = () => {
 
     try {
         let version = git.branch($srcFolder);
@@ -29,17 +29,18 @@ const getGitlabVersion = () => {
     } catch(err) {
 
         // 不报错
-        console.log('当前目录没有检测到 git 分支，如果根据版本号发布，请确保当前目录处于 git 分支中，如: publish/0.0.1。目前分支的版本临时设置为 0.0.0。');
         return '0.0.0';
     }
 
 }
 
+// not working now, to be fixed
 function getStringReplaceLoader(replaceMap, currentEnv){
 
-    const replacements = []
+    const replacements = [];
 
     for(let key in replaceMap){
+
         replacements.push({
             pattern: new RegExp(key.replace(/\$/g, '\\$'), 'g'),
             replacement() {
@@ -49,7 +50,7 @@ function getStringReplaceLoader(replaceMap, currentEnv){
     }
 
     return {
-        test: /\.((vue)|(vuex)|(js)|(jsx)|(html)|(md))*$/,
+        test: /\.((vue)|(vuex)|(js)|(jsx)|(html)|(md))$/,
         exclude: /(node_modules|bower_components)/,
         loader: StringReplacePlugin.replace({
             replacements: replacements
@@ -58,16 +59,25 @@ function getStringReplaceLoader(replaceMap, currentEnv){
 }
 
 // replace
-const globalReplaceMap = {
-    '$$_CDNURL_$$': {
-        'dev-daily': './website/static',
-        'dev-pre': './website/static',
-        'dev-prod': './website/static',
-        'build-daily': './static',
-        'build-daily': './static',
-        'build-daily': './static'
-    }
+const getReplaceMap = () => {
+
+    const gitVersion = getGitVersion();
+
+    const keyWords = {
+        '$$_CDNURL_$$': {
+            'dev-daily': './website/static',
+            'dev-pre': './website/static',
+            'dev-prod': './website/static',
+            'build-daily': './static',
+            'build-daily': './static',
+            'build-daily': './static'
+        }
+    };
+
+    return keyWords;
 };
+
+const globalReplaceMap = getReplaceMap();
 
 function processer(context) {
 
@@ -191,8 +201,6 @@ function processer(context) {
     const replaceHtmlKeywords = (targetFile, pageName, docName) => {
 
         const htmlPath = targetFile;
-
-        console.log(globalReplaceMap['$$_CDNURL_$$'][globalCurrentEnv], globalCurrentEnv);
 
         const newHtmlContent = fs.readFileSync(htmlPath)
                                   .toString()
@@ -852,7 +860,7 @@ function processer(context) {
         // HMR
         webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
 
-        // webpackConfig.module.rules.push(getStringReplaceLoader(globalReplaceMap, globalCurrentEnv));
+        webpackConfig.module.rules.push(getStringReplaceLoader(globalReplaceMap, globalCurrentEnv));
 
         // rules
         webpackConfig.module.rules.forEach((item) => {
