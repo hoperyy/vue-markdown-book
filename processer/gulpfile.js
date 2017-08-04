@@ -698,6 +698,16 @@ function processer(context) {
         docNames.forEach((docName) => {
             const userConfig = getFinalConfigByDocName(docName);
 
+            if (!fs.existsSync(userConfig.themeTemplateFolder)) {
+                console.log('主题: ' + userConfig.theme + ' 不存在');
+                return;
+            }
+
+            if (!fs.existsSync(userConfig.iframeThemeTemplateFolder)) {
+                console.log('iframe 主题: ' + userConfig.iframeTheme + ' 不存在');
+                return;
+            }
+
             // default config
             if (userConfig._shouldNotCreatePagesReg.test('/' + docName + '/')) {
                 return;
