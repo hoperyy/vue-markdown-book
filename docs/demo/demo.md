@@ -31,6 +31,7 @@
 <test>test</test>
 
 <script>
+console.log('$$_CDNURL_$$');
 import test from './test.vue';
 
 export default {

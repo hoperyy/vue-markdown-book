@@ -36,36 +36,25 @@ const getGitlabVersion = () => {
 }
 
 function getStringReplaceLoader(replaceMap, currentEnv){
-    let stringLoaderConfig = {
-        replacements: []
-    };
-    let stringLoader = null;
-    let replacement = {};
 
-    const str2reg = (matchString) => {
-        let re = /\$/g;
-        let filteredMatchString = matchString.replace(re, '\\$');
-
-        return new RegExp(filteredMatchString, 'g');
-    }
+    const replacements = []
 
     for(let key in replaceMap){
-        replacement = {
-            pattern: str2reg(key),
-            replacement: function () {
+        replacements.push({
+            pattern: new RegExp(key.replace(/\$/g, '\\$'), 'g'),
+            replacement() {
                 return replaceMap[key][currentEnv];
             }
-        }
-        stringLoaderConfig.replacements.push(replacement);
+        });
     }
 
-    stringLoader = {
-        test: /\.[(vue)(vuex)(js)(jsx)(html)]*$/,
+    return {
+        test: /\.((vue)|(vuex)|(js)|(jsx)|(html)|(md))*$/,
         exclude: /(node_modules|bower_components)/,
-        loader: StringReplacePlugin.replace(stringLoaderConfig)
+        loader: StringReplacePlugin.replace({
+            replacements: replacements
+        })
     };
-
-    return stringLoader;
 }
 
 // replace
@@ -226,41 +215,6 @@ function processer(context) {
             }
 
             fse.copySync(path.join(srcFolder, filename), path.join(targetFolder, filename));
-        });
-
-        readdirSync(targetFolder).forEach((filePath) => {
-            utime(filePath);
-        });
-
-    };
-
-    const copyIframeFromDemo = (docInfo) => {
-
-        const docName = docInfo.docName;
-        const iframeTheme = docInfo.iframeTheme;
-        const themeTemplateFolder = docInfo.themeTemplateFolder;
-        const iframeThemeTemplateFolder = docInfo.themeTemplateFolder;
-        const targetFolder = path.join(globalCodeFolder, docName);
-
-        if (fs.existsSync(targetFolder)) {
-          fse.removeSync(targetFolder);
-        }
-
-        fs.readdirSync(themeTemplateFolder).forEach((filename) => {
-            if (filename === 'routes-template') {
-                return;
-            }
-
-            fse.copySync(path.join(themeTemplateFolder, filename), path.join(targetFolder, filename));
-        });
-
-        // copy iframe template for this doc folder
-        fs.readdirSync(iframeThemeTemplateFolder).forEach((filename) => {
-            if (filename === 'routes-template') {
-                return;
-            }
-
-            fse.copySync(path.join(iframeThemeTemplateFolder, filename), path.join(path.join(globalCodeFolder, docInfo.md5IframeTheme), filename));
         });
 
         readdirSync(targetFolder).forEach((filePath) => {
@@ -898,17 +852,16 @@ function processer(context) {
         // HMR
         webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
 
-        console.log(getStringReplaceLoader(globalReplaceMap, globalCurrentEnv));
-        // webpackConfig.plugins.push(getStringReplaceLoader(globalReplaceMap, globalCurrentEnv));
+        // webpackConfig.module.rules.push(getStringReplaceLoader(globalReplaceMap, globalCurrentEnv));
 
         // rules
         webpackConfig.module.rules.forEach((item) => {
 
-            if (item.test.test('.css')) {
+            if (item.test.toString() === /\.css$/.toString()) {
                 item.use = ['vue-style-loader', 'css-loader', 'postcss-loader'];
-            } else if (item.test.test('.less')) {
+            } else if (item.test.toString() === /\.less$/.toString()) {
                 item.use = ['vue-style-loader', 'css-loader', 'postcss-loader', 'less-loader'];
-            } else if (item.test.test('.vue')) {
+            } else if (item.test.toString() === /\.vue$/.toString()) {
                 item.options.loaders.css = ['vue-style-loader', 'css-loader', 'postcss-loader'];
                 item.options.loaders.less = ['vue-style-loader', 'css-loader', 'postcss-loader', 'less-loader'];
             }
