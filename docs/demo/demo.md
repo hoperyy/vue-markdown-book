@@ -4,6 +4,8 @@
 
   就像这个列表项一样
 
+  \$\$\_CDNURL\_\$\$
+
 + 可以用 markdown 语法插入图片，但图片路径不要有中文
 
   ![img](./assets/markdown-img-paste-20170726194904174.png)
@@ -31,7 +33,7 @@
 <test>test</test>
 
 <script>
-console.log('$$_CDNURL_$$');
+console.log('\$\$\_CDNURL\_\$\$');
 import test from './test.vue';
 
 export default {
