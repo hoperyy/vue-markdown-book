@@ -34,9 +34,11 @@
   },
   "dependencies": {
     "directory-tree": "^2.0.0",
+    "git-rev-sync": "^1.9.1",
     "gulp-watch": "^4.3.11",
     "md5": "^2.2.1",
     "readdir-enhanced": "^1.5.2",
-    "relative": "^3.0.2"
+    "relative": "^3.0.2",
+    "string-replace-webpack-plugin": "^0.1.3"
   }
 }
