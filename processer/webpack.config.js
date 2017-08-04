@@ -4,6 +4,7 @@ const fs = require('fs');
 
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const StringReplacePlugin = require('string-replace-webpack-plugin');
 
 function getEntry(root) {
 
@@ -128,7 +129,8 @@ module.exports = (docFolder, srcCodeFolder, buildFolder) => {
             new ExtractTextPlugin({
                 filename: '[name].css',
                 disable: false
-            })
+            }),
+            new StringReplacePlugin()
         ]
 		};
 

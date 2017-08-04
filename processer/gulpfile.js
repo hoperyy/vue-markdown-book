@@ -5,8 +5,10 @@ const gulp = require('gulp');
 const gulpWatch = require('gulp-watch');
 const fse = require('fs-extra');
 const md5 = require('md5');
-
 const relative = require('relative');
+const git = require('git-rev-sync');
+
+const StringReplacePlugin = require('string-replace-webpack-plugin');
 
 const readdirTree = require('directory-tree');
 const readdirEnhanced = require('readdir-enhanced').sync;
@@ -17,7 +19,70 @@ const readdirSync = (dir) => {
     });
 };
 
+// 针对微店发布系统订制的方法，获取版本号
+const getGitlabVersion = () => {
+
+    try {
+        let version = git.branch($srcFolder);
+        version = version.indexOf('publish/') > -1 ? version.replace(/publish\//,'') : '0.0.0';
+        return version;
+    } catch(err) {
+
+        // 不报错
+        console.log('当前目录没有检测到 git 分支，如果根据版本号发布，请确保当前目录处于 git 分支中，如: publish/0.0.1。目前分支的版本临时设置为 0.0.0。');
+        return '0.0.0';
+    }
+
+}
+
+function getStringReplaceLoader(replaceMap, currentEnv){
+    let stringLoaderConfig = {
+        replacements: []
+    };
+    let stringLoader = null;
+    let replacement = {};
+
+    const str2reg = (matchString) => {
+        let re = /\$/g;
+        let filteredMatchString = matchString.replace(re, '\\$');
+
+        return new RegExp(filteredMatchString, 'g');
+    }
+
+    for(let key in replaceMap){
+        replacement = {
+            pattern: str2reg(key),
+            replacement: function () {
+                return replaceMap[key][currentEnv];
+            }
+        }
+        stringLoaderConfig.replacements.push(replacement);
+    }
+
+    stringLoader = {
+        test: /\.[(vue)(vuex)(js)(jsx)(html)]*$/,
+        exclude: /(node_modules|bower_components)/,
+        loader: StringReplacePlugin.replace(stringLoaderConfig)
+    };
+
+    return stringLoader;
+}
+
+// replace
+const replaceMap = {
+    '$$_CDNURL_$$': {
+        'dev-daily': './website/static',
+        'dev-pre': './website/static',
+        'dev-prod': './website/static',
+        'build-daily': './static',
+        'build-daily': './static',
+        'build-daily': './static'
+    }
+};
+
 function processer(context) {
+
+    const currentEnv = context.currentEnv;
 
     // can be replaced
     const rootDocFolder = context.rootDocFolder;
@@ -134,15 +199,17 @@ function processer(context) {
 
     };
 
-    const replaceHtmlKeywords = (targetFile, pageName, docName, currentEnv) => {
+    const replaceHtmlKeywords = (targetFile, pageName, docName) => {
 
         const htmlPath = targetFile;
+
+        console.log(replaceMap['$$_CDNURL_$$'][currentEnv], currentEnv);
 
         const newHtmlContent = fs.readFileSync(htmlPath)
                                   .toString()
                                   .replace(/\$\$\_PAGENAME\_\$\$/g, pageName)
                                   .replace(/\$\$\_DOCNAME\_\$\$/g, docName)
-                                  .replace(/\$\$\_CDNURL\_\$\$/g, currentEnv === 'is-build' ? './static' : './website/static');
+                                  .replace(/\$\$\_CDNURL\_\$\$/g, replaceMap['$$_CDNURL_$$'][currentEnv]);
 
         writeFileSync(htmlPath, newHtmlContent);
     };
@@ -689,7 +756,7 @@ function processer(context) {
         return finalConfig;
     };
 
-    const processDocs = (env) => {
+    const processDocs = () => {
         clearSrcCodeFolder();
         emptyBuildFolder();
 
@@ -744,8 +811,8 @@ function processer(context) {
             // write filetree.js
             writeFileTreeJsFile(docName, path.join(path.join(codeFolder, docName, 'file-tree.js')));
 
-            replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), userConfig.pageName || docName, docName, 'is-dev');
-            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme, env);
+            replaceHtmlKeywords(path.join(codeFolder, docName, 'index.html'), userConfig.pageName || docName, docName);
+            replaceHtmlKeywords(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme);
 
             fse.copySync(path.join(codeFolder, docName, 'index.html'), path.join(buildFolder, docName + '.html'));
             fse.copySync(path.join(codeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(buildFolder, docNameInfo.md5IframeTheme + '.html'));
@@ -755,11 +822,9 @@ function processer(context) {
         });
     };
 
-    const handlers = {};
+    const devHandler = () => {
 
-    handlers['dev'] = () => {
-
-        processDocs('is-dev');
+        processDocs();
 
         gulpWatch([path.join(rootDocFolder, '**/*')], (stats) => {
             const filePath = stats.path;
@@ -833,6 +898,8 @@ function processer(context) {
         // HMR
         webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
 
+        // webpackConfig.plugins.push(getStringReplaceLoader(replaceMap));
+
         // rules
         webpackConfig.module.rules.forEach((item) => {
 
@@ -875,9 +942,9 @@ function processer(context) {
     };
 
 
-    handlers['build'] = () => {
+    const buildHandler = () => {
 
-        processDocs('is-build');
+        processDocs();
 
         // get default webpack config
         const webpackConfig = require('./webpack.config')(codeFolder, buildFolder);
@@ -901,7 +968,13 @@ function processer(context) {
     };
 
     // run
-    handlers[context.currentEnv]();
+    if (/dev\-/.test(currentEnv)) {
+        devHandler();
+    }
+
+    if (/build\-/.test(currentEnv)) {
+        buildHandler();
+    }
 
 }
 
@@ -910,7 +983,7 @@ gulp.task('dev', () => {
         rootDocFolder: path.join(__dirname, '../docs'),
         buildFolder: path.join(__dirname, '../docs/build'),
         debugPort: 9000,
-        currentEnv: 'dev'
+        currentEnv: 'dev-prod'
     });
 });
 
@@ -918,6 +991,6 @@ gulp.task('build', () => {
     processer({
         rootDocFolder: path.join(__dirname, '../docs'),
         buildFolder: path.join(__dirname, '../build'),
-        currentEnv: 'build'
+        currentEnv: 'build-prod'
     });
 });
