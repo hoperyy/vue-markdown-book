@@ -653,8 +653,8 @@ function processer(context) {
         let themeTemplateFolder = path.join(__dirname, 'theme', config.theme);
         let iframeThemeTemplateFolder = path.join(__dirname, 'theme', config.theme);
 
-        let themeTemplateFolderInDocFolder = path.join(rootDocFolder, 'book-theme', config.theme);
-        let iframeThemeTemplateFolderInDocFolder = path.join(rootDocFolder, 'book-theme', config.theme);
+        const themeTemplateFolderInDocFolder = path.join(rootDocFolder, 'book-theme', config.theme);
+        const iframeThemeTemplateFolderInDocFolder = path.join(rootDocFolder, 'book-theme', config.theme);
 
         // prefer themes in doc
         if (fs.existsSync(themeTemplateFolderInDocFolder)) {
@@ -698,16 +698,6 @@ function processer(context) {
         docNames.forEach((docName) => {
             const userConfig = getFinalConfigByDocName(docName);
 
-            if (!fs.existsSync(userConfig.themeTemplateFolder)) {
-                console.log('主题: ' + userConfig.theme + ' 不存在');
-                return;
-            }
-
-            if (!fs.existsSync(userConfig.iframeThemeTemplateFolder)) {
-                console.log('iframe 主题: ' + userConfig.iframeTheme + ' 不存在');
-                return;
-            }
-
             // default config
             if (userConfig._shouldNotCreatePagesReg.test('/' + docName + '/')) {
                 return;
@@ -721,6 +711,16 @@ function processer(context) {
             const docNameInfo = getDocInfoByDocName(docName);
 
             docMap[docName] = docNameInfo;
+
+            if (!fs.existsSync(docNameInfo.themeTemplateFolder)) {
+                throw Error('主题: ' + docNameInfo.theme + ' 不存在');
+                return;
+            }
+
+            if (!fs.existsSync(docNameInfo.iframeThemeTemplateFolder)) {
+                throw Error('iframe 主题: ' + docNameInfo.iframeTheme + ' 不存在');
+                return;
+            }
 
             // create pages
             copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(codeFolder, docName));
