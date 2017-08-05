@@ -236,10 +236,10 @@ function processer(context) {
 
         const currentDocFolder = path.join(globalDocFolder, docName);
 
-        const filteredDirTree = {};
-
         // get dir tree
-        const dirTree = readdirTree(currentDocFolder);
+        const dirTree = readdirTree(currentDocFolder, {
+            exclude: config._shouldNotShowReg
+        });
 
         // format dir tree path
         const formateDirTree = (tree, fileIndex) => {
@@ -416,11 +416,14 @@ function processer(context) {
                 content = `module.exports = [];`;
             }
 
+            console.log(iframeRouteFileInSrc, targetFilePath, md5String);
+
             if (content.indexOf(md5String) === -1) {
-                content = `import doc_${md5String} from '${relative(iframeRouteFileInSrc, targetFilePath)}';\n` + content;
+                const importName = `doc_${md5String}`;
+                content = `import ${importName} from '${relative(iframeRouteFileInSrc, targetFilePath)}';\n` + content;
                 content = content.replace(
                   'module.exports = [',
-                  `module.exports = [\n{\n  path: '/${md5String}',\n  component: doc_${md5String}\n},\n`
+                  `module.exports = [\n{\n  path: '/${md5String}',\n  component: ${importName}\n},\n`
                 );
 
                 writeFileSync(iframeRouteFileInSrc, content);
@@ -430,7 +433,7 @@ function processer(context) {
     };
 
     // get files map: {'/xx/xx..': {...}}
-    const getFilesMapByDirTree = (dirTree) => {
+    const getFilesMapByDirTree = (config, dirTree) => {
 
         const filesMap = {};
 
@@ -525,8 +528,6 @@ function processer(context) {
             }
         }
 
-        return processedFilePath;
-
     };
 
     const createShownVueFile = (docName, relativeDocFilePath) => {
@@ -556,6 +557,7 @@ function processer(context) {
 
         fse.ensureFileSync(shownFilePath);
 
+        console.log('create shown file: ', shownFilePath);
         writeFileSync(shownFilePath, shownVueContent);
 
     };
@@ -620,6 +622,7 @@ function processer(context) {
 
         routesContent += `\n\nmodule.exports = [\n`;
         for (relativeDocFilePath in filesMap) {
+            console.log('~~~ writeRouteFile: ', filesMap[relativeDocFilePath].md5String, relativeDocFilePath);
             routesContent += `{
               path: '${filesMap[relativeDocFilePath].routerPath}',
               component: ${'doc_' + filesMap[relativeDocFilePath].md5String}
@@ -677,7 +680,7 @@ function processer(context) {
         const config = getFinalConfigByDocName(docName);
 
         const dirTree = getFormatedDirTree(docName, config);
-        const filesMap = getFilesMapByDirTree(dirTree);
+        const filesMap = getFilesMapByDirTree(config, dirTree);
 
         let themeTemplateFolder = path.join(__dirname, 'theme', config.theme);
         let iframeThemeTemplateFolder = path.join(__dirname, 'theme', config.theme);
