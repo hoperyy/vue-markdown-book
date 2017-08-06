@@ -1,5 +1,5 @@
 <template>
-  <div>overlay9</div>
+  <div>overlay</div>
 </template>
 
 <script>

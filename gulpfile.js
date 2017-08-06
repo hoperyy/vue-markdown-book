@@ -369,7 +369,7 @@ function processer(context) {
 
             }
 
-            // // rewrite processedFilePath（replace iframe-doc to iframe）
+            // rewrite file（replace iframe-doc to iframe）
             const replaced = matchedItem
                               .replace('<iframe-doc', '<iframe')
                               .replace('</iframe-doc>', '</iframe>')
@@ -469,7 +469,7 @@ function processer(context) {
         };
     };
 
-    const checkAndProcessDocFile = (docName, relativeDocFilePath) => {
+    const copyAndProcessDocFile = (docName, relativeDocFilePath) => {
 
         const docNameInfo = docMap[docName];
         const md5IframeTheme = docNameInfo.md5IframeTheme;
@@ -499,7 +499,7 @@ function processer(context) {
 
     };
 
-    const createShownVueFile = (docName, relativeDocFilePath) => {
+    const createPageFile = (docName, relativeDocFilePath) => {
 
         const docInfo = docMap[docName];
 
@@ -548,20 +548,6 @@ function processer(context) {
 
         fse.removeSync(copiedDocFilePath);
         fse.removeSync(processedFilePath);
-    };
-
-    // create shown-vue in src for sources to load
-    const createShownVue = (docName) => {
-
-      const docInfo = docMap[docName];
-
-      const filesMap = docInfo.filesMap;
-
-      for (let relativeDocFilePath in filesMap) {
-          checkAndProcessDocFile(docInfo, relativeDocFilePath);
-          createShownVueFile(docName, relativeDocFilePath);
-      }
-
     };
 
     // create file-tree.js
@@ -736,10 +722,10 @@ function processer(context) {
 
             for (let relativeDocFilePath in docNameInfo.filesMap) {
 
-                checkAndProcessDocFile(docName, relativeDocFilePath);
+                copyAndProcessDocFile(docName, relativeDocFilePath);
 
                 // create shown vue file
-                createShownVueFile(docName, relativeDocFilePath);
+                createPageFile(docName, relativeDocFilePath);
 
             }
 
@@ -790,8 +776,7 @@ function processer(context) {
 
             switch(stats.event) {
                 case 'change':
-                    // fse.copySync(filePath, copyTo);
-                    checkAndProcessDocFile(docName, relativeDocFilePath);
+                    copyAndProcessDocFile(docName, relativeDocFilePath);
                     break;
                 case 'add':
 
@@ -799,10 +784,10 @@ function processer(context) {
                     docMap[docName] = getDocInfoByDocName(docName);
 
                     // copy doc file
-                    checkAndProcessDocFile(docName, relativeDocFilePath);
+                    copyAndProcessDocFile(docName, relativeDocFilePath);
 
                     // create shown vue file
-                    createShownVueFile(docName, relativeDocFilePath);
+                    createPageFile(docName, relativeDocFilePath);
 
                     // write route file
                     writeRouteFile(docName, path.join(globalCodeFolder, docName, 'routes.js'));
