@@ -1,10 +1,8 @@
 ### Overlay
 
-#### 遮罩层组件
+#### 遮罩层组件3
 
-##### 用法一：复制代码
-
-##### 用法二：使用标签（`<overlay></overlay>`）
+##### 用法一：使用 vue 标签（`<overlay></overlay>`）
 
 +   属性
 
@@ -56,7 +54,7 @@
     </style>
     ```
 
-##### 用法三：使用 `prototype`（`import '@vdian/h5-overlay/prototype.js'`）
+##### 用法二：使用 `prototype`（`import '@vdian/h5-overlay/prototype.js'`）
 
 +   显示 Overlay：`this.$overlay.show(config)`
 
@@ -99,3 +97,5 @@
     <style lang="less" scoped>
     </style>
     ```
+
+<iframe src="/doc-iframe.html#/9f468333548487e0b039c0f44e991e69"></iframe>

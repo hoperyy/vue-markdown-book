@@ -95,8 +95,8 @@ function processer(context) {
         theme: 'default',
         iframeTheme: 'iframe-default',
 
-        _shouldNotCreatePagesReg: /\/((book\-themes)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js))/i,
-        _shouldNotShowReg: /\/((book\-themes)|(iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(package\.json)|(package-lock)|(\.git)|(doc\-theme)|(bookconfig\.js)|(assets2))/i,
+        // _shouldNotCreatePagesReg: /((book\-themes)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(\.git)|(doc\-theme))/i,
+        _shouldNotShowReg: /((book\-themes)|(iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(\.git)|(doc\-theme)|(assets))/i,
         shouldNotShowExtnameReg: /\.((md))$/i
     };
 
@@ -126,19 +126,17 @@ function processer(context) {
         return userConfig;
     };
 
-    const shouldNotShow = (filePath, config) => {
+    const checkShouldNotShow = (docName, str) => {
 
-        if (!/^\//.test(filePath)) {
-            filePath = '/' + filePath;
-        }
+        const userConfig = mergeUserConfigByDocName(docName);
 
         // default config
-        if (config._shouldNotShowReg.test(filePath)) {
+        if (userConfig._shouldNotShowReg.test(str)) {
             return true;
         }
 
         // user config
-        if (config.shouldNotShowReg && config.shouldNotShowReg.test(filePath)) {
+        if (userConfig.shouldNotShowReg && userConfig.shouldNotShowReg.test(str)) {
             return true;
         }
 
@@ -179,7 +177,7 @@ function processer(context) {
                 const filePath = path.join(globalCodeFolder, foldername, subname);
                 const subStats = fs.statSync(filePath);
 
-                if (subStats.isFile() && /\.html$/.test(filePath) && !shouldNotShow(filePath, docName)) {
+                if (subStats.isFile() && /\.html$/.test(filePath) && !checkShouldNotShow(docName, filePath)) {
                     try {
                         fse.copySync(path.join(globalCodeFolder, foldername, subname), path.join(globalBuildFolder, foldername + '.html'));
                     } catch(err) {
@@ -225,13 +223,13 @@ function processer(context) {
     };
 
     // get dir tree
-    const getFormatedDirTree = (docName, config) => {
+    const getFormatedDirTree = (docName, mergedConfig) => {
 
         const currentDocFolder = path.join(globalDocFolder, docName);
 
         // get dir tree
         const dirTree = readdirTree(currentDocFolder, {
-            exclude: config._shouldNotShowReg
+            exclude: mergedConfig._shouldNotShowReg
         });
 
         // format dir tree path
@@ -248,10 +246,10 @@ function processer(context) {
               tree.path = tree.path.replace(currentDocFolder, '');
 
               // should be exluded
-              if (shouldNotShow(item.path, config)) {
+              if (checkShouldNotShow(docName, item.path)) {
                   item.shouldNotShow = true;
               }
-              if (shouldNotShow(tree.path, config)) {
+              if (checkShouldNotShow(docName, tree.path)) {
                   tree.shouldNotShow = true;
               }
 
@@ -278,7 +276,7 @@ function processer(context) {
               tree.md5String = md5(tree.absolutePath);
 
               // item routerPath
-              item.routerPath = item.path.replace(config.shouldNotShowExtnameReg, '');
+              item.routerPath = item.path.replace(mergedConfig.shouldNotShowExtnameReg, '');
 
               // add index
               item.index = fileIndex + '-' + index;
@@ -407,7 +405,7 @@ function processer(context) {
     // get files map: {'/xx/xx..': {...}}
     const getFilesMapByDirTree = (config, dirTree) => {
 
-        const filesMap = {};
+        const shownFilesMap = {};
 
         const act = (tree) => {
 
@@ -416,7 +414,7 @@ function processer(context) {
           }
           tree.children.forEach((item, index) => {
 
-              filesMap[item.path] = item;
+              shownFilesMap[item.path] = item;
 
               if (item.children) {
                   act(item, item.index);
@@ -428,7 +426,7 @@ function processer(context) {
 
       act(dirTree);
 
-      return filesMap;
+      return shownFilesMap;
     };
 
     const transforFilePath = (docName, relativeDocFilePath) => {
@@ -469,8 +467,18 @@ function processer(context) {
         };
     };
 
-    const copyAndProcessDocFile = (docName, relativeDocFilePath) => {
+    const copyDocFile = (docName, relativeDocFilePath) => {
+        const transforedFilePath = transforFilePath(docName, relativeDocFilePath);
+        const docFilePath = transforedFilePath.docFilePath;
+        const copiedDocFilePath = transforedFilePath.copiedDocFilePath;
+        const processedFilePath = transforedFilePath.processedFilePath;
 
+        // copy
+        fse.copySync(docFilePath, copiedDocFilePath);
+        utime(copiedDocFilePath);
+    };
+
+    const processDocFile = (docName, relativeDocFilePath) => {
         const docNameInfo = docMap[docName];
         const md5IframeTheme = docNameInfo.md5IframeTheme;
 
@@ -478,9 +486,6 @@ function processer(context) {
         const docFilePath = transforedFilePath.docFilePath;
         const copiedDocFilePath = transforedFilePath.copiedDocFilePath;
         const processedFilePath = transforedFilePath.processedFilePath;
-
-        fse.copySync(docFilePath, copiedDocFilePath);
-        utime(copiedDocFilePath);
 
         // step: create new file in src/** by file type
         if (fs.statSync(docFilePath).isFile()) {
@@ -496,7 +501,6 @@ function processer(context) {
                 processIframeDoc(docFilePath, copiedDocFilePath, md5IframeTheme);
             }
         }
-
     };
 
     const createPageFile = (docName, relativeDocFilePath) => {
@@ -506,13 +510,13 @@ function processer(context) {
         const transforedFilePath = transforFilePath(docInfo.docName, relativeDocFilePath);
         const processedFilePath = transforedFilePath.processedFilePath;
 
-        const filesMapItem = docInfo.filesMap[relativeDocFilePath];
+        const shownFilesMapItem = docInfo.shownFilesMap[relativeDocFilePath];
 
         // create shown vue pages
-        const shownFilePath = path.join(globalCodeFolder, docInfo.docName, 'routes', 'route-' + filesMapItem.md5String + '.vue');
+        const shownFilePath = path.join(globalCodeFolder, docInfo.docName, 'routes', 'route-' + shownFilesMapItem.md5String + '.vue');
 
         // format 'x-x-x' to '[x, x, x]'
-        const fileIndex = JSON.stringify(filesMapItem.index.split('-')).replace(/\"/g, "'");
+        const fileIndex = JSON.stringify(shownFilesMapItem.index.split('-')).replace(/\"/g, "'");
 
         let shownVueContent = '';
         if (fs.statSync(transforedFilePath.docFilePath).isFile()) {
@@ -532,8 +536,8 @@ function processer(context) {
 
     const removeShownVueFile = (relativeDocFilePath, docInfo) => {
 
-        const filesMapItem = docInfo.filesMap[relativeDocFilePath];
-        const shownFilePath = path.join(globalCodeFolder, docInfo.docName, 'routes', filesMapItem.md5String + '.vue');
+        const shownFilesMapItem = docInfo.shownFilesMap[relativeDocFilePath];
+        const shownFilePath = path.join(globalCodeFolder, docInfo.docName, 'routes', shownFilesMapItem.md5String + '.vue');
 
         fse.removeSync(shownFilePath);
 
@@ -565,20 +569,20 @@ function processer(context) {
     const writeRouteFile = (docName, targetRouteFile) => {
 
         const docInfo = docMap[docName];
-        const filesMap = docInfo.filesMap;
+        const shownFilesMap = docInfo.shownFilesMap;
 
         // 创建 routes.js
         const routesFilePath = targetRouteFile;
         let routesContent = ``;
-        for (relativeDocFilePath in filesMap) {
-            routesContent += `\nimport ${'doc_' + filesMap[relativeDocFilePath].md5String} from './routes/route-${filesMap[relativeDocFilePath].md5String}.vue';`;
+        for (relativeDocFilePath in shownFilesMap) {
+            routesContent += `\nimport ${'doc_' + shownFilesMap[relativeDocFilePath].md5String} from './routes/route-${shownFilesMap[relativeDocFilePath].md5String}.vue';`;
         }
 
         routesContent += `\n\nmodule.exports = [\n`;
-        for (relativeDocFilePath in filesMap) {
+        for (relativeDocFilePath in shownFilesMap) {
             routesContent += `{
-              path: '${filesMap[relativeDocFilePath].routerPath}',
-              component: ${'doc_' + filesMap[relativeDocFilePath].md5String}
+              path: '${shownFilesMap[relativeDocFilePath].routerPath}',
+              component: ${'doc_' + shownFilesMap[relativeDocFilePath].md5String}
             },`;
         }
         routesContent = routesContent.replace(/\,$/, '');
@@ -633,7 +637,7 @@ function processer(context) {
         const config = mergeUserConfigByDocName(docName);
 
         const dirTree = getFormatedDirTree(docName, config);
-        const filesMap = getFilesMapByDirTree(config, dirTree);
+        const shownFilesMap = getFilesMapByDirTree(config, dirTree);
 
         let themeTemplateFolder = path.join(globalThemeFolder, config.theme);
         let iframeThemeTemplateFolder = path.join(globalThemeFolder, config.theme);
@@ -654,7 +658,7 @@ function processer(context) {
             docName: docName,
 
             dirTree: dirTree,
-            filesMap: filesMap,
+            shownFilesMap: shownFilesMap,
 
             docFolderWithDocName: path.join(globalDocFolder, docName),
             processedDocFolderWithDocName: path.join(globalCodeFolder, docName, 'routes', 'copied-doc'),
@@ -684,18 +688,12 @@ function processer(context) {
         docNames.forEach((docName) => {
             const userConfig = mergeUserConfigByDocName(docName);
 
-            // default config
-            if (userConfig._shouldNotCreatePagesReg.test('/' + docName + '/')) {
-                return;
-            }
-
-            // user config
-            if (userConfig.shouldNotCreatePagesReg && userConfig.shouldNotCreatePagesReg.test('/' + docName + '/')) {
-                return;
-            }
-
             // if docName is a file, return
             if (!fs.statSync(path.join(globalDocFolder, docName)).isDirectory()) {
+                return;
+            }
+
+            if (checkShouldNotShow(docName, docName)) {
                 return;
             }
 
@@ -725,11 +723,11 @@ function processer(context) {
                 utime(filePath);
             });
 
-            for (let relativeDocFilePath in docNameInfo.filesMap) {
+            for (let relativeDocFilePath in docNameInfo.shownFilesMap) {
 
-                copyAndProcessDocFile(docName, relativeDocFilePath);
+                processDocFile(docName, relativeDocFilePath);
 
-                // create shown vue file
+                // create page file
                 createPageFile(docName, relativeDocFilePath);
 
             }
@@ -760,17 +758,6 @@ function processer(context) {
             const docName = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
 
             const userConfig = mergeUserConfigByDocName(docName);
-
-            // default config
-            if (userConfig._shouldNotCreatePagesReg.test('/' + docName + '/')) {
-                return;
-            }
-
-            // user config
-            if (userConfig.shouldNotCreatePagesReg && userConfig.shouldNotCreatePagesReg.test('/' + docName + '/')) {
-                return;
-            }
-
             const relativeDocFilePath = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
 
             if (iframeWatchList[filePath]) {
@@ -781,28 +768,43 @@ function processer(context) {
 
             switch(stats.event) {
                 case 'change':
-                    copyAndProcessDocFile(docName, relativeDocFilePath);
+                    if (checkShouldNotShow(docName, relativeDocFilePath)) {
+                        // console.log('文件改变，仅复制: ', relativeDocFilePath);
+                        copyDocFile(docName, relativeDocFilePath);
+                    } else {
+                        // console.log('文件改变，复制及处理: ', relativeDocFilePath);
+                        copyDocFile(docName, relativeDocFilePath);
+                        processDocFile(docName, relativeDocFilePath);
+                    }
+
                     break;
                 case 'add':
 
-                    // reget dir tree and filesMap
-                    docMap[docName] = getDocInfoByDocName(docName);
+                    if (checkShouldNotShow(docName, relativeDocFilePath)) {
+                        // console.log('文件新增，仅复制: ', relativeDocFilePath);
+                        copyDocFile(docName, relativeDocFilePath);
+                    } else {
+                        // console.log('文件新增，复制及处理: ', relativeDocFilePath);
+                        // reget dir tree and shownFilesMap
+                        docMap[docName] = getDocInfoByDocName(docName);
 
-                    // copy doc file
-                    copyAndProcessDocFile(docName, relativeDocFilePath);
+                        // copy doc file
+                        copyDocFile(docName, relativeDocFilePath);
+                        processDocFile(docName, relativeDocFilePath);
 
-                    // create shown vue file
-                    createPageFile(docName, relativeDocFilePath);
+                        // create shown vue file
+                        createPageFile(docName, relativeDocFilePath);
 
-                    // write route file
-                    writeRouteFile(docName, path.join(globalCodeFolder, docName, 'routes.js'));
+                        // write route file
+                        writeRouteFile(docName, path.join(globalCodeFolder, docName, 'routes.js'));
 
-                    // write filetree.js
-                    writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
+                        // write filetree.js
+                        writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
+                    }
                     break;
                 case 'unlink':
 
-                    // reget dir tree and filesMap
+                    // reget dir tree and shownFilesMap
                     docMap[docName] = getDocInfoByDocName(docName);
 
                     // write route file
