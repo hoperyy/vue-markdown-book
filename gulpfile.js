@@ -694,6 +694,11 @@ function processer(context) {
                 return;
             }
 
+            // if docName is a file, return
+            if (!fs.statSync(path.join(globalDocFolder, docName)).isDirectory()) {
+                return;
+            }
+
             const docNameInfo = getDocInfoByDocName(docName);
 
             docMap[docName] = docNameInfo;
