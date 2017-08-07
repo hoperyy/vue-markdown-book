@@ -95,7 +95,6 @@ function processer(context) {
         theme: 'default',
         iframeTheme: 'iframe-default',
 
-        // _shouldNotCreatePagesReg: /((book\-themes)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(\.git)|(doc\-theme))/i,
         _shouldNotShowReg: /((book\-themes)|(iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(\.git)|(doc\-theme)|(assets))/i,
         shouldNotShowExtnameReg: /\.((md))$/i
     };
@@ -231,6 +230,8 @@ function processer(context) {
         const dirTree = readdirTree(currentDocFolder, {
             exclude: mergedConfig._shouldNotShowReg
         });
+
+        // console.log('~~~~~ readdir tree: ', dirTree, docName);
 
         // format dir tree path
         const formateDirTree = (tree, fileIndex) => {
@@ -534,26 +535,6 @@ function processer(context) {
 
     };
 
-    const removeShownVueFile = (relativeDocFilePath, docInfo) => {
-
-        const shownFilesMapItem = docInfo.shownFilesMap[relativeDocFilePath];
-        const shownFilePath = path.join(globalCodeFolder, docInfo.docName, 'routes', shownFilesMapItem.md5String + '.vue');
-
-        fse.removeSync(shownFilePath);
-
-    };
-
-    const removeDocFile = (relativeDocFilePath, docInfo) => {
-
-        const transforedFilePath = transforFilePath(docInfo.docName, relativeDocFilePath);
-
-        const copiedDocFilePath = transforedFilePath.copiedDocFilePath;
-        const processedFilePath = transforedFilePath.processedFilePath;
-
-        fse.removeSync(copiedDocFilePath);
-        fse.removeSync(processedFilePath);
-    };
-
     // create file-tree.js
     const writeFileTreeJsFile = (docName, targetFile) => {
 
@@ -754,6 +735,7 @@ function processer(context) {
         processDocs();
 
         gulpWatch([path.join(globalDocFolder, '**/*')], (stats) => {
+
             const filePath = stats.path;
             const docName = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
 
@@ -764,15 +746,24 @@ function processer(context) {
                 fse.copySync(filePath, iframeWatchList[filePath].target);
             }
 
+            if (checkShouldNotShow(docName, filePath)) {
+                return;
+            }
+
+            // return if this is not in doc dir, such as 'bookconfig.js'
+            if (!/\//.test(filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, ''))) {
+                return;
+            }
+
             let docNameInfo = getDocInfoByDocName(docName);
 
             switch(stats.event) {
                 case 'change':
                     if (checkShouldNotShow(docName, relativeDocFilePath)) {
-                        // console.log('文件改变，仅复制: ', relativeDocFilePath);
+                        console.log('文件改变，仅复制: ', relativeDocFilePath);
                         copyDocFile(docName, relativeDocFilePath);
                     } else {
-                        // console.log('文件改变，复制及处理: ', relativeDocFilePath);
+                        console.log('文件改变，复制及处理: ', relativeDocFilePath);
                         copyDocFile(docName, relativeDocFilePath);
                         processDocFile(docName, relativeDocFilePath);
                     }
@@ -812,10 +803,6 @@ function processer(context) {
 
                     // write filetree.js
                     writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
-
-                    // const lastDocNameInfo = docMap[docName];
-                    // removeShownVueFile(relativeDocFilePath, lastDocNameInfo);
-                    // removeDocFile(relativeDocFilePath, lastDocNameInfo);
                     break;
             }
 
