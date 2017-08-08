@@ -654,75 +654,76 @@ function processer(context) {
         return finalConfig;
     };
 
+    const createPage = (docName) => {
+
+        // if docName is not folder, return
+        if (!fs.statSync(path.join(globalDocFolder, docName)).isDirectory()) {
+            return;
+        }
+
+        // if docName should not show, return
+        if (checkShouldNotShow(docName, docName)) {
+            return;
+        }
+
+        const docNameInfo = getDocInfo(docName);
+
+        docMap[docName] = docNameInfo;
+
+        if (!fs.existsSync(docNameInfo.themeTemplateFolder)) {
+            throw Error('theme: ' + docNameInfo.theme + ' not exists');
+            return;
+        }
+
+        if (!fs.existsSync(docNameInfo.iframeThemeTemplateFolder)) {
+            throw Error('iframe theme: ' + docNameInfo.iframeTheme + ' not exists');
+            return;
+        }
+
+        // create page from template
+        copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(globalCodeFolder, docName));
+
+        // copy iframe page from template
+        copyPageFromThemeTemplate(path.join(globalThemeFolder, docNameInfo.iframeTheme), path.join(globalCodeFolder, docNameInfo.md5IframeTheme));
+
+        // copy all current doc files to tmp/**/routes/copied-doc
+        fse.copySync(path.join(globalDocFolder, docName), path.join(__dirname, 'temp', docName, 'routes/copied-doc'));
+
+        // set utimes to prevent multi webpack callback
+        readdirSync(path.join(__dirname, 'temp', docName, 'routes/copied-doc')).forEach((filePath) => {
+            utime(filePath);
+        });
+
+        // only create shown page
+        for (let relativeDocFilePath in docNameInfo.shownFilesMap) {
+
+            processDocFile(docName, relativeDocFilePath);
+
+            // create page file
+            createShownPage(docName, relativeDocFilePath);
+
+        }
+
+        // write route file
+        writeRouteFile(docName, path.join(globalCodeFolder, docName, 'routes.js'));
+
+        // write filetree.js
+        writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
+
+        replaceHtmlKeywords(path.join(globalCodeFolder, docName, 'index.html'), mergeUserConfigByDocName(docName).pageName || docName, docName);
+        replaceHtmlKeywords(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme);
+
+        // create .html files in build
+        fse.copySync(path.join(globalCodeFolder, docName, 'index.html'), path.join(globalBuildFolder, docName + '.html'));
+        fse.copySync(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(globalBuildFolder, docNameInfo.md5IframeTheme + '.html'));
+    };
+
     const processDocs = () => {
         fse.ensureDirSync(globalCodeFolder);
         clearSrcCodeFolder();
         emptyBuildFolder();
-
-        const docNames = fs.readdirSync(globalDocFolder);
-
-        docNames.forEach((docName) => {
-
-            // if docName is not folder, return
-            if (!fs.statSync(path.join(globalDocFolder, docName)).isDirectory()) {
-                return;
-            }
-
-            // if docName should not show, return
-            if (checkShouldNotShow(docName, docName)) {
-                return;
-            }
-
-            const docNameInfo = getDocInfo(docName);
-
-            docMap[docName] = docNameInfo;
-
-            if (!fs.existsSync(docNameInfo.themeTemplateFolder)) {
-                throw Error('theme: ' + docNameInfo.theme + ' not exists');
-                return;
-            }
-
-            if (!fs.existsSync(docNameInfo.iframeThemeTemplateFolder)) {
-                throw Error('iframe theme: ' + docNameInfo.iframeTheme + ' not exists');
-                return;
-            }
-
-            // create page from template
-            copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(globalCodeFolder, docName));
-
-            // copy iframe page from template
-            copyPageFromThemeTemplate(path.join(globalThemeFolder, docNameInfo.iframeTheme), path.join(globalCodeFolder, docNameInfo.md5IframeTheme));
-
-            // copy all current doc files to tmp/**/routes/copied-doc
-            fse.copySync(path.join(globalDocFolder, docName), path.join(__dirname, 'temp', docName, 'routes/copied-doc'));
-
-            // set utimes to prevent multi webpack callback
-            readdirSync(path.join(__dirname, 'temp', docName, 'routes/copied-doc')).forEach((filePath) => {
-                utime(filePath);
-            });
-
-            // only create shown page
-            for (let relativeDocFilePath in docNameInfo.shownFilesMap) {
-
-                processDocFile(docName, relativeDocFilePath);
-
-                // create page file
-                createShownPage(docName, relativeDocFilePath);
-
-            }
-
-            // write route file
-            writeRouteFile(docName, path.join(globalCodeFolder, docName, 'routes.js'));
-
-            // write filetree.js
-            writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
-
-            replaceHtmlKeywords(path.join(globalCodeFolder, docName, 'index.html'), mergeUserConfigByDocName(docName).pageName || docName, docName);
-            replaceHtmlKeywords(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme);
-
-            // create .html files in build
-            fse.copySync(path.join(globalCodeFolder, docName, 'index.html'), path.join(globalBuildFolder, docName + '.html'));
-            fse.copySync(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(globalBuildFolder, docNameInfo.md5IframeTheme + '.html'));
+        fs.readdirSync(globalDocFolder).forEach((docName) => {
+            createPage(docName);
         });
     };
 
