@@ -5,33 +5,12 @@ const gulp = require('gulp');
 const gulpWatch = require('gulp-watch');
 const fse = require('fs-extra');
 const md5 = require('md5');
-const relative = require('relative');
-const git = require('git-rev-sync');
 
 const StringReplacePlugin = require('string-replace-webpack-plugin');
 
-const readdirTree = require('directory-tree-enhancer');
-const readdirEnhanced = require('readdir-enhanced').sync;
-const readdirSync = (dir) => {
-    return readdirEnhanced(dir, {
-        deep: true,
-        basePath: dir
-    });
-};
-
-const getGitVersion = () => {
-
-    try {
-        let version = git.branch($srcFolder);
-        version = version.indexOf('publish/') > -1 ? version.replace(/publish\//,'') : '0.0.0';
-        return version;
-    } catch(err) {
-
-        // 不报错
-        return '0.0.0';
-    }
-
-}
+const pathUtil = require('./util/path');
+const gitUtil = require('./util/git');
+const fileUtil = require('./util/file');
 
 // not working now, to be fixed
 function getStringReplaceLoader(replaceMap, currentEnv){
@@ -58,9 +37,9 @@ function getStringReplaceLoader(replaceMap, currentEnv){
 }
 
 // replace
-const getReplaceMap = () => {
+const getReplaceMap = (currentFolder) => {
 
-    const gitVersion = getGitVersion();
+    const gitVersion = gitUtil.getGitVersion(currentFolder);
 
     const keyWords = {
         '$$_CDNURL_$$': {
@@ -76,8 +55,6 @@ const getReplaceMap = () => {
     return keyWords;
 };
 
-const globalReplaceMap = getReplaceMap();
-
 function processer(context) {
 
     const globalCurrentEnv = context.currentEnv;
@@ -89,7 +66,7 @@ function processer(context) {
     const globalCodeFolder = path.join(__dirname, 'temp');
     const globalThemeFolder = path.join(__dirname, 'theme');
 
-    const globalShouldNotRemovedFilesReg = /(\.idea)|(\.DS_Store)|(\.git)/i;
+
 
     const defaultUserConfig = {
         theme: 'default',
@@ -97,6 +74,8 @@ function processer(context) {
         _shouldNotShowReg: /((node\_modules)|(book\-themes)|(\.git)|(\.idea)|(\.ds_store))/i,
         shouldNotShowExtnameReg: null
     };
+
+    const globalReplaceMap = getReplaceMap(globalDocFolder);
 
     const docMap = {};
 
@@ -141,23 +120,6 @@ function processer(context) {
         return false;
     };
 
-    const utime = (filePath) => {
-        fs.utimesSync(filePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
-    };
-
-    const emptyBuildFolder = () => {
-        fse.ensureDirSync(globalBuildFolder);
-        fs.readdirSync(globalBuildFolder).forEach((filename) => {
-          if (!globalShouldNotRemovedFilesReg.test('/' + filename + '/')) {
-            try {
-              fse.removeSync(path.join(globalBuildFolder, filename));
-            } catch(err) {
-
-            }
-          }
-        });
-    };
-
     const createHtmlInBuildFolder = (docName) => {
 
         let filename = docName;
@@ -197,7 +159,7 @@ function processer(context) {
                                   .replace(/\$\$\_DOCNAME\_\$\$/g, docName)
                                   .replace(/\$\$\_CDNURL\_\$\$/g, globalReplaceMap['$$_CDNURL_$$'][globalCurrentEnv]);
 
-        writeFileSync(htmlPath, newHtmlContent);
+        fileUtil.writeFileSync(htmlPath, newHtmlContent);
     };
 
     const copyPageFromThemeTemplate = (srcFolder, targetFolder) => {
@@ -214,8 +176,8 @@ function processer(context) {
             fse.copySync(path.join(srcFolder, filename), path.join(targetFolder, filename));
         });
 
-        readdirSync(targetFolder).forEach((filePath) => {
-            utime(filePath);
+        fileUtil.readdirSync(targetFolder).forEach((filePath) => {
+            fileUtil.utime(filePath);
         });
 
     };
@@ -226,7 +188,7 @@ function processer(context) {
         const currentDocFolder = path.join(globalDocFolder, docName);
 
         // get dir tree
-        const dirTree = readdirTree(currentDocFolder, {
+        const dirTree = fileUtil.readdirTree(currentDocFolder, {
             exclude: [mergedConfig._shouldNotShowReg, mergedConfig.shouldNotShowReg]
         });
 
@@ -242,14 +204,6 @@ function processer(context) {
               // format into relative path
               item.path = item.path.replace(currentDocFolder, '');
               tree.path = tree.path.replace(currentDocFolder, '');
-
-              // should be exluded
-              // if (checkShouldNotShow(docName, item.path)) {
-              //     item.shouldNotShow = true;
-              // }
-              // if (checkShouldNotShow(docName, tree.path)) {
-              //     tree.shouldNotShow = true;
-              // }
 
               // format path to '/xxx/xxx/...'
               if (/^\.\//.test(item.path)) {
@@ -308,7 +262,7 @@ function processer(context) {
         const fd = fs.openSync(filePath, mode);
         fs.writeFileSync(filePath, content);
         fs.close(fd);
-        utime(filePath);
+        fileUtil.utime(filePath);
     };
 
     const processIframeDoc = (docFilePath, targetFilePath, md5IframeTheme) => {
@@ -355,7 +309,7 @@ function processer(context) {
 
             if (!fs.existsSync(loadedIframeFile)) {
                 fse.copySync(iframeSrcFilePath, loadedIframeFile);
-                utime(loadedIframeFile);
+                fileUtil.utime(loadedIframeFile);
 
                 // add into watch list
                 const srcDocFileFolderName = path.dirname(docFilePath);
@@ -374,7 +328,7 @@ function processer(context) {
             while(replacedContent.indexOf(matchedItem) !== -1) {
                 replacedContent = replacedContent.replace(matchedItem, replaced);
             }
-            writeFileSync(targetFilePath, replacedContent);
+            fileUtil.writeFileSync(targetFilePath, replacedContent);
 
             // update iframe routes
             const iframeRouteFileInSrc = path.join(globalCodeFolder, `${md5IframeTheme}/routes.js`);
@@ -389,13 +343,13 @@ function processer(context) {
 
             if (content.indexOf(md5String) === -1) {
                 const importName = `doc_${md5String}`;
-                content = `import ${importName} from '${relative(iframeRouteFileInSrc, loadedIframeFile)}';\n` + content;
+                content = `import ${importName} from '${pathUtil.relative(iframeRouteFileInSrc, loadedIframeFile)}';\n` + content;
                 content = content.replace(
                   'module.exports = [',
                   `module.exports = [\n{\n  path: '/${md5String}',\n  component: ${importName}\n},\n`
                 );
 
-                writeFileSync(iframeRouteFileInSrc, content);
+                fileUtil.writeFileSync(iframeRouteFileInSrc, content);
             }
         });
     };
@@ -473,7 +427,7 @@ function processer(context) {
 
         // copy
         fse.copySync(docFilePath, copiedDocFilePath);
-        utime(copiedDocFilePath);
+        fileUtil.utime(copiedDocFilePath);
     };
 
     const processDocFile = (docName, relativeDocFilePath) => {
@@ -490,11 +444,11 @@ function processer(context) {
 
             if (transforedFilePath.isImg) {
                 const content = `![img](./${relativeDocFilePath.split('/').pop()}) \n<style scoped>p {text-align: center;}</style>`;
-                writeFileSync(processedFilePath, content);
+                fileUtil.writeFileSync(processedFilePath, content);
             } else if (!transforedFilePath.isMd) {
                 const extname = path.extname(copiedDocFilePath).replace('.', '');
                 const content = fs.readFileSync(docFilePath).toString();
-                writeFileSync(processedFilePath, '```' + extname + '\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
+                fileUtil.writeFileSync(processedFilePath, '```' + extname + '\n' + content + (/\n$/.test(content) ? '```' :'\n```'));
             } else if (transforedFilePath.isMd) {
                 processIframeDoc(docFilePath, copiedDocFilePath, md5IframeTheme);
             }
@@ -520,7 +474,7 @@ function processer(context) {
         if (fs.statSync(transforedFilePath.docFilePath).isFile()) {
             const templateContent = fs.readFileSync(path.join(docNameInfo.themeTemplateFolder, 'routes-template/file-template.vue')).toString();
             shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex))
-                                             .replace(/\$\$\_DOC\_PATH\_\$\$/g, JSON.stringify('./' + relative(shownFilePath, processedFilePath)));
+                                             .replace(/\$\$\_DOC\_PATH\_\$\$/g, JSON.stringify('./' + pathUtil.relative(shownFilePath, processedFilePath)));
         } else {
             const templateContent = fs.readFileSync(path.join(docNameInfo.themeTemplateFolder, 'routes-template/dir-template.vue')).toString();
             shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex));
@@ -528,7 +482,7 @@ function processer(context) {
 
         fse.ensureFileSync(shownFilePath);
 
-        writeFileSync(shownFilePath, shownVueContent);
+        fileUtil.writeFileSync(shownFilePath, shownVueContent);
 
     };
 
@@ -540,7 +494,7 @@ function processer(context) {
 
         fse.ensureFileSync(targetFile);
         const contentStr = JSON.stringify(dirTree);
-        writeFileSync(targetFile, `module.exports=${contentStr}`);
+        fileUtil.writeFileSync(targetFile, `module.exports=${contentStr}`);
     };
 
     // create vue routes
@@ -568,7 +522,7 @@ function processer(context) {
 
         fse.ensureFileSync(routesFilePath);
 
-        writeFileSync(routesFilePath, routesContent);
+        fileUtil.writeFileSync(routesFilePath, routesContent);
     };
 
     const clearSrcCodeFolder = () => {
@@ -654,10 +608,12 @@ function processer(context) {
         return finalConfig;
     };
 
-    const createPage = (docName) => {
+    const createPage = (currentFolder) => {
+
+        const docName = pathUtil.getNameFromPath(currentFolder);
 
         // if docName is not folder, return
-        if (!fs.statSync(path.join(globalDocFolder, docName)).isDirectory()) {
+        if (!fs.statSync(currentFolder).isDirectory()) {
             return;
         }
 
@@ -681,17 +637,17 @@ function processer(context) {
         }
 
         // create page from template
-        copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(globalCodeFolder, docName));
+        fileUtil.copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(globalCodeFolder, docName));
 
         // copy iframe page from template
-        copyPageFromThemeTemplate(path.join(globalThemeFolder, docNameInfo.iframeTheme), path.join(globalCodeFolder, docNameInfo.md5IframeTheme));
+        fileUtil.copyPageFromThemeTemplate(path.join(globalThemeFolder, docNameInfo.iframeTheme), path.join(globalCodeFolder, docNameInfo.md5IframeTheme));
 
         // copy all current doc files to tmp/**/routes/copied-doc
         fse.copySync(path.join(globalDocFolder, docName), path.join(__dirname, 'temp', docName, 'routes/copied-doc'));
 
         // set utimes to prevent multi webpack callback
-        readdirSync(path.join(__dirname, 'temp', docName, 'routes/copied-doc')).forEach((filePath) => {
-            utime(filePath);
+        fileUtil.readdirSync(path.join(__dirname, 'temp', docName, 'routes/copied-doc')).forEach((filePath) => {
+            fileUtil.utime(filePath);
         });
 
         // only create shown page
@@ -721,9 +677,9 @@ function processer(context) {
     const processDocs = () => {
         fse.ensureDirSync(globalCodeFolder);
         clearSrcCodeFolder();
-        emptyBuildFolder();
+        fileUtil.emptyFolder(globalBuildFolder);
         fs.readdirSync(globalDocFolder).forEach((docName) => {
-            createPage(docName);
+            createPage(path.join(globalDocFolder, docName));
         });
     };
 
