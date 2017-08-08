@@ -1,12 +1,12 @@
 <template>
     <ul class="level1">
-        <li v-if="!level1Item.shouldNotShow" v-bind:class="getLevel1Class(level1Item, level1Index)" v-for="(level1Item, level1Index) in arr">
+        <li v-bind:class="getLevel1Class(level1Item, level1Index)" v-for="(level1Item, level1Index) in arr">
             <ul class="level2" v-if="level1Item.children">
-                <li v-if="!level2Item.shouldNotShow" v-bind:class="getLevel2Class(level2Item, level2Index, level1Index)" v-for="(level2Item, level2Index) in level1Item.children">
+                <li v-bind:class="getLevel2Class(level2Item, level2Index, level1Index)" v-for="(level2Item, level2Index) in level1Item.children">
                     <ul class="level3" v-if="level2Item.children">
-                        <li v-if="!level3Item.shouldNotShow" v-bind:class="getLevel3Class(level3Item, level3Index, level2Index, level1Index)" v-for="(level3Item, level3Index) in level2Item.children">
+                        <li v-bind:class="getLevel3Class(level3Item, level3Index, level2Index, level1Index)" v-for="(level3Item, level3Index) in level2Item.children">
                             <ul class="level3" v-if="level2Item.children">
-                                <li v-if="!level4Item.shouldNotShow" @click="click(level4Index)" v-bind:class="getLevel4Class(level4Item, level4Index, level3Index, level2Index, level1Index)" v-for="(level4Item, level4Index) in level3Item.children">
+                                <li @click="click(level4Index)" v-bind:class="getLevel4Class(level4Item, level4Index, level3Index, level2Index, level1Index)" v-for="(level4Item, level4Index) in level3Item.children">
                                   <div v-if="level4Item.type === 'directory'">{{level4Item.routerPath.split('/').pop()}}</div>
                                   <router-link :to="level4Item.routerPath" v-if="level4Item.type !== 'directory'">{{level4Item.routerPath.split('/').pop()}}</router-link>
                                 </li>

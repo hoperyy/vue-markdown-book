@@ -1,6 +1,6 @@
 <template>
     <ul class="level1">
-        <li v-if="!level1Item.shouldNotShow" @click="click(level1Index)" v-bind:class="getLevel1Class(level1Item, level1Index, withBorder = true)" v-for="(level1Item, level1Index) in arr">
+        <li @click="click(level1Index)" v-bind:class="getLevel1Class(level1Item, level1Index, withBorder = true)" v-for="(level1Item, level1Index) in arr">
             <div v-if="level1Item.type === 'directory'">{{level1Item.routerPath.split('/').pop()}}</div>
             <router-link :to="level1Item.routerPath" v-if="level1Item.type !== 'directory'">{{level1Item.routerPath.split('/').pop()}}</router-link>
         </li>
