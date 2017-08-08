@@ -94,10 +94,8 @@ function processer(context) {
     const defaultUserConfig = {
         theme: 'default',
         iframeTheme: 'iframe-default',
-
-        // _shouldNotCreatePagesReg: /((book\-themes)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(\.git)|(doc\-theme))/i,
-        _shouldNotShowReg: /((book\-themes)|(iframe\-demos)|(\.idea)|(\.ds_store)|(node\_modules)|(\.git)|(doc\-theme)|(assets))/i,
-        shouldNotShowExtnameReg: /\.((md))$/i
+        _shouldNotShowReg: /((node\_modules)|(book\-themes)|(\.git)|(\.idea)|(\.ds_store))/i,
+        shouldNotShowExtnameReg: null
     };
 
     const docMap = {};
@@ -276,7 +274,7 @@ function processer(context) {
               tree.md5String = md5(tree.absolutePath);
 
               // item routerPath
-              item.routerPath = item.path.replace(mergedConfig.shouldNotShowExtnameReg, '');
+              item.routerPath = mergedConfig.shouldNotShowExtnameReg ? item.path.replace(mergedConfig.shouldNotShowExtnameReg, '') : item.path;
 
               // add index
               item.index = fileIndex + '-' + index;
