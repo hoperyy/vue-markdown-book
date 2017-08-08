@@ -244,12 +244,12 @@ function processer(context) {
               tree.path = tree.path.replace(currentDocFolder, '');
 
               // should be exluded
-              if (checkShouldNotShow(docName, item.path)) {
-                  item.shouldNotShow = true;
-              }
-              if (checkShouldNotShow(docName, tree.path)) {
-                  tree.shouldNotShow = true;
-              }
+              // if (checkShouldNotShow(docName, item.path)) {
+              //     item.shouldNotShow = true;
+              // }
+              // if (checkShouldNotShow(docName, tree.path)) {
+              //     tree.shouldNotShow = true;
+              // }
 
               // format path to '/xxx/xxx/...'
               if (/^\.\//.test(item.path)) {
