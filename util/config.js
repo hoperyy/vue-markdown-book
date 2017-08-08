@@ -5,7 +5,7 @@ const fs = require('fs');
 const defaultUserConfig = {
     theme: 'default',
     iframeTheme: 'iframe-default',
-    _shouldNotShowReg: /((node\_modules)|(book\-themes)|(\.git)|(\.idea)|(\.ds_store))/i,
+    _shouldNotShowReg: /((\.bookrc)|(node\_modules)|(book\-themes)|(\.git)|(\.idea)|(\.ds_store))/i,
     shouldNotShowExtnameReg: null
 };
 

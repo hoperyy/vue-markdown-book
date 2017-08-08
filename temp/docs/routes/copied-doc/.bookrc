@@ -1,0 +1,6 @@
+module.exports = {
+    shouldNotShowExtnameReg: /\.((md)|(vue))$/i,
+    shouldNotShowReg: /((iframe\-demos)|(assets))/i,
+    theme: 'default',
+    pageName: 'test page'
+}
