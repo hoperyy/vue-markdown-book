@@ -21,14 +21,14 @@ module.exports = {
         fs.utimesSync(filePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
     },
 
-    emptyFolder(folder) {
+    emptyFolder(absoluteFolder, ignored) {
         const shouldNotRemove = /(\.idea)|(\.DS_Store)|(\.git)/i;
 
-        fse.ensureDirSync(folder);
-        fs.readdirSync(folder).forEach((filename) => {
-          if (!shouldNotRemove.test('/' + filename + '/')) {
+        fse.ensureDirSync(absoluteFolder);
+        fs.readdirSync(absoluteFolder).forEach((filename) => {
+          if (!shouldNotRemove.test(filename) && (ignored ? !ignored.test(filename) : true)) {
             try {
-              fse.removeSync(path.join(folder, filename));
+              fse.removeSync(path.join(absoluteFolder, filename));
             } catch(err) {
 
             }
@@ -68,5 +68,18 @@ module.exports = {
             this.utime(filePath);
         });
 
+    },
+
+    replaceHtmlKeywords(targetFile, pageName, docName, cdnUrl) {
+
+        const htmlPath = targetFile;
+
+        const newHtmlContent = fs.readFileSync(htmlPath)
+                                  .toString()
+                                  .replace(/\$\$\_PAGENAME\_\$\$/g, pageName)
+                                  .replace(/\$\$\_DOCNAME\_\$\$/g, docName)
+                                  .replace(/\$\$\_CDNURL\_\$\$/g, cdnUrl);
+
+        this.writeFileSync(htmlPath, newHtmlContent);
     }
 };
