@@ -11,6 +11,9 @@ const StringReplacePlugin = require('string-replace-webpack-plugin');
 const pathUtil = require('./util/path');
 const gitUtil = require('./util/git');
 const fileUtil = require('./util/file');
+const configUtil = require('./util/config');
+const checkUtil = require('./util/check');
+const fileMapUtil = require('./util/file-map');
 
 // not working now, to be fixed
 function getStringReplaceLoader(replaceMap, currentEnv){
@@ -66,80 +69,30 @@ function processer(context) {
     const globalCodeFolder = path.join(__dirname, 'temp');
     const globalThemeFolder = path.join(__dirname, 'theme');
 
-
-
-    const defaultUserConfig = {
-        theme: 'default',
-        iframeTheme: 'iframe-default',
-        _shouldNotShowReg: /((node\_modules)|(book\-themes)|(\.git)|(\.idea)|(\.ds_store))/i,
-        shouldNotShowExtnameReg: null
-    };
-
     const globalReplaceMap = getReplaceMap(globalDocFolder);
 
     const docMap = {};
 
     const iframeWatchList = {};
 
-    const getConfigInFolder = (folder) => {
-
-        // merge user config
-        const userConfigFilePath = path.join(folder, '.bookrc');
-
-        if (!fs.existsSync(userConfigFilePath)) {
-            return null;
-        }
-
-        const config = require(userConfigFilePath);
-
-        let userConfig;
-
-        if (typeof config === 'function') {
-            userConfig = config();
-        } else {
-            userConfig = config;
-        }
-
-        return userConfig;
-    };
-
-    const checkShouldNotShow = (docName, str) => {
-
-        const userConfig = mergeUserConfig(path.join(globalDocFolder, docName));
-
-        // default config
-        if (userConfig._shouldNotShowReg.test(str)) {
-            return true;
-        }
-
-        // user config
-        if (userConfig.shouldNotShowReg && userConfig.shouldNotShowReg.test(str)) {
-            return true;
-        }
-
-        return false;
-    };
-
     const createHtmlInBuildFolder = (docName) => {
 
-        let filename = docName;
-
         // create *.html in build folder
-        const stats = fs.statSync(path.join(globalCodeFolder, filename));
+        const stats = fs.statSync(path.join(globalCodeFolder, docName));
 
         // only working for .html file in folders
         if (stats.isDirectory()) {
-            const foldername = filename;
-            const subFiles = fs.readdirSync(path.join(globalCodeFolder, foldername));
+            const subFiles = fs.readdirSync(path.join(globalCodeFolder, docName));
 
             subFiles.forEach((subname) => {
 
-                const filePath = path.join(globalCodeFolder, foldername, subname);
+                const filePath = path.join(globalCodeFolder, docName, subname);
+                const relativeFilePath = path.join(docName, subname);
                 const subStats = fs.statSync(filePath);
 
-                if (subStats.isFile() && /\.html$/.test(filePath) && !checkShouldNotShow(docName, filePath)) {
+                if (subStats.isFile() && /\.html$/.test(filePath) && !checkUtil.checkShouldNotShow(globalDocFolder, filePath)) {
                     try {
-                        fse.copySync(path.join(globalCodeFolder, foldername, subname), path.join(globalBuildFolder, foldername + '.html'));
+                        fse.copySync(path.join(globalCodeFolder, docName, subname), path.join(globalBuildFolder, foldername + '.html'));
                     } catch(err) {
                         console.log('error: ', err, ' \n and subname is: ', subname);
                     }
@@ -147,122 +100,6 @@ function processer(context) {
             });
         }
 
-    };
-
-    const replaceHtmlKeywords = (targetFile, pageName, docName) => {
-
-        const htmlPath = targetFile;
-
-        const newHtmlContent = fs.readFileSync(htmlPath)
-                                  .toString()
-                                  .replace(/\$\$\_PAGENAME\_\$\$/g, pageName)
-                                  .replace(/\$\$\_DOCNAME\_\$\$/g, docName)
-                                  .replace(/\$\$\_CDNURL\_\$\$/g, globalReplaceMap['$$_CDNURL_$$'][globalCurrentEnv]);
-
-        fileUtil.writeFileSync(htmlPath, newHtmlContent);
-    };
-
-    const copyPageFromThemeTemplate = (srcFolder, targetFolder) => {
-
-        if (fs.existsSync(targetFolder)) {
-            fse.removeSync(targetFolder);
-        }
-
-        fs.readdirSync(srcFolder).forEach((filename) => {
-            if (filename === 'routes-template') {
-                return;
-            }
-
-            fse.copySync(path.join(srcFolder, filename), path.join(targetFolder, filename));
-        });
-
-        fileUtil.readdirSync(targetFolder).forEach((filePath) => {
-            fileUtil.utime(filePath);
-        });
-
-    };
-
-    // get dir tree
-    const getFormatedDirTree = (docName, mergedConfig) => {
-
-        const currentDocFolder = path.join(globalDocFolder, docName);
-
-        // get dir tree
-        const dirTree = fileUtil.readdirTree(currentDocFolder, {
-            exclude: [mergedConfig._shouldNotShowReg, mergedConfig.shouldNotShowReg]
-        });
-
-        // format dir tree path
-        const formateDirTree = (tree, fileIndex) => {
-
-          if (!tree || !tree.children) {
-              return;
-          }
-
-          tree.children.forEach((item, index) => {
-
-              // format into relative path
-              item.path = item.path.replace(currentDocFolder, '');
-              tree.path = tree.path.replace(currentDocFolder, '');
-
-              // format path to '/xxx/xxx/...'
-              if (/^\.\//.test(item.path)) {
-                  item.path = item.path.replace(/^\.\//, '');
-              }
-              if (/^\.\//.test(tree.path)) {
-                  tree.path = tree.path.replace(/^\.\//, '');
-              }
-              if (!/^\//.test(item.path)) {
-                  item.path = '/' + item.path;
-              }
-              if (!/^\//.test(tree.path)) {
-                  tree.path = '/' + tree.path;
-              }
-
-              // add absolute path
-              item.absolutePath = path.join(currentDocFolder, item.path);
-              tree.absolutePath = path.join(currentDocFolder, tree.path);
-
-              // add md5 string
-              item.md5String = md5(item.absolutePath);
-              tree.md5String = md5(tree.absolutePath);
-
-              // item routerPath
-              item.routerPath = mergedConfig.shouldNotShowExtnameReg ? item.path.replace(mergedConfig.shouldNotShowExtnameReg, '') : item.path;
-
-              // add index
-              item.index = fileIndex + '-' + index;
-
-              // format index to 'x' or 'x-x' or 'x-x-x'
-              if (/^-/.test(item.index)) {
-                item.index = item.index.replace(/^-/, '');
-              }
-
-              if (item.children) {
-                  formateDirTree(item, item.index);
-              }
-
-          });
-
-        };
-
-        formateDirTree(dirTree, '');
-
-        return dirTree;
-    };
-
-    const writeFileSync = (filePath, content) => {
-
-        fse.ensureFileSync(filePath);
-
-        if (fs.existsSync(filePath)) {
-            mode = 'r';
-        }
-
-        const fd = fs.openSync(filePath, mode);
-        fs.writeFileSync(filePath, content);
-        fs.close(fd);
-        fileUtil.utime(filePath);
     };
 
     const processIframeDoc = (docFilePath, targetFilePath, md5IframeTheme) => {
@@ -352,33 +189,6 @@ function processer(context) {
                 fileUtil.writeFileSync(iframeRouteFileInSrc, content);
             }
         });
-    };
-
-    // get files map: {'/xx/xx..': {...}}
-    const getFilesMapByDirTree = (config, dirTree) => {
-
-        const shownFilesMap = {};
-
-        const act = (tree) => {
-
-          if (!tree || !tree.children) {
-              return;
-          }
-          tree.children.forEach((item, index) => {
-
-              shownFilesMap[item.path] = item;
-
-              if (item.children) {
-                  act(item, item.index);
-              }
-
-          });
-
-      };
-
-      act(dirTree);
-
-      return shownFilesMap;
     };
 
     const transforFilePath = (docName, relativeDocFilePath) => {
@@ -525,49 +335,9 @@ function processer(context) {
         fileUtil.writeFileSync(routesFilePath, routesContent);
     };
 
-    const clearSrcCodeFolder = () => {
-        const srcFiles = fs.readdirSync(globalCodeFolder);
-
-        srcFiles.forEach((filename) => {
-           if (!/(components)|(libs)/.test(filename)) {
-             try {
-               fse.removeSync(path.join(globalCodeFolder, filename));
-             } catch(err) {
-
-             }
-           }
-        });
-    };
-
-    const mergeUserConfig = (currentDocFolder) => {
-
-        const globalUserConfig = getConfigInFolder(globalDocFolder);
-        const currentDocUserConfig = getConfigInFolder(currentDocFolder);
-
-        let config = {};
-
-        for (let i in defaultUserConfig) {
-            config[i] = defaultUserConfig[i];
-        }
-
-        if (globalUserConfig) {
-            for (let i in globalUserConfig) {
-                config[i] = globalUserConfig[i];
-            }
-        }
-
-        if (currentDocUserConfig) {
-            for (let i in currentDocUserConfig) {
-                config[i] = currentDocUserConfig[i];
-            }
-        }
-
-        return config;
-    };
-
     const getDocInfo = (docName) => {
 
-        const config = mergeUserConfig(path.join(globalDocFolder, docName));
+        const config = configUtil.mergeUserConfig(globalDocFolder, path.join(globalDocFolder, docName));
 
         // set template folder
         let themeTemplateFolder = path.join(globalThemeFolder, config.theme);
@@ -584,13 +354,13 @@ function processer(context) {
             iframeThemeTemplateFolder = userIframeThemeTemplateFolder;
         }
 
-        const dirTree = getFormatedDirTree(docName, config);
+        const dirTree = fileMapUtil.getFormatedDirTree(globalDocFolder, path.join(globalDocFolder, docName));
 
         const finalConfig = {
             docName: docName,
 
             dirTree: dirTree,
-            shownFilesMap: getFilesMapByDirTree(config, dirTree),
+            shownFilesMap: fileMapUtil.getFilesMapByDirTree(dirTree),
 
             theme: config.theme,
             iframeTheme: config.iframeTheme,
@@ -618,7 +388,7 @@ function processer(context) {
         }
 
         // if docName should not show, return
-        if (checkShouldNotShow(docName, docName)) {
+        if (checkUtil.checkShouldNotShow(globalDocFolder, path.join(globalDocFolder, docName))) {
             return;
         }
 
@@ -666,8 +436,9 @@ function processer(context) {
         // write filetree.js
         writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
 
-        replaceHtmlKeywords(path.join(globalCodeFolder, docName, 'index.html'), mergeUserConfig(path.join(globalDocFolder, docName)).pageName || docName, docName);
-        replaceHtmlKeywords(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme);
+        const cdnUrl = globalReplaceMap['$$_CDNURL_$$'][globalCurrentEnv];
+        fileUtil.replaceHtmlKeywords(path.join(globalCodeFolder, docName, 'index.html'), configUtil.mergeUserConfig(globalDocFolder, path.join(globalDocFolder, docName)).pageName || docName, docName, cdnUrl);
+        fileUtil.replaceHtmlKeywords(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme, cdnUrl);
 
         // create .html files in build
         fse.copySync(path.join(globalCodeFolder, docName, 'index.html'), path.join(globalBuildFolder, docName + '.html'));
@@ -676,7 +447,7 @@ function processer(context) {
 
     const processDocs = () => {
         fse.ensureDirSync(globalCodeFolder);
-        clearSrcCodeFolder();
+        fileUtil.emptyFolder(globalCodeFolder, /(components)|(libs)/);
         fileUtil.emptyFolder(globalBuildFolder);
         fs.readdirSync(globalDocFolder).forEach((docName) => {
             createPage(path.join(globalDocFolder, docName));
@@ -692,7 +463,7 @@ function processer(context) {
             const filePath = stats.path;
             const docName = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
 
-            const userConfig = mergeUserConfig(path.join(globalDocFolder, docName));
+            const userConfig = configUtil.mergeUserConfig(globalDocFolder, path.join(globalDocFolder, docName));
             const relativeDocFilePath = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
 
             // copy iframe files
@@ -709,7 +480,7 @@ function processer(context) {
 
             switch(stats.event) {
                 case 'change':
-                    if (checkShouldNotShow(docName, relativeDocFilePath)) {
+                    if (checkUtil.checkShouldNotShow(globalDocFolder, filePath)) {
                         copyDocFile(docName, relativeDocFilePath);
                     } else {
                         copyDocFile(docName, relativeDocFilePath);
@@ -719,7 +490,7 @@ function processer(context) {
                     break;
                 case 'add':
 
-                    if (checkShouldNotShow(docName, relativeDocFilePath)) {
+                    if (checkUtil.checkShouldNotShow(globalDocFolder, filePath)) {
                         copyDocFile(docName, relativeDocFilePath);
                     } else {
 
