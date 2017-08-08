@@ -6,8 +6,10 @@ const md5 = require('md5');
 
 const configUtil = require('./config');
 const fileUtil = require('./file');
+const pathUtil = require('./path');
 
 module.exports = {
+
     getFormatedDirTree(rootFolder, currentDocFolder) {
 
         const mergedConfig = configUtil.mergeUserConfig(rootFolder, currentDocFolder);
@@ -100,5 +102,49 @@ module.exports = {
         act(dirTree);
 
         return shownFilesMap;
+    },
+
+    getDocInfo(rootFolder, currentDocFolder) {
+
+        const docName = pathUtil.getNameFromPath(currentDocFolder);
+        const config = configUtil.mergeUserConfig(rootFolder, currentDocFolder);
+
+        // set template folder
+        let themeTemplateFolder = path.join(pathUtil.themeFolder, config.theme);
+        let iframeThemeTemplateFolder = path.join(pathUtil.themeFolder, config.theme);
+        const userThemeTemplateFolder = path.join(rootFolder, 'book-theme', config.theme);
+        const userIframeThemeTemplateFolder = path.join(rootFolder, 'book-theme', config.theme);
+
+        // prefer themes in doc
+        if (fs.existsSync(userThemeTemplateFolder)) {
+            themeTemplateFolder = userThemeTemplateFolder;
+        }
+
+        if (fs.existsSync(userIframeThemeTemplateFolder)) {
+            iframeThemeTemplateFolder = userIframeThemeTemplateFolder;
+        }
+
+        const dirTree = this.getFormatedDirTree(rootFolder, currentDocFolder);
+
+        const finalConfig = {
+            docName,
+
+            dirTree,
+            shownFilesMap: this.getFilesMapByDirTree(dirTree),
+
+            theme: config.theme,
+            iframeTheme: config.iframeTheme,
+            md5IframeTheme: encodeURIComponent(docName) + '-iframe',
+
+            themeTemplateFolder: themeTemplateFolder,
+            iframeThemeTemplateFolder: iframeThemeTemplateFolder
+        };
+
+        // merge user config
+        for (let i in config) {
+            finalConfig[i] = config[i];
+        }
+
+        return finalConfig;
     }
 };
