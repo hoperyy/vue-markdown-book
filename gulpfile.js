@@ -126,7 +126,7 @@ function processer(context) {
 
     const checkShouldNotShow = (docName, str) => {
 
-        const userConfig = mergeUserConfigByDocName(docName);
+        const userConfig = mergeUserConfig(path.join(globalDocFolder, docName));
 
         // default config
         if (userConfig._shouldNotShowReg.test(str)) {
@@ -585,10 +585,10 @@ function processer(context) {
         });
     };
 
-    const mergeUserConfigByDocName = (docName) => {
+    const mergeUserConfig = (currentDocFolder) => {
 
         const globalUserConfig = getConfigInFolder(globalDocFolder);
-        const currentDocUserConfig = getConfigInFolder(path.join(globalDocFolder, docName));
+        const currentDocUserConfig = getConfigInFolder(currentDocFolder);
 
         let config = {};
 
@@ -613,7 +613,7 @@ function processer(context) {
 
     const getDocInfo = (docName) => {
 
-        const config = mergeUserConfigByDocName(docName);
+        const config = mergeUserConfig(path.join(globalDocFolder, docName));
 
         // set template folder
         let themeTemplateFolder = path.join(globalThemeFolder, config.theme);
@@ -710,7 +710,7 @@ function processer(context) {
         // write filetree.js
         writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
 
-        replaceHtmlKeywords(path.join(globalCodeFolder, docName, 'index.html'), mergeUserConfigByDocName(docName).pageName || docName, docName);
+        replaceHtmlKeywords(path.join(globalCodeFolder, docName, 'index.html'), mergeUserConfig(path.join(globalDocFolder, docName)).pageName || docName, docName);
         replaceHtmlKeywords(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme);
 
         // create .html files in build
@@ -736,7 +736,7 @@ function processer(context) {
             const filePath = stats.path;
             const docName = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
 
-            const userConfig = mergeUserConfigByDocName(docName);
+            const userConfig = mergeUserConfig(path.join(globalDocFolder, docName));
             const relativeDocFilePath = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
 
             // copy iframe files
