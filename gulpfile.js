@@ -10,7 +10,7 @@ const git = require('git-rev-sync');
 
 const StringReplacePlugin = require('string-replace-webpack-plugin');
 
-const readdirTree = require('directory-tree');
+const readdirTree = require('directory-tree-enhancer');
 const readdirEnhanced = require('readdir-enhanced').sync;
 const readdirSync = (dir) => {
     return readdirEnhanced(dir, {
@@ -95,7 +95,8 @@ function processer(context) {
         theme: 'default',
         iframeTheme: 'iframe-default',
 
-        _shouldNotShowReg: /((book\-themes)|(iframe\-demos)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(\.git)|(doc\-theme)|(assets))/i,
+        // _shouldNotCreatePagesReg: /((book\-themes)|(build)|(\.idea)|(\.ds_store)|(node\_modules)|(\.git)|(doc\-theme))/i,
+        _shouldNotShowReg: /((book\-themes)|(iframe\-demos)|(\.idea)|(\.ds_store)|(node\_modules)|(\.git)|(doc\-theme)|(assets))/i,
         shouldNotShowExtnameReg: /\.((md))$/i
     };
 
@@ -106,7 +107,7 @@ function processer(context) {
     const getConfigInFolder = (folder) => {
 
         // merge user config
-        const userConfigFilePath = path.join(folder, './bookconfig.js');
+        const userConfigFilePath = path.join(folder, '.bookrc');
 
         if (!fs.existsSync(userConfigFilePath)) {
             return null;
@@ -228,10 +229,8 @@ function processer(context) {
 
         // get dir tree
         const dirTree = readdirTree(currentDocFolder, {
-            exclude: mergedConfig._shouldNotShowReg
+            exclude: [mergedConfig._shouldNotShowReg, mergedConfig.shouldNotShowReg]
         });
-
-        // console.log('~~~~~ readdir tree: ', dirTree, docName);
 
         // format dir tree path
         const formateDirTree = (tree, fileIndex) => {
@@ -504,28 +503,28 @@ function processer(context) {
         }
     };
 
-    const createPageFile = (docName, relativeDocFilePath) => {
+    const createShownPage = (docName, relativeDocFilePath) => {
 
-        const docInfo = docMap[docName];
+        const docNameInfo = docMap[docName];
 
-        const transforedFilePath = transforFilePath(docInfo.docName, relativeDocFilePath);
+        const transforedFilePath = transforFilePath(docNameInfo.docName, relativeDocFilePath);
         const processedFilePath = transforedFilePath.processedFilePath;
 
-        const shownFilesMapItem = docInfo.shownFilesMap[relativeDocFilePath];
+        const shownFilesMapItem = docNameInfo.shownFilesMap[relativeDocFilePath];
 
         // create shown vue pages
-        const shownFilePath = path.join(globalCodeFolder, docInfo.docName, 'routes', 'route-' + shownFilesMapItem.md5String + '.vue');
+        const shownFilePath = path.join(globalCodeFolder, docNameInfo.docName, 'routes', 'route-' + shownFilesMapItem.md5String + '.vue');
 
         // format 'x-x-x' to '[x, x, x]'
         const fileIndex = JSON.stringify(shownFilesMapItem.index.split('-')).replace(/\"/g, "'");
 
         let shownVueContent = '';
         if (fs.statSync(transforedFilePath.docFilePath).isFile()) {
-            const templateContent = fs.readFileSync(path.join(docInfo.themeTemplateFolder, 'routes-template/file-template.vue')).toString();
+            const templateContent = fs.readFileSync(path.join(docNameInfo.themeTemplateFolder, 'routes-template/file-template.vue')).toString();
             shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex))
                                              .replace(/\$\$\_DOC\_PATH\_\$\$/g, JSON.stringify('./' + relative(shownFilePath, processedFilePath)));
         } else {
-            const templateContent = fs.readFileSync(path.join(docInfo.themeTemplateFolder, 'routes-template/dir-template.vue')).toString();
+            const templateContent = fs.readFileSync(path.join(docNameInfo.themeTemplateFolder, 'routes-template/dir-template.vue')).toString();
             shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex));
         }
 
@@ -538,8 +537,8 @@ function processer(context) {
     // create file-tree.js
     const writeFileTreeJsFile = (docName, targetFile) => {
 
-        const docInfo = docMap[docName];
-        const dirTree = docInfo.dirTree;
+        const docNameInfo = docMap[docName];
+        const dirTree = docNameInfo.dirTree;
 
         fse.ensureFileSync(targetFile);
         const contentStr = JSON.stringify(dirTree);
@@ -549,8 +548,8 @@ function processer(context) {
     // create vue routes
     const writeRouteFile = (docName, targetRouteFile) => {
 
-        const docInfo = docMap[docName];
-        const shownFilesMap = docInfo.shownFilesMap;
+        const docNameInfo = docMap[docName];
+        const shownFilesMap = docNameInfo.shownFilesMap;
 
         // 创建 routes.js
         const routesFilePath = targetRouteFile;
@@ -614,35 +613,32 @@ function processer(context) {
         return config;
     };
 
-    const getDocInfoByDocName = (docName) => {
+    const getDocInfo = (docName) => {
+
         const config = mergeUserConfigByDocName(docName);
 
-        const dirTree = getFormatedDirTree(docName, config);
-        const shownFilesMap = getFilesMapByDirTree(config, dirTree);
-
+        // set template folder
         let themeTemplateFolder = path.join(globalThemeFolder, config.theme);
         let iframeThemeTemplateFolder = path.join(globalThemeFolder, config.theme);
-
-        const themeTemplateFolderInDocFolder = path.join(globalDocFolder, 'book-theme', config.theme);
-        const iframeThemeTemplateFolderInDocFolder = path.join(globalDocFolder, 'book-theme', config.theme);
+        const userThemeTemplateFolder = path.join(globalDocFolder, 'book-theme', config.theme);
+        const userIframeThemeTemplateFolder = path.join(globalDocFolder, 'book-theme', config.theme);
 
         // prefer themes in doc
-        if (fs.existsSync(themeTemplateFolderInDocFolder)) {
-            themeTemplateFolder = themeTemplateFolderInDocFolder;
+        if (fs.existsSync(userThemeTemplateFolder)) {
+            themeTemplateFolder = userThemeTemplateFolder;
         }
 
-        if (fs.existsSync(iframeThemeTemplateFolderInDocFolder)) {
-            iframeThemeTemplateFolder = iframeThemeTemplateFolderInDocFolder;
+        if (fs.existsSync(userIframeThemeTemplateFolder)) {
+            iframeThemeTemplateFolder = userIframeThemeTemplateFolder;
         }
+
+        const dirTree = getFormatedDirTree(docName, config);
 
         const finalConfig = {
             docName: docName,
 
             dirTree: dirTree,
-            shownFilesMap: shownFilesMap,
-
-            docFolderWithDocName: path.join(globalDocFolder, docName),
-            processedDocFolderWithDocName: path.join(globalCodeFolder, docName, 'routes', 'copied-doc'),
+            shownFilesMap: getFilesMapByDirTree(config, dirTree),
 
             theme: config.theme,
             iframeTheme: config.iframeTheme,
@@ -652,6 +648,7 @@ function processer(context) {
             iframeThemeTemplateFolder: iframeThemeTemplateFolder
         };
 
+        // merge user config
         for (let i in config) {
             finalConfig[i] = config[i];
         }
@@ -667,49 +664,52 @@ function processer(context) {
         const docNames = fs.readdirSync(globalDocFolder);
 
         docNames.forEach((docName) => {
-            const userConfig = mergeUserConfigByDocName(docName);
 
-            // if docName is a file, return
+            // if docName is not folder, return
             if (!fs.statSync(path.join(globalDocFolder, docName)).isDirectory()) {
                 return;
             }
 
+            // if docName should not show, return
             if (checkShouldNotShow(docName, docName)) {
                 return;
             }
 
-            const docNameInfo = getDocInfoByDocName(docName);
+            const docNameInfo = getDocInfo(docName);
 
             docMap[docName] = docNameInfo;
 
             if (!fs.existsSync(docNameInfo.themeTemplateFolder)) {
-                throw Error('主题: ' + docNameInfo.theme + ' 不存在');
+                throw Error('theme: ' + docNameInfo.theme + ' not exists');
                 return;
             }
 
             if (!fs.existsSync(docNameInfo.iframeThemeTemplateFolder)) {
-                throw Error('iframe 主题: ' + docNameInfo.iframeTheme + ' 不存在');
+                throw Error('iframe theme: ' + docNameInfo.iframeTheme + ' not exists');
                 return;
             }
 
-            // create pages
+            // create page from template
             copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(globalCodeFolder, docName));
 
-            // copy iframe defined in doc
+            // copy iframe page from template
             copyPageFromThemeTemplate(path.join(globalThemeFolder, docNameInfo.iframeTheme), path.join(globalCodeFolder, docNameInfo.md5IframeTheme));
 
-            // copy current doc name files to tmp/**/routes/copied-doc
-            fse.copySync(docNameInfo.docFolderWithDocName, path.join(__dirname, 'temp', docName, 'routes/copied-doc'));
+            // copy all current doc files to tmp/**/routes/copied-doc
+            fse.copySync(path.join(globalDocFolder, docName), path.join(__dirname, 'temp', docName, 'routes/copied-doc'));
+
+            // set utimes to prevent multi webpack callback
             readdirSync(path.join(__dirname, 'temp', docName, 'routes/copied-doc')).forEach((filePath) => {
                 utime(filePath);
             });
 
+            // only create shown page
             for (let relativeDocFilePath in docNameInfo.shownFilesMap) {
 
                 processDocFile(docName, relativeDocFilePath);
 
                 // create page file
-                createPageFile(docName, relativeDocFilePath);
+                createShownPage(docName, relativeDocFilePath);
 
             }
 
@@ -719,14 +719,12 @@ function processer(context) {
             // write filetree.js
             writeFileTreeJsFile(docName, path.join(path.join(globalCodeFolder, docName, 'file-tree.js')));
 
-            replaceHtmlKeywords(path.join(globalCodeFolder, docName, 'index.html'), userConfig.pageName || docName, docName);
+            replaceHtmlKeywords(path.join(globalCodeFolder, docName, 'index.html'), mergeUserConfigByDocName(docName).pageName || docName, docName);
             replaceHtmlKeywords(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), docNameInfo.md5IframeTheme, docNameInfo.md5IframeTheme);
 
+            // create .html files in build
             fse.copySync(path.join(globalCodeFolder, docName, 'index.html'), path.join(globalBuildFolder, docName + '.html'));
             fse.copySync(path.join(globalCodeFolder, docNameInfo.md5IframeTheme, 'index.html'), path.join(globalBuildFolder, docNameInfo.md5IframeTheme + '.html'));
-
-            utime(path.join(globalBuildFolder, docName + '.html'));
-            utime(path.join(globalBuildFolder, docNameInfo.md5IframeTheme + '.html'));
         });
     };
 
@@ -742,12 +740,9 @@ function processer(context) {
             const userConfig = mergeUserConfigByDocName(docName);
             const relativeDocFilePath = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
 
+            // copy iframe files
             if (iframeWatchList[filePath]) {
                 fse.copySync(filePath, iframeWatchList[filePath].target);
-            }
-
-            if (checkShouldNotShow(docName, filePath)) {
-                return;
             }
 
             // return if this is not in doc dir, such as 'bookconfig.js'
@@ -755,15 +750,13 @@ function processer(context) {
                 return;
             }
 
-            let docNameInfo = getDocInfoByDocName(docName);
+            let docNameInfo = getDocInfo(docName);
 
             switch(stats.event) {
                 case 'change':
                     if (checkShouldNotShow(docName, relativeDocFilePath)) {
-                        console.log('文件改变，仅复制: ', relativeDocFilePath);
                         copyDocFile(docName, relativeDocFilePath);
                     } else {
-                        console.log('文件改变，复制及处理: ', relativeDocFilePath);
                         copyDocFile(docName, relativeDocFilePath);
                         processDocFile(docName, relativeDocFilePath);
                     }
@@ -772,19 +765,18 @@ function processer(context) {
                 case 'add':
 
                     if (checkShouldNotShow(docName, relativeDocFilePath)) {
-                        // console.log('文件新增，仅复制: ', relativeDocFilePath);
                         copyDocFile(docName, relativeDocFilePath);
                     } else {
-                        // console.log('文件新增，复制及处理: ', relativeDocFilePath);
+
                         // reget dir tree and shownFilesMap
-                        docMap[docName] = getDocInfoByDocName(docName);
+                        docMap[docName] = getDocInfo(docName);
 
                         // copy doc file
                         copyDocFile(docName, relativeDocFilePath);
                         processDocFile(docName, relativeDocFilePath);
 
                         // create shown vue file
-                        createPageFile(docName, relativeDocFilePath);
+                        createShownPage(docName, relativeDocFilePath);
 
                         // write route file
                         writeRouteFile(docName, path.join(globalCodeFolder, docName, 'routes.js'));
@@ -796,7 +788,7 @@ function processer(context) {
                 case 'unlink':
 
                     // reget dir tree and shownFilesMap
-                    docMap[docName] = getDocInfoByDocName(docName);
+                    docMap[docName] = getDocInfo(docName);
 
                     // write route file
                     writeRouteFile(docName, path.join(globalCodeFolder, docName, 'routes.js'));
