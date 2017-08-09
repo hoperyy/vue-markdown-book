@@ -369,7 +369,17 @@ function processer(context) {
         fileUtil.copyPageFromThemeTemplate(path.join(pathUtil.themeFolder, docNameInfo.iframeTheme), path.join(globalCodeFolder, docNameInfo.md5IframeTheme));
 
         // copy all current doc files to tmp/**/routes/copied-doc
-        fse.copySync(path.join(globalDocFolder, docName), path.join(globalCodeFolder, docName, 'routes/copied-doc'));
+        // fse.copySync(path.join(globalDocFolder, docName), path.join(globalCodeFolder, docName, 'routes/copied-doc'));
+        // copy all current doc files to tmp/**/routes/copied-doc
+        fs.readdirSync(path.join(globalDocFolder, docName)).forEach((filename) => {
+            const filePath = path.join(globalDocFolder, docName, filename);
+
+            if (configUtil.defaultShouldNotShowReg.test(filename)) {
+                return;
+            }
+
+            fse.copySync(filePath, path.join(globalCodeFolder, docName, 'routes/copied-doc', filename));
+        });
 
         // set utimes to prevent multi webpack callback
         fileUtil.readdirSync(path.join(globalCodeFolder, docName, 'routes/copied-doc')).forEach((filePath) => {
