@@ -342,7 +342,6 @@ function processer(context) {
 
             if (!checkUtil.checkShouldNotShow(globalPageFolder, path.join(globalPageFolder, relativeDocFilePath))) {
 
-                console.log(relativeDocFilePath);
                 processDocFile(relativeDocFilePath);
 
                 // create page file
@@ -368,6 +367,8 @@ function processer(context) {
     };
 
     const processPage = () => {
+        fse.removeSync(globalBuildFolder);
+        fse.ensureDirSync(globalBuildFolder);
         fse.ensureDirSync(globalCodeFolder);
         fileUtil.emptyFolder(globalCodeFolder, /(components)|(libs)/);
         fileUtil.emptyFolder(globalBuildFolder);
@@ -392,17 +393,14 @@ function processer(context) {
 
             // copy iframe files
             if (iframeWatchList[filePath]) {
-                console.log('~~~~ iframe 文件变化: ', filePath);
                 fse.copySync(filePath, iframeWatchList[filePath].target);
             }
 
             switch(stats.event) {
                 case 'change':
                     if (checkUtil.checkShouldNotShow(globalPageFolder, filePath)) {
-                        console.log('~~~ 文件变化，只复制不处理');
                         copyDocFile(relativeDocFilePath);
                     } else {
-                        console.log('~~~ 文件变化，复制并处理');
                         copyDocFile(relativeDocFilePath);
                         processDocFile(relativeDocFilePath);
                     }
@@ -411,11 +409,8 @@ function processer(context) {
                 case 'add':
 
                     if (checkUtil.checkShouldNotShow(globalPageFolder, filePath)) {
-                        console.log('~~~ 文件新增，只复制不处理');
                         copyDocFile(relativeDocFilePath);
                     } else {
-
-                        console.log('~~~ 文件新增，复制并处理');
 
                         // reget dir tree and shownFilesMap
                         globalPageInfo = dirInfoUtil.getDocInfo(globalPageFolder, globalPageFolder);
@@ -435,8 +430,6 @@ function processer(context) {
                     }
                     break;
                 case 'unlink':
-
-                    console.log('文件被删除: ', filePath);
 
                     // reget dir tree and shownFilesMap
                     globalPageInfo = dirInfoUtil.getDocInfo(globalPageFolder, globalPageFolder);
