@@ -76,8 +76,6 @@ function processer(context) {
 
     const globalCopiedDocFolder = path.join(globalCodeFolder, globalPageName, 'routes/copied-doc');
 
-    const docMap = {};
-
     const iframeWatchList = {};
 
     const processIframeDoc = (docFilePath, targetFilePath) => {
