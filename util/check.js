@@ -2,6 +2,8 @@
 const configUtil = require('./config');
 
 module.exports = {
+
+    // two parts: 1. shouldNotShow 2. shouldNotCopyToCopiedDoc
     checkShouldNotShow(rootFolder, absoluteFilePath) {
 
         // formate relativeFilePath
@@ -9,8 +11,11 @@ module.exports = {
 
         const relativeFilePath = absoluteFilePath.replace(rootFolder);
 
-        // default config
-        if (userConfig._shouldNotShowReg.test(relativeFilePath)) {
+        if (configUtil._shouldNotShowReg.test(relativeFilePath)) {
+            return true;
+        }
+
+        if (configUtil._shouldNotPutInCopiedFolder.test(relativeFilePath)) {
             return true;
         }
 

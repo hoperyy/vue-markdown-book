@@ -333,7 +333,7 @@ function processer(context) {
         fs.readdirSync(globalPageFolder).forEach((filename) => {
             const filePath = path.join(globalPageFolder, filename);
 
-            if (configUtil.defaultShouldNotShowReg.test(filename)) {
+            if (configUtil._shouldNotPutInCopiedFolder.test(filename)) {
                 return;
             }
 
@@ -349,16 +349,12 @@ function processer(context) {
         // only create shown page
         for (let relativeDocFilePath in globalPageInfo.shownFilesMap) {
 
-            if (!checkUtil.checkShouldNotShow(globalPageFolder, path.join(globalPageFolder, relativeDocFilePath))) {
+            processDocFile(relativeDocFilePath);
 
-                processDocFile(relativeDocFilePath);
-
-                // create page file
-                createShownPage(relativeDocFilePath);
-            }
+            // create page file
+            createShownPage(relativeDocFilePath);
 
         }
-
 
         // write route file
         writeRouteFile(path.join(globalCodeFolder, globalPageName, 'routes.js'));
@@ -378,6 +374,7 @@ function processer(context) {
     const processPage = () => {
         fse.removeSync(globalBuildFolder);
         fse.ensureDirSync(globalBuildFolder);
+        fse.removeSync(globalCodeFolder);
         fse.ensureDirSync(globalCodeFolder);
         fileUtil.emptyFolder(globalCodeFolder, /(components)|(libs)/);
         fileUtil.emptyFolder(globalBuildFolder);
@@ -394,6 +391,10 @@ function processer(context) {
 
             const userConfig = configUtil.mergeUserConfig(globalPageFolder, globalPageFolder);
             let relativeDocFilePath = filePath.replace(globalPageFolder, '');
+
+            if (configUtil._shouldNotPutInCopiedFolder.test(relativeDocFilePath)) {
+                return;
+            }
 
             // same as file map
             if (!/^\//.test(relativeDocFilePath)) {
