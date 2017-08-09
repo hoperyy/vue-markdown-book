@@ -16,7 +16,9 @@ module.exports = {
 
         // get dir tree
         const dirTree = fileUtil.readdirTree(currentDocFolder, {
-            exclude: [mergedConfig._shouldNotShowReg, mergedConfig.shouldNotShowReg]
+
+            // same as checkUtil.checkShouldNotShow()
+            exclude: [configUtil._shouldNotPutInCopiedFolder, configUtil._shouldNotShowReg, mergedConfig.shouldNotShowReg]
         });
 
         // format dir tree path

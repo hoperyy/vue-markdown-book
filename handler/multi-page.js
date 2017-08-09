@@ -369,12 +369,10 @@ function processer(context) {
         fileUtil.copyPageFromThemeTemplate(path.join(pathUtil.themeFolder, docNameInfo.iframeTheme), path.join(globalCodeFolder, docNameInfo.md5IframeTheme));
 
         // copy all current doc files to tmp/**/routes/copied-doc
-        // fse.copySync(path.join(globalDocFolder, docName), path.join(globalCodeFolder, docName, 'routes/copied-doc'));
-        // copy all current doc files to tmp/**/routes/copied-doc
         fs.readdirSync(path.join(globalDocFolder, docName)).forEach((filename) => {
             const filePath = path.join(globalDocFolder, docName, filename);
 
-            if (configUtil.defaultShouldNotShowReg.test(filename)) {
+            if (configUtil._shouldNotPutInCopiedFolder.test(path.join(docName, filename))) {
                 return;
             }
 
@@ -414,6 +412,7 @@ function processer(context) {
     const processDocs = () => {
         fse.removeSync(globalBuildFolder);
         fse.ensureDirSync(globalBuildFolder);
+        fse.removeSync(globalCodeFolder);
         fse.ensureDirSync(globalCodeFolder);
         fileUtil.emptyFolder(globalCodeFolder, /(components)|(libs)/);
         fileUtil.emptyFolder(globalBuildFolder);
@@ -432,6 +431,11 @@ function processer(context) {
             const docName = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').split('/').shift();
 
             const userConfig = configUtil.mergeUserConfig(globalDocFolder, path.join(globalDocFolder, docName));
+
+            if (configUtil._shouldNotPutInCopiedFolder.test(filePath.replace(globalDocFolder, ''))) {
+                return;
+            }
+
             const relativeDocFilePath = filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, '').replace(docName, '');
 
             // copy iframe files
@@ -439,7 +443,7 @@ function processer(context) {
                 fse.copySync(filePath, iframeWatchList[filePath].target);
             }
 
-            // return if this is not in doc dir, such as 'bookconfig.js'
+            // return if this is not in doc dir, such as '.bookrc'
             if (!/\//.test(filePath.replace(globalDocFolder, '').replace(/^\./, '').replace(/^\//, ''))) {
                 return;
             }

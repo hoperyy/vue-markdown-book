@@ -5,7 +5,6 @@ const fs = require('fs');
 const defaultUserConfig = {
     theme: 'default',
     iframeTheme: 'iframe-default',
-    _shouldNotShowReg: /((\.staging)|(\.bookrc)|(node\_modules)|(book\-themes)|(package\.json)|(package-lock\.json)|(\.git)|(\.idea)|(\.ds_store))/i,
     shouldNotShowExtnameReg: null
 };
 
@@ -33,7 +32,9 @@ const getConfigInFolder = (folder) => {
 
 module.exports = {
 
-    defaultShouldNotShowReg: defaultUserConfig._shouldNotShowReg,
+    _shouldNotPutInCopiedFolder: /((\.staging)|(\.bookrc)|(node\_modules)|(book\-themes)|(package\.json)|(package-lock\.json)|(\.git)|(\.idea)|(\.ds_store))/i,
+
+    _shouldNotShowReg: /((\.staging)|(\.bookrc)|(node\_modules)|(book\-themes)|(package\.json)|(package-lock\.json)|(\.git)|(\.idea)|(\.ds_store))/i,
 
     mergeUserConfig(rootFolder, absoluteFilePath) {
 
