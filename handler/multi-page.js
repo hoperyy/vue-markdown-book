@@ -402,6 +402,8 @@ function processer(context) {
     };
 
     const processDocs = () => {
+        fse.removeSync(globalBuildFolder);
+        fse.ensureDirSync(globalBuildFolder);
         fse.ensureDirSync(globalCodeFolder);
         fileUtil.emptyFolder(globalCodeFolder, /(components)|(libs)/);
         fileUtil.emptyFolder(globalBuildFolder);
