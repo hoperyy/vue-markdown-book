@@ -5,7 +5,7 @@ const fs = require('fs');
 const defaultUserConfig = {
     theme: 'default',
     iframeTheme: 'iframe-default',
-    _shouldNotShowReg: /((\.bookrc)|(node\_modules)|(book\-themes)|(package\.json)|(package-lock\.json)|(\.git)|(\.idea)|(\.ds_store))/i,
+    _shouldNotShowReg: /((\.staging)|(\.bookrc)|(node\_modules)|(book\-themes)|(package\.json)|(package-lock\.json)|(\.git)|(\.idea)|(\.ds_store))/i,
     shouldNotShowExtnameReg: null
 };
 
@@ -32,6 +32,9 @@ const getConfigInFolder = (folder) => {
 };
 
 module.exports = {
+
+    defaultShouldNotShowReg: defaultUserConfig._shouldNotShowReg,
+
     mergeUserConfig(rootFolder, absoluteFilePath) {
 
         let relativeFilePath = absoluteFilePath.replace(rootFolder, '');

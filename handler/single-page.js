@@ -330,7 +330,16 @@ function processer(context) {
         fileUtil.copyPageFromThemeTemplate(path.join(pathUtil.themeFolder, globalPageInfo.iframeTheme), path.join(globalCodeFolder, globalPageInfo.md5IframeTheme));
 
         // copy all current doc files to tmp/**/routes/copied-doc
-        fse.copySync(globalPageFolder, globalCopiedDocFolder);
+        fs.readdirSync(globalPageFolder).forEach((filename) => {
+            const filePath = path.join(globalPageFolder, filename);
+
+            if (configUtil.defaultShouldNotShowReg.test(filename)) {
+                return;
+            }
+
+            fse.copySync(filePath, path.join(globalCopiedDocFolder, filename));
+        });
+        // fse.copySync(globalPageFolder, globalCopiedDocFolder);
 
         // set utimes to prevent multi webpack callback
         fileUtil.readdirSync(globalCopiedDocFolder).forEach((filePath) => {
