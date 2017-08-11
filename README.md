@@ -10,13 +10,5 @@
 ## 使用
 
 + 启动本地调试: `npm run dev`
-+ 执行 build：`npm run build`
 
-## demo
-
-https://hoperyy.github.io/vue-markdown-book/demo.html#/demo
-
-## todo
-
-+ 支持多个文档主题
 + 主题美化
