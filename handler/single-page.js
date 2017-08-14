@@ -425,10 +425,21 @@ function processer(context) {
 
                         // copy doc file
                         copyDocFile(relativeDocFilePath);
-                        processDocFile(relativeDocFilePath);
 
                         // create shown vue file
-                        createShownPage(relativeDocFilePath);
+                        const tempArr = relativeDocFilePath.split('/');
+                        while(tempArr.length) {
+
+                            const currentRelativePath = tempArr.join('/');
+
+                            if (currentRelativePath) {
+                                processDocFile(currentRelativePath);
+                                createShownPage(currentRelativePath);
+                            }
+
+                            tempArr.pop();
+
+                        }
 
                         // write route file
                         writeRouteFile(path.join(globalCodeFolder, globalPageName, 'routes.js'));
