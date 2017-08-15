@@ -10,9 +10,27 @@ if (false) {
     processer = require('./handler/single-page');
 }
 
-gulp.task('dev', () => {
+console.log(process.argv);
 
-    console.log(process.env.HOME);
+const getArgv = () => {
+    const params = {};
+    const argv = process.argv;
+    for (let i = argv.length - 1; i >= 0; i--) {
+        if (/\=/.test(argv[i])) {
+            const arr = argv[i].split('=');
+            params[arr[0]] = arr[1];
+        }
+    }
+
+    return params;
+};
+
+const params = getArgv();
+
+const tasks = {};
+
+tasks['dev'] = () => {
+
     const fse = require('fs-extra');
     const fileUtil = require('./util/file');
     const tempCodeFolder = path.join(process.env.HOME, '.vuebook/vuebook-temp-code');
@@ -27,18 +45,16 @@ gulp.task('dev', () => {
     fileUtil.copySync(path.join(__dirname, '.babelrc'), path.join(tempCodeFolder, '.babelrc'));
     fileUtil.copySync(path.join(__dirname, 'postcss.config.js'), path.join(tempCodeFolder, 'postcss.config.js'));
 
-    console.log(process.cwd());
-
     processer({
-        docFolder: '/Users/lyy/Downloads/code/my-project/docs', // process.cwd(),
-        buildFolder: path.join('/Users/lyy/Downloads/code/my-project/docs', 'build'),
+        docFolder: params.cwd,
+        buildFolder: path.join(params.cwd, 'build'),
         codeFolder: tempCodeFolder,
         debugPort: 9000,
         currentEnv: 'dev-prod'
     });
-});
+};
 
-gulp.task('build', () => {
+tasks['build'] = () => {
 
     const tempCodeFolder = path.join(__dirname, './temp');
 
@@ -48,4 +64,6 @@ gulp.task('build', () => {
         codeFolder: tempCodeFolder,
         currentEnv: 'build-prod'
     });
-});
+};
+
+tasks[params.task]();
