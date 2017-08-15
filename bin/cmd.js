@@ -16,7 +16,9 @@ commander
     .description('启动.')
     .parse(process.argv)
     .action(() => {
-        require('child_process').execSync(`npm run dev`, {
+        const gulpfile = path.join(__dirname, '../gulpfile.js');
+        const cwd = process.cwd();
+        require('child_process').execSync(`node ${gulpfile} task=dev cwd=${cwd}`, {
             cwd: path.join(__dirname, '..'),
             stdio: 'inherit'
         });
