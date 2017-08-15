@@ -24,10 +24,10 @@ function getEntry(root) {
     return entry;
 }
 
-module.exports = (docFolder, srcCodeFolder, buildFolder) => {
+module.exports = (docFolder, codeFolder, buildFolder) => {
 
     // 获取入口
-    const entry = getEntry(srcCodeFolder);
+    const entry = getEntry(codeFolder);
 
 		const config = {
 				entry: entry,
@@ -44,12 +44,14 @@ module.exports = (docFolder, srcCodeFolder, buildFolder) => {
             },
             modules: [
                 path.resolve(docFolder, 'node_modules/'),      // 工作目录的依赖
+                path.resolve(codeFolder, 'node_modules/'),
                 path.resolve(__dirname, 'node_modules/')    // 脚手架的依赖
             ]
         },
         resolveLoader: {
             modules: [
                 path.resolve(docFolder, 'node_modules/'),      // 工作目录的依赖
+                path.resolve(codeFolder, 'node_modules/'),
                 path.resolve(__dirname, 'node_modules/')     // 脚手架的依赖
             ]
         },
@@ -115,7 +117,7 @@ module.exports = (docFolder, srcCodeFolder, buildFolder) => {
                     test: /\.js$/,
                     loader: 'babel-loader',
                     include: [
-                        srcCodeFolder
+                        codeFolder
                     ]
                 }]
 				},

@@ -7,8 +7,6 @@ module.exports = {
 
     themeFolder: path.join(__dirname, '../theme'),
 
-    codeFolder: path.join(__dirname, '../temp'),
-
     getNameFromPath(filePath) {
         return filePath.replace(/\/$/, '').split('/').pop();
     },

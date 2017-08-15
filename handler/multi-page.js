@@ -66,7 +66,7 @@ function processer(context) {
     const globalDocFolder = context.docFolder;
     let globalBuildFolder = context.buildFolder;
 
-    const globalCodeFolder = pathUtil.codeFolder;
+    const globalCodeFolder = context.codeFolder;
 
     const globalReplaceMap = getReplaceMap(globalDocFolder);
 

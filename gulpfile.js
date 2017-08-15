@@ -14,6 +14,7 @@ gulp.task('dev', () => {
     processer({
         docFolder: path.join(__dirname, 'docs'),
         buildFolder: path.join(__dirname, 'build'),
+        codeFolder: path.join(__dirname, './temp'),
         debugPort: 9000,
         currentEnv: 'dev-prod'
     });
@@ -23,6 +24,7 @@ gulp.task('build', () => {
     processer({
         docFolder: path.join(__dirname, 'docs'),
         buildFolder: path.join(__dirname, 'build'),
+        codeFolder: path.join(__dirname, './temp'),
         currentEnv: 'build-prod'
     });
 });
