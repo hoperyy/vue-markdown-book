@@ -372,9 +372,9 @@ function processer(context) {
     const processPage = () => {
         fse.removeSync(globalBuildFolder);
         fse.ensureDirSync(globalBuildFolder);
-        fse.removeSync(globalCodeFolder);
+        // fse.removeSync(globalCodeFolder);
         fse.ensureDirSync(globalCodeFolder);
-        fileUtil.emptyFolder(globalCodeFolder, /(components)|(libs)/);
+        fileUtil.emptyFolder(globalCodeFolder, /(node_modules)|(\.babelrc)|(postcss\.config\.js)|(components)|(libs)/);
         fileUtil.emptyFolder(globalBuildFolder);
         createPage(globalPageFolder);
     };
