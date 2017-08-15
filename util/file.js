@@ -21,6 +21,11 @@ module.exports = {
         fs.utimesSync(filePath, ((Date.now() - 10 * 1000)) / 1000, (Date.now() - 10 * 1000) / 1000);
     },
 
+    copySync(from, to) {
+        fse.copySync(from, to);
+        this.utime(to);
+    },
+
     emptyFolder(absoluteFolder, ignored) {
         const shouldNotRemove = /(\.idea)|(\.DS_Store)|(\.git)/i;
 

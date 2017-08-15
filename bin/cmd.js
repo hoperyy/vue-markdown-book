@@ -16,7 +16,7 @@ commander
     .description('启动.')
     .parse(process.argv)
     .action(() => {
-        require('child_process').execSync('npm run dev', {
+        require('child_process').execSync(`npm run dev`, {
             cwd: path.join(__dirname, '..'),
             stdio: 'inherit'
         });
