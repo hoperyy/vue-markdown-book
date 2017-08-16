@@ -16,25 +16,26 @@ body {
   margin: 0 auto;
 }
 
-.theme-default-body {
+.theme-vdianh5doc-body {
   display: flex;
   // min-height: 100vh;
   height: 100vh;
   flex-direction: column;
   justify-content: space-between;
 }
-.theme-default-content {
+.theme-vdianh5doc-content {
   display: flex;
   flex: 1;
   padding: 0 20px;
   margin: 20px 0;
 }
-.theme-default-markdown-doc {
+.theme-vdianh5doc-markdown-doc {
   box-sizing: border-box;
   flex: 1;
+  // height: 100vh;
   overflow-y: scroll;
   margin-left: 20px;
-  margin-right: 20px;
+  margin-right: 230px;
   padding: 20px;
   background-color: #fff;
 }
@@ -43,8 +44,18 @@ body {
 @iframe-height: 400px;
 iframe {
     box-sizing: border-box;
+    position: fixed;
+    right: 30px;
+    top: 80px;
+    width: @iframe-width;
+    height: @iframe-height;
+    padding-top: 53px;
+    padding-bottom: 57px;
+    padding-left: 14px;
+    padding-right: 11px;
     border: 0;
-    width: 100%;
+    background: url(https://si.geilicdn.com/hz_img_11770000015c2f4bf8dd0a026860_374_784_unadjust.png) 0 0 no-repeat;
+    background-size: @iframe-width @iframe-height;
 }
 
 /* markdown */
