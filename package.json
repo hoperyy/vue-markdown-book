@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "webpack.config.js",
-  "scripts": {
-    "dev": "gulp dev",
-    "build": "gulp build"
-  },
   "bin": {
     "vuebook": "./bin/cmd.js"
   },
