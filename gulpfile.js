@@ -10,8 +10,6 @@ if (false) {
     processer = require('./handler/single-page');
 }
 
-console.log(process.argv);
-
 const getArgv = () => {
     const params = {};
     const argv = process.argv;
