@@ -325,7 +325,7 @@ function processer(context) {
         fileUtil.copyPageFromThemeTemplate(globalPageInfo.themeTemplateFolder, path.join(globalCodeFolder, globalPageName));
 
         // copy iframe page from template
-        fileUtil.copyPageFromThemeTemplate(path.join(pathUtil.themeFolder, globalPageInfo.iframeTheme), path.join(globalCodeFolder, globalPageInfo.md5IframeTheme));
+        fileUtil.copyPageFromThemeTemplate(globalPageInfo.iframeThemeTemplateFolder, path.join(globalCodeFolder, globalPageInfo.md5IframeTheme));
 
         // copy all current doc files to tmp/**/routes/copied-doc
         fs.readdirSync(globalPageFolder).forEach((filename) => {

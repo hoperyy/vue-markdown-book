@@ -113,9 +113,9 @@ module.exports = {
 
         // set template folder
         let themeTemplateFolder = path.join(pathUtil.themeFolder, config.theme);
-        let iframeThemeTemplateFolder = path.join(pathUtil.themeFolder, config.theme);
+        let iframeThemeTemplateFolder = path.join(pathUtil.themeFolder, config.iframeTheme);
         const userThemeTemplateFolder = path.join(rootFolder, 'book-theme', config.theme);
-        const userIframeThemeTemplateFolder = path.join(rootFolder, 'book-theme', config.theme);
+        const userIframeThemeTemplateFolder = path.join(rootFolder, 'book-theme', config.iframeTheme);
 
         // prefer themes in doc
         if (fs.existsSync(userThemeTemplateFolder)) {
