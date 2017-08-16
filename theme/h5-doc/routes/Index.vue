@@ -1,9 +1,9 @@
+
 <template>
-    <div class="theme-default-body">
-        <Mheader></Mheader>
-        <div class="theme-default-content">
-            <Mmenu :currentIndex=$$_FILE_INDEX_$$></Mmenu>
-            <div class="common-theme-markdown-doc theme-default-markdown-doc"></div>
+    <div class="theme-vdianh5doc-body">
+        <div class="theme-vdianh5doc-content">
+            <Mmenu :currentIndex="['0']"></Mmenu>
+            <div class="common-theme-markdown-doc theme-vdianh5doc-markdown-doc"></div>
         </div>
     </div>
 </template>
@@ -17,7 +17,7 @@ export default {
     components: {
         Mheader,
         Mfooter,
-        Mmenu,
+        Mmenu
     }
 };
 
