@@ -24,5 +24,18 @@ commander
         });
     });
 
+commander
+    .command('build')
+    .description('build.')
+    .parse(process.argv)
+    .action(() => {
+        const gulpfile = path.join(__dirname, '../gulpfile.js');
+        const cwd = process.cwd();
+        require('child_process').execSync(`node ${gulpfile} task=build cwd=${cwd}`, {
+            cwd: path.join(__dirname, '..'),
+            stdio: 'inherit'
+        });
+    });
+
 
 commander.parse(process.argv);

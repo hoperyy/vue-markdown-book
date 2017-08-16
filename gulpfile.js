@@ -54,11 +54,23 @@ tasks['dev'] = () => {
 
 tasks['build'] = () => {
 
-    const tempCodeFolder = path.join(__dirname, './temp');
+    const fse = require('fs-extra');
+    const fileUtil = require('./util/file');
+    const tempCodeFolder = path.join(process.env.HOME, '.vuebook/vuebook-temp-code');
+
+    fileUtil.writeFileSync(path.join(tempCodeFolder, 'package.json'), JSON.stringify({
+        name: "temp-code",
+        version: "0.0.1"
+    }));
+
+    require('child_process').execSync(`cd ${tempCodeFolder} && npm i babel-preset-es2015 autoprefixer`);
+
+    fileUtil.copySync(path.join(__dirname, '.babelrc'), path.join(tempCodeFolder, '.babelrc'));
+    fileUtil.copySync(path.join(__dirname, 'postcss.config.js'), path.join(tempCodeFolder, 'postcss.config.js'));
 
     processer({
-        docFolder: path.join(__dirname, 'docs'),
-        buildFolder: path.join(__dirname, 'build'),
+        docFolder: params.cwd,
+        buildFolder: path.join(params.cwd, 'build'),
         codeFolder: tempCodeFolder,
         currentEnv: 'build-prod'
     });
