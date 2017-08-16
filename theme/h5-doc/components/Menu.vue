@@ -1,5 +1,5 @@
 <template>
-    <div class="menu">
+    <div class="theme-h5-doc-menu">
         <ul class="level1">
             <li v-bind:class="getClass('level1-item', level1Item)" v-for="(level1Item, level1Index) in fileTree">
                 <span v-if="level1Item.type === 'directory'">{{level1Item.routerPath.split('/').pop()}}</span>
@@ -58,16 +58,6 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.menu {
-  display: flex;
-  padding-left: 1px;
-  background-color: #fff;
-}
-.menu-box {
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
-  margin-right: -1px;
-}
 
 ul,
 li {
@@ -80,30 +70,25 @@ ul {
     padding-left: 5px;
 }
 
-a {
+.is-file >:first-child,
+.is-folder >:first-child {
     display: block;
     text-decoration: none;
-    color: #9da5b3;
-}
-
-span {
-    display: block;
-}
-
-.is-folder {
-    color: #9da5b3;
+    color: inherit;
+    height: 18px;
+    line-height: 18px;
     font-weight: 700;
     padding: 8px;
     display: block;
 }
 
-.is-file {
-    padding: 4px 8px;
-    display: block;
-    text-decoration: none;
-    color: #9da5b3;
-    transition: color .2s;
+.is-file >:first-child {
+    color: #4c555a;
     font-weight: normal;
+}
+
+.is-folder >:first-child {
+    color: #9da5b3;
 }
 
 .current >:first-child {
