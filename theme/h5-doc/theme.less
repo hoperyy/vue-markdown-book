@@ -23,35 +23,48 @@ body {
   flex-direction: column;
   justify-content: space-between;
 }
+
+@layout-margin-right: 350px;
+
 .theme-h5-doc-content {
   display: flex;
   flex: 1;
-  margin: 20px 0;
+  margin-right: @layout-margin-right;
+}
+.theme-h5-doc-menu {
+    display: flex;
+    box-sizing: border-box;
+    width: 16%;
+    padding-left: 1px;
+    background-color: #f9fafb;
+    padding: 42px 0 42px 20px;
+    color: #4c555a;
+    overflow-y: scroll;
 }
 .theme-h5-doc-markdown-doc {
   box-sizing: border-box;
-  flex: 1;
+  // flex: 1;
+  width: 83%;
   // height: 100vh;
   overflow-y: scroll;
-  margin-left: 20px;
-  margin-right: 330px;
+  // margin-right: 330px;
   padding: 20px;
   background-color: #fff;
 }
 
-@iframe-width: 300px;
-@iframe-height: 644px;
+@iframe-width: @layout-margin-right - 20;
+@iframe-height: @iframe-width * (391 / 183);
 iframe {
     box-sizing: border-box;
     position: fixed;
-    right: 10px;
+    right: 5px;
     top: 10px;
     width: @iframe-width;
     height: @iframe-height;
     padding: 80px 20px;
     border: 0;
     background: url(http://mint-ui.github.io/docs/static/img/phone.5909f66.png) 0 0 no-repeat;
-    background-size: @iframe-width @iframe-height;
+    background-size: 100% 100%;
 }
 
 /* markdown */
@@ -406,6 +419,7 @@ iframe {
     font-size: 13px;
     line-height: 19px;
     overflow: auto;
+    overflow-x: scroll;
     padding: 6px 10px;
     border-radius: 3px;
   }
@@ -416,6 +430,7 @@ iframe {
     font-size: 13px;
     line-height: 19px;
     overflow: auto;
+    overflow-x: scroll;
     padding: 6px 10px;
     border-radius: 3px;
   }
