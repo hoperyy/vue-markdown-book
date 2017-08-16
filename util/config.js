@@ -32,9 +32,9 @@ const getConfigInFolder = (folder) => {
 
 module.exports = {
 
-    _shouldNotPutInCopiedFolder: /((\.staging)|(\.bookrc)|(\.vuebook)|(\/build)|(node\_modules)|(book\-themes)|(package\.json)|(package-lock\.json)|(\.git)|(\.idea)|(\.ds_store))/i,
+    _shouldNotPutInCopiedFolder: /((\.staging)|(\.bookrc)|(\.vuebook)|(book\-theme)|(\/build)|(node\_modules)|(book\-themes)|(package\.json)|(package-lock\.json)|(\.git)|(\.idea)|(\.ds_store))/i,
 
-    _shouldNotShowReg: /((\.staging)|(\.bookrc)|(\.vuebook)|(\/build)|(node\_modules)|(book\-themes)|(package\.json)|(package-lock\.json)|(\.git)|(\.idea)|(\.ds_store))/i,
+    _shouldNotShowReg: /((\.staging)|(\.bookrc)|(\.vuebook)|(\/build)|(book\-theme)|(node\_modules)|(book\-themes)|(package\.json)|(package-lock\.json)|(\.git)|(\.idea)|(\.ds_store))/i,
 
     mergeUserConfig(rootFolder, absoluteFilePath) {
 

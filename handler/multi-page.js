@@ -366,7 +366,7 @@ function processer(context) {
         fileUtil.copyPageFromThemeTemplate(docNameInfo.themeTemplateFolder, path.join(globalCodeFolder, docName));
 
         // copy iframe page from template
-        fileUtil.copyPageFromThemeTemplate(path.join(pathUtil.themeFolder, docNameInfo.iframeTheme), path.join(globalCodeFolder, docNameInfo.md5IframeTheme));
+        fileUtil.copyPageFromThemeTemplate(docNameInfo.iframeThemeTemplateFolder, path.join(globalCodeFolder, docNameInfo.md5IframeTheme));
 
         // copy all current doc files to tmp/**/routes/copied-doc
         fs.readdirSync(path.join(globalDocFolder, docName)).forEach((filename) => {
@@ -412,9 +412,9 @@ function processer(context) {
     const processDocs = () => {
         fse.removeSync(globalBuildFolder);
         fse.ensureDirSync(globalBuildFolder);
-        fse.removeSync(globalCodeFolder);
+        // fse.removeSync(globalCodeFolder);
         fse.ensureDirSync(globalCodeFolder);
-        fileUtil.emptyFolder(globalCodeFolder, /(components)|(libs)/);
+        fileUtil.emptyFolder(globalCodeFolder, /(node_modules)|(\.babelrc)|(postcss\.config\.js)|(components)|(libs)/);
         fileUtil.emptyFolder(globalBuildFolder);
         fs.readdirSync(globalDocFolder).forEach((docName) => {
             createPage(path.join(globalDocFolder, docName));

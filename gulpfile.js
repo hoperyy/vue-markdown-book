@@ -4,7 +4,7 @@ const gulp = require('gulp');
 
 let processer;
 
-if (false) {
+if (true) {
     processer = require('./handler/multi-page');
 } else {
     processer = require('./handler/single-page');
