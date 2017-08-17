@@ -9,7 +9,7 @@
 
 ## 效果图
 
-![效果图](./assets/markdown-img-paste-20170817212333440.png)
+![效果图](./assets/demo.png)
 
 ## 使用
 
