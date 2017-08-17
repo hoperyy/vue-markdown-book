@@ -31,32 +31,32 @@ module.exports = (docFolder, codeFolder, buildFolder) => {
 
 		const config = {
 				entry: entry,
-        output: {
-            path: path.join(buildFolder, 'static'),
-            publicPath: '/website/static/',
-            filename: '[name].js',
-            chunkFilename: '[name].js'
-        },
-        resolve: {
-            mainFields: ['browser', 'module', 'jsnext:main', 'main'],
-            alias: {
-                vue: 'vue/dist/vue.js',
-            },
-            modules: [
-                path.resolve(docFolder, 'node_modules/'),      // 工作目录的依赖
-                path.resolve(codeFolder, 'node_modules/'),
-                path.resolve(__dirname, 'node_modules/')    // 脚手架的依赖
-            ]
-        },
-        resolveLoader: {
-            modules: [
-                path.resolve(docFolder, 'node_modules/'),      // 工作目录的依赖
-                path.resolve(codeFolder, 'node_modules/'),
-                path.resolve(__dirname, 'node_modules/')     // 脚手架的依赖
-            ]
-        },
+                output: {
+                    path: path.join(buildFolder, 'static'),
+                    publicPath: '/website/static/',
+                    filename: '[name].js',
+                    chunkFilename: '[name].js'
+                },
+                resolve: {
+                    mainFields: ['browser', 'module', 'jsnext:main', 'main'],
+                    alias: {
+                        vue: 'vue/dist/vue.js',
+                    },
+                    modules: [
+                        path.resolve(docFolder, 'node_modules/'),      // 工作目录的依赖
+                        path.resolve(codeFolder, 'node_modules/'),
+                        path.resolve(__dirname, 'node_modules/')    // 脚手架的依赖
+                    ]
+                },
+                resolveLoader: {
+                    modules: [
+                        path.resolve(docFolder, 'node_modules/'),      // 工作目录的依赖
+                        path.resolve(codeFolder, 'node_modules/'),
+                        path.resolve(__dirname, 'node_modules/')     // 脚手架的依赖
+                    ]
+                },
 				module: {
-						rules: [{
+					rules: [{
                     test: /\.jpg$/,
                     use: 'url-loader?name=img/[hash].[ext]&mimetype=image/jpg&limit=8000'
                 }, {
@@ -119,21 +119,20 @@ module.exports = (docFolder, codeFolder, buildFolder) => {
                     include: [
                         codeFolder
                     ]
-                }]
-				},
+                }]},
 				plugins: [
-            new webpack.optimize.CommonsChunkPlugin({
-                name: 'vendor',
-                filename: 'common.js',
-                minChunks: Infinity,
-            }),
-            // new StringReplacePlugin(),
-            new ExtractTextPlugin({
-                filename: '[name].css',
-                disable: false
-            }),
-            new StringReplacePlugin()
-        ]
+                    new webpack.optimize.CommonsChunkPlugin({
+                        name: 'vendor',
+                        filename: 'common.js',
+                        minChunks: Infinity,
+                    }),
+                    // new StringReplacePlugin(),
+                    new ExtractTextPlugin({
+                        filename: '[name].css',
+                        disable: false
+                    }),
+                    new StringReplacePlugin()
+                ]
 		};
 
 		return config;
