@@ -9,9 +9,12 @@
 
 ## 使用
 
++   `git clone git@github.com:hoperyy/vue-markdown-book.git`
++   `npm link` (生成全局命令 `vuebook`，可能需要加 `sudo`)
++   进入另一个目录
 +   `mkdir doc`
 +   `cd doc`
-+   编辑文件内容
++   `vuebook init`
 +   `vuebook dev`
 +   打开 [http:127.0.0.1:9000/doc.html](http:127.0.0.1:9000/doc.html)
 
@@ -24,15 +27,18 @@
         shouldNotShowReg: /(assets)/i, // 设置不显示在页面的文件
         shouldNotShowExtnameReg: /(\.md)/i, // 设置不显示的文件后缀
         theme: 'default', // 选择主题（默认是 default）
-        iframeTheme: 'default-iframe' // 选择 iframe 页面的主题（默认是 default-iframe）
+        iframeTheme: 'iframe-default' // 选择 iframe 页面的主题（默认是 default-iframe）
     };
     ```
 
 +   自定义主题
-    +   `cd doc`
-    +   `mkdir book-themes`
-    +   编辑主题页面代码，主题页面参考 `./theme/` 下的文件目录
+    +   `cd book-themes`
+    +   编辑主题页面代码，主题页面参考 `book-themes/` 下的文件目录
 
-+   todo
++   内置语法
 
-    +   默认主题美化
+    `<iframe-doc src="xxx"></iframe-doc>`
+
+    嵌入 iframe 页面，属性 `src` 值为 `.vue` 或 `.md` 文件，例：`<iframe-doc src="./test.vue"></iframe-doc>`
+
+    
