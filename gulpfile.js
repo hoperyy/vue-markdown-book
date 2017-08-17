@@ -1,4 +1,5 @@
 
+const fs = require('fs');
 const path = require('path');
 const gulp = require('gulp');
 
@@ -30,18 +31,14 @@ const tasks = {};
 tasks['dev'] = () => {
 
     const fse = require('fs-extra');
-    const fileUtil = require('./util/file');
     const tempCodeFolder = path.join(process.env.HOME, '.vuebook/vuebook-temp-code');
 
-    fileUtil.writeFileSync(path.join(tempCodeFolder, 'package.json'), JSON.stringify({
-        name: "temp-code",
-        version: "0.0.1"
-    }));
-
-    require('child_process').execSync(`cd ${tempCodeFolder} && npm i babel-preset-es2015 autoprefixer`);
-
-    fileUtil.copySync(path.join(__dirname, '.babelrc'), path.join(tempCodeFolder, '.babelrc'));
-    fileUtil.copySync(path.join(__dirname, 'postcss.config.js'), path.join(tempCodeFolder, 'postcss.config.js'));
+    const from = path.join(__dirname, 'node_modules');
+    const to = path.join(tempCodeFolder, 'node_modules');
+    if (fs.existsSync(to)) {
+        fse.removeSync(to);
+    }
+    fse.ensureSymlinkSync(from, to);
 
     processer({
         docFolder: params.cwd,
@@ -55,18 +52,14 @@ tasks['dev'] = () => {
 tasks['build'] = () => {
 
     const fse = require('fs-extra');
-    const fileUtil = require('./util/file');
     const tempCodeFolder = path.join(process.env.HOME, '.vuebook/vuebook-temp-code');
 
-    fileUtil.writeFileSync(path.join(tempCodeFolder, 'package.json'), JSON.stringify({
-        name: "temp-code",
-        version: "0.0.1"
-    }));
-
-    require('child_process').execSync(`cd ${tempCodeFolder} && npm i babel-preset-es2015 autoprefixer`);
-
-    fileUtil.copySync(path.join(__dirname, '.babelrc'), path.join(tempCodeFolder, '.babelrc'));
-    fileUtil.copySync(path.join(__dirname, 'postcss.config.js'), path.join(tempCodeFolder, 'postcss.config.js'));
+    const from = path.join(__dirname, 'node_modules');
+    const to = path.join(tempCodeFolder, 'node_modules');
+    if (fs.existsSync(to)) {
+        fse.removeSync(to);
+    }
+    fse.ensureSymlinkSync(from, to);
 
     processer({
         docFolder: params.cwd,
