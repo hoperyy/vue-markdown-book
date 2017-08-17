@@ -7,6 +7,10 @@
 
 有项目需要写文档的话，可以考虑这个工具
 
+## 效果图
+
+![效果图](./assets/markdown-img-paste-20170817212333440.png)
+
 ## 使用
 
 +   `git clone git@github.com:hoperyy/vue-markdown-book.git`
