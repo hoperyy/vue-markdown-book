@@ -75,7 +75,6 @@ ul {
     display: block;
     text-decoration: none;
     color: inherit;
-    height: 18px;
     line-height: 18px;
     font-weight: 700;
     padding: 8px;
