@@ -1,0 +1,6 @@
+module.exports = {
+    shouldNotShowReg: /(assets)/i, // 设置不显示在页面的文件
+    shouldNotShowExtnameReg: /(\.md)/i, // 设置不显示的文件后缀
+    theme: 'default', // 选择主题（默认是 default）
+    iframeTheme: 'iframe-default' // 选择 iframe 页面的主题（默认是 default-iframe）
+};
