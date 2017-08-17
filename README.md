@@ -27,7 +27,7 @@
         shouldNotShowReg: /(assets)/i, // 设置不显示在页面的文件
         shouldNotShowExtnameReg: /(\.md)/i, // 设置不显示的文件后缀
         theme: 'default', // 选择主题（默认是 default）
-        iframeTheme: 'iframe-default' // 选择 iframe 页面的主题（默认是 default-iframe）
+        iframeTheme: 'iframe-default' // 选择 iframe 页面的主题（默认是 iframe-default）
     };
     ```
 
@@ -40,5 +40,3 @@
     `<iframe-doc src="xxx"></iframe-doc>`
 
     嵌入 iframe 页面，属性 `src` 值为 `.vue` 或 `.md` 文件，例：`<iframe-doc src="./test.vue"></iframe-doc>`
-
-    
