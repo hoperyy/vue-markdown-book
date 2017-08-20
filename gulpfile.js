@@ -49,6 +49,8 @@ const tasks = {
 
     dev() {
 
+        console.log('preparing...');
+
         const cacheFolder = path.join(process.env.HOME, '.v2u2eb2ook');
 
         const scaffoldFolder = path.join(cacheFolder, 'scaffold');
