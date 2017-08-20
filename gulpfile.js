@@ -39,10 +39,14 @@ const syncScaffold = (scaffoldFolder) => {
     fse.ensureSymlinkSync(path.join(__dirname, 'node_modules'), nmPath);
 };
 
-const syncDoc = (from, to) => {
+const syncDoc = (from, to, {watch}) => {
     syncDirectory(from, to, {
-        watch: true
+        watch: watch
     });
+};
+
+const prepare = cacheFolder => {
+
 };
 
 const tasks = {
@@ -60,7 +64,7 @@ const tasks = {
         // sync scaffold
         syncScaffold(scaffoldFolder);
 
-        syncDoc(cwd, docFolder);
+        syncDoc(cwd, docFolder, { watch: true });
 
         processer({
             docFolder,
@@ -73,20 +77,23 @@ const tasks = {
 
     build() {
 
-        const fse = require('fs-extra');
-        const tempCodeFolder = path.join(process.env.HOME, '.vuebook/vuebook-temp-code');
+        console.log('preparing...');
 
-        const from = path.join(__dirname, 'node_modules');
-        const to = path.join(tempCodeFolder, 'node_modules');
-        if (fs.existsSync(to)) {
-            fse.removeSync(to);
-        }
-        fse.ensureSymlinkSync(from, to);
+        const cacheFolder = path.join(process.env.HOME, '.v2u2eb2ook');
+
+        const scaffoldFolder = path.join(cacheFolder, 'scaffold');
+
+        const docFolder = path.join(scaffoldFolder, 'workspace', encodeURIComponent(cwd), cwd.replace(/\/$/, '').split('/').pop());
+
+        // sync scaffold
+        syncScaffold(scaffoldFolder);
+
+        syncDoc(cwd, docFolder, { watch: false });
 
         processer({
-            docFolder: cwd,
+            docFolder,
             buildFolder: path.join(cwd, 'build'),
-            codeFolder: tempCodeFolder,
+            codeFolder: path.join(scaffoldFolder, 'vuebook-temp-code'),
             currentEnv: 'build-prod'
         });
     }
