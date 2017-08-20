@@ -3,13 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const gulp = require('gulp');
 
-let processer;
+const fse = require('fs-extra');
 
-if (false) {
-    processer = require('./handler/multi-page');
-} else {
-    processer = require('./handler/single-page');
-}
+const syncDirectory = require('sync-directory');
+
+// const processer = require('./handler/multi-page');
+const processer = require('./handler/single-page');
 
 const getArgv = () => {
     const params = {};
@@ -24,49 +23,71 @@ const getArgv = () => {
     return params;
 };
 
-const params = getArgv();
+const { cwd, task } = getArgv();
 
-const tasks = {};
-
-tasks['dev'] = () => {
-
-    const fse = require('fs-extra');
-    const tempCodeFolder = path.join(process.env.HOME, '.vuebook/vuebook-temp-code');
-
-    const from = path.join(__dirname, 'node_modules');
-    const to = path.join(tempCodeFolder, 'node_modules');
-    if (fs.existsSync(to)) {
-        fse.removeSync(to);
+const syncScaffold = (scaffoldFolder) => {
+    const nmPath = path.join(scaffoldFolder, 'node_modules');
+    if (fs.existsSync(nmPath)) {
+        fse.removeSync(nmPath);
     }
-    fse.ensureSymlinkSync(from, to);
+    syncDirectory(__dirname, scaffoldFolder, {
+        ignored: /node\_modules/i
+    });
+    if (fs.existsSync(nmPath)) {
+        fse.removeSync(nmPath);
+    }
+    fse.ensureSymlinkSync(path.join(__dirname, 'node_modules'), nmPath);
+};
 
-    processer({
-        docFolder: params.cwd,
-        buildFolder: path.join(params.cwd, 'build'),
-        codeFolder: tempCodeFolder,
-        debugPort: 9000,
-        currentEnv: 'dev-prod'
+const syncDoc = (from, to) => {
+    syncDirectory(from, to, {
+        watch: true
     });
 };
 
-tasks['build'] = () => {
+const tasks = {
 
-    const fse = require('fs-extra');
-    const tempCodeFolder = path.join(process.env.HOME, '.vuebook/vuebook-temp-code');
+    dev() {
 
-    const from = path.join(__dirname, 'node_modules');
-    const to = path.join(tempCodeFolder, 'node_modules');
-    if (fs.existsSync(to)) {
-        fse.removeSync(to);
+        const cacheFolder = path.join(process.env.HOME, '.v2u2eb2ook');
+
+        const scaffoldFolder = path.join(cacheFolder, 'scaffold');
+
+        const docFolder = path.join(scaffoldFolder, 'workspace', encodeURIComponent(cwd), cwd.replace(/\/$/, '').split('/').pop());
+
+        // sync scaffold
+        syncScaffold(scaffoldFolder);
+
+        syncDoc(cwd, docFolder);
+
+        processer({
+            docFolder,
+            buildFolder: path.join(cwd, 'build'),
+            codeFolder: path.join(scaffoldFolder, 'vuebook-temp-code'),
+            debugPort: 9000,
+            currentEnv: 'dev-prod'
+        });
+    },
+
+    build() {
+
+        const fse = require('fs-extra');
+        const tempCodeFolder = path.join(process.env.HOME, '.vuebook/vuebook-temp-code');
+
+        const from = path.join(__dirname, 'node_modules');
+        const to = path.join(tempCodeFolder, 'node_modules');
+        if (fs.existsSync(to)) {
+            fse.removeSync(to);
+        }
+        fse.ensureSymlinkSync(from, to);
+
+        processer({
+            docFolder: cwd,
+            buildFolder: path.join(cwd, 'build'),
+            codeFolder: tempCodeFolder,
+            currentEnv: 'build-prod'
+        });
     }
-    fse.ensureSymlinkSync(from, to);
-
-    processer({
-        docFolder: params.cwd,
-        buildFolder: path.join(params.cwd, 'build'),
-        codeFolder: tempCodeFolder,
-        currentEnv: 'build-prod'
-    });
 };
 
-tasks[params.task]();
+tasks[task]();
