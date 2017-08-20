@@ -49,9 +49,9 @@ const getReplaceMap = (currentFolder) => {
             'dev-daily': './website/static',
             'dev-pre': './website/static',
             'dev-prod': './website/static',
-            'build-daily': './static',
-            'build-daily': './static',
-            'build-daily': './static'
+            'build-daily': './website/static',
+            'build-pre': './website/static',
+            'build-prod': './website/static'
         }
     };
 
@@ -520,23 +520,28 @@ function processer(context) {
         processPage();
 
         // get default webpack config
-        const webpackConfig = require('../webpack.config')(globalCodeFolder, globalBuildFolder);
+        const webpackConfig = require('../webpack.config')(globalPageFolder, globalCodeFolder, globalBuildFolder);
+
+        // rules
+        webpackConfig.module.rules.push(getStringReplaceLoader(globalReplaceMap, globalCurrentEnv));
 
         // rules
         webpackConfig.module.rules.forEach((item) => {
 
-            if (item.test.test('.css')) {
+            if (item.test.toString() === /\.css$/.toString()) {
                 item.use = ['vue-style-loader', 'css-loader', 'postcss-loader'];
-            } else if (item.test.test('.less')) {
+            } else if (item.test.toString() === /\.less$/.toString()) {
                 item.use = ['vue-style-loader', 'css-loader', 'postcss-loader', 'less-loader'];
-            } else if (item.test.test('.vue')) {
+            } else if (item.test.toString() === /\.vue$/.toString()) {
                 item.options.loaders.css = ['vue-style-loader', 'css-loader', 'postcss-loader'];
                 item.options.loaders.less = ['vue-style-loader', 'css-loader', 'postcss-loader', 'less-loader'];
             }
 
         });
 
-        webpack(webpackConfig, () => {});
+        webpack(webpackConfig, () => {
+            console.log('compilication done.');
+        });
 
     };
 
