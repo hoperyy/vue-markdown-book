@@ -65,18 +65,12 @@ function processer(context) {
     // can be replaced
     const globalPageFolder = context.docFolder;
     let globalBuildFolder = context.buildFolder;
-
     const globalCodeFolder = context.codeFolder;
-
     const globalReplaceMap = getReplaceMap(globalPageFolder);
-
     let globalPageInfo = dirInfoUtil.getDocInfo(globalPageFolder, globalPageFolder);
-
     const globalPageName = pathUtil.getNameFromPath(globalPageFolder);
-
     const globalCopiedDocFolder = path.join(globalCodeFolder, globalPageName, 'routes/copied-doc');
-
-    const iframeWatchList = {};
+    const globalIframeWatchList = {};
 
     const processIframeDoc = (docFilePath, targetFilePath) => {
 
@@ -128,7 +122,7 @@ function processer(context) {
 
                 // add into watch list
                 const srcDocFileFolderName = path.dirname(docFilePath);
-                iframeWatchList[path.join(srcDocFileFolderName, src)] = {
+                globalIframeWatchList[path.join(srcDocFileFolderName, src)] = {
                     target: loadedIframeFile
                 }
 
@@ -269,12 +263,8 @@ function processer(context) {
 
     // create file-tree.js
     const writeFileTreeJsFile = (targetFile) => {
-
-        const dirTree = globalPageInfo.dirTree;
-
         fse.ensureFileSync(targetFile);
-        const contentStr = JSON.stringify(dirTree);
-        fileUtil.writeFileSync(targetFile, `module.exports=${contentStr}`);
+        fileUtil.writeFileSync(targetFile, `module.exports=${JSON.stringify(globalPageInfo.dirTree)}`);
     };
 
     // create vue routes
@@ -337,7 +327,6 @@ function processer(context) {
 
             fse.copySync(filePath, path.join(globalCopiedDocFolder, filename));
         });
-        // fse.copySync(globalPageFolder, globalCopiedDocFolder);
 
         // set utimes to prevent multi webpack callback
         fileUtil.readdirSync(globalCopiedDocFolder).forEach((filePath) => {
@@ -372,7 +361,6 @@ function processer(context) {
     const processPage = () => {
         fse.removeSync(globalBuildFolder);
         fse.ensureDirSync(globalBuildFolder);
-        // fse.removeSync(globalCodeFolder);
         fse.ensureDirSync(globalCodeFolder);
         fileUtil.emptyFolder(globalCodeFolder, /(node_modules)|(\.babelrc)|(postcss\.config\.js)|(components)|(libs)/);
         fileUtil.emptyFolder(globalBuildFolder);
@@ -400,8 +388,8 @@ function processer(context) {
             }
 
             // copy iframe files
-            if (iframeWatchList[filePath]) {
-                fse.copySync(filePath, iframeWatchList[filePath].target);
+            if (globalIframeWatchList[filePath]) {
+                fse.copySync(filePath, globalIframeWatchList[filePath].target);
             }
 
             switch(stats.event) {
