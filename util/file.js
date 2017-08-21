@@ -75,7 +75,7 @@ module.exports = {
 
     },
 
-    replaceHtmlKeywords(targetFile, pageName, docName, cdnUrl) {
+    replaceHtmlKeywords(targetFile, {pageName, docName, cdnUrl}) {
 
         const htmlPath = targetFile;
 

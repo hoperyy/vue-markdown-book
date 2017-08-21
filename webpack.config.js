@@ -16,7 +16,13 @@ function getEntry(root) {
         const filepath = path.join(root, filename);
         if (fs.statSync(filepath).isDirectory()) {
             if (fs.existsSync(path.join(filepath, 'index.html'))) {
-                  entry[filename + '/index'] = [path.join(root, filename, 'index.js')];
+
+                if (/\-iframe/.test(filename)) {
+                    entry['iframe'] = [path.join(root, filename, 'index.js')];
+                } else {
+                    entry['index'] = [path.join(root, filename, 'index.js')];
+                }
+
             }
         }
     });
@@ -33,7 +39,7 @@ module.exports = (docFolder, codeFolder, buildFolder) => {
 				entry: entry,
                 output: {
                     path: path.join(buildFolder, 'static'),
-                    publicPath: '/website/static/',
+                    publicPath: '/static/',
                     filename: '[name].js',
                     chunkFilename: '[name].js'
                 },

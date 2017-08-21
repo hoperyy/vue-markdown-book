@@ -46,12 +46,12 @@ const getReplaceMap = (currentFolder) => {
 
     const keyWords = {
         '$$_CDNURL_$$': {
-            'dev-daily': './website/static',
-            'dev-pre': './website/static',
-            'dev-prod': './website/static',
-            'build-daily': './website/static',
-            'build-pre': './website/static',
-            'build-prod': './website/static'
+            'dev-daily': '../static',
+            'dev-pre': '../static',
+            'dev-prod': '../static',
+            'build-daily': '../static',
+            'build-pre': '../static',
+            'build-prod': '../static'
         }
     };
 
@@ -132,7 +132,7 @@ function processer(context) {
             const replaced = matchedItem
                               .replace('<iframe-doc', '<iframe')
                               .replace('</iframe-doc>', '</iframe>')
-                              .replace(src, `/${md5IframeTheme}.html#/${md5String}`);
+                              .replace(src, `/pages/iframe.html#/${md5String}`);
 
             while(replacedContent.indexOf(matchedItem) !== -1) {
                 replacedContent = replacedContent.replace(matchedItem, replaced);
@@ -168,7 +168,7 @@ function processer(context) {
         const docFilePath = path.join(globalPageFolder, relativeDocFilePath);
         const copiedDocFilePath = path.join(globalCopiedDocFolder, relativeDocFilePath);
 
-        const isFile = true;//fs.statSync(docFilePath).isFile();
+        const isFile = true; //fs.statSync(docFilePath).isFile();
 
         let processedFilePath = copiedDocFilePath;
 
@@ -350,12 +350,12 @@ function processer(context) {
         writeFileTreeJsFile(path.join(globalCodeFolder, globalPageName, 'file-tree.js'));
 
         const cdnUrl = globalReplaceMap['$$_CDNURL_$$'][globalCurrentEnv];
-        fileUtil.replaceHtmlKeywords(path.join(globalCodeFolder, globalPageName, 'index.html'), configUtil.mergeUserConfig(globalPageFolder, globalPageFolder).pageName || globalPageName, globalPageName, cdnUrl);
-        fileUtil.replaceHtmlKeywords(path.join(globalCodeFolder, globalPageInfo.md5IframeTheme, 'index.html'), globalPageInfo.md5IframeTheme, globalPageInfo.md5IframeTheme, cdnUrl);
+        fileUtil.replaceHtmlKeywords(path.join(globalCodeFolder, globalPageName, 'index.html'), { pageName: configUtil.mergeUserConfig(globalPageFolder, globalPageFolder).pageName || globalPageName, docName: globalPageName, cdnUrl});
+        fileUtil.replaceHtmlKeywords(path.join(globalCodeFolder, globalPageInfo.md5IframeTheme, 'index.html'), { pageName: globalPageInfo.md5IframeTheme, docName: globalPageInfo.md5IframeTheme, cdnUrl});
 
         // create .html files in build
-        fse.copySync(path.join(globalCodeFolder, globalPageName, 'index.html'), path.join(globalBuildFolder, globalPageName + '.html'));
-        fse.copySync(path.join(globalCodeFolder, globalPageInfo.md5IframeTheme, 'index.html'), path.join(globalBuildFolder, globalPageInfo.md5IframeTheme + '.html'));
+        fse.copySync(path.join(globalCodeFolder, globalPageName, 'index.html'), path.join(globalBuildFolder, 'pages/index.html'));
+        fse.copySync(path.join(globalCodeFolder, globalPageInfo.md5IframeTheme, 'index.html'), path.join(globalBuildFolder, 'pages/iframe.html'));
     };
 
     const processPage = () => {
@@ -527,6 +527,7 @@ function processer(context) {
 
         });
 
+        console.log('\nwebpack compiling...');
         webpack(webpackConfig, () => {
             console.log('compilication done.');
         });
