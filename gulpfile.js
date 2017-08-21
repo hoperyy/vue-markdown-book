@@ -7,7 +7,6 @@ const fse = require('fs-extra');
 
 const syncDirectory = require('sync-directory');
 
-// const processer = require('./handler/multi-page');
 const processer = require('./handler/single-page');
 
 const getArgv = () => {
