@@ -60,16 +60,17 @@ const getReplaceMap = (currentFolder) => {
 
 function processer(context) {
 
-    const globalCurrentEnv = context.currentEnv;
+    const $currentEnv = context.currentEnv;
 
     // can be replaced
     const $docFolder = context.docFolder;
-    let $buildFolder = context.buildFolder;
+    const $buildFolder = context.buildFolder;
     const $codeFolder = context.codeFolder;
     const $replaceMap = getReplaceMap($docFolder);
     let $dirInfo = dirInfoUtil.getDocInfo($docFolder, $docFolder);
     const $pageName = pathUtil.getNameFromPath($docFolder);
     const $copiedDocFolder = path.join($codeFolder, $pageName, 'routes/copied-doc');
+    
     const $iframeWatchList = {};
 
     const processIframeDoc = (docFilePath, targetFilePath) => {
@@ -175,18 +176,16 @@ function processer(context) {
         let isImg = false;
         let isMd = false;
 
-        if (isFile) {
-            if (/\.((jpg)|(png)|(gif))$/.test(copiedDocFilePath)) {
-                processedFilePath = copiedDocFilePath;
-                processedFilePath += '.md';
-                isImg = true;
-            } else if (!/\.md$/.test(copiedDocFilePath)) {
-                processedFilePath = copiedDocFilePath;
-                processedFilePath += '.md';
-                isMd = false;
-            } else if (/\.md$/.test(copiedDocFilePath)) {
-                isMd = true;
-            }
+        if (/\.((jpg)|(png)|(gif))$/.test(copiedDocFilePath)) {
+            processedFilePath = copiedDocFilePath;
+            processedFilePath += '.md';
+            isImg = true;
+        } else if (!/\.md$/.test(copiedDocFilePath)) {
+            processedFilePath = copiedDocFilePath;
+            processedFilePath += '.md';
+            isMd = false;
+        } else if (/\.md$/.test(copiedDocFilePath)) {
+            isMd = true;
         }
 
         return {
@@ -349,7 +348,7 @@ function processer(context) {
         // write filetree.js
         writeFileTreeJsFile(path.join($codeFolder, $pageName, 'file-tree.js'));
 
-        const cdnUrl = $replaceMap['$$_CDNURL_$$'][globalCurrentEnv];
+        const cdnUrl = $replaceMap['$$_CDNURL_$$'][$currentEnv];
         fileUtil.replaceHtmlKeywords(path.join($codeFolder, $pageName, 'index.html'), { pageName: configUtil.mergeUserConfig($docFolder, $docFolder).pageName || $pageName, docName: $pageName, cdnUrl});
         fileUtil.replaceHtmlKeywords(path.join($codeFolder, $dirInfo.md5IframeTheme, 'index.html'), { pageName: $dirInfo.md5IframeTheme, docName: $dirInfo.md5IframeTheme, cdnUrl});
 
@@ -459,7 +458,7 @@ function processer(context) {
         // HMR
         webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
 
-        webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, globalCurrentEnv));
+        webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, $currentEnv));
 
         // rules
         webpackConfig.module.rules.forEach((item) => {
@@ -511,7 +510,7 @@ function processer(context) {
         const webpackConfig = require('../webpack.config')($docFolder, $codeFolder, $buildFolder);
 
         // rules
-        webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, globalCurrentEnv));
+        webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, $currentEnv));
 
         // rules
         webpackConfig.module.rules.forEach((item) => {
@@ -535,11 +534,11 @@ function processer(context) {
     };
 
     // run
-    if (/dev\-/.test(globalCurrentEnv)) {
+    if (/dev\-/.test($currentEnv)) {
         devHandler();
     }
 
-    if (/build\-/.test(globalCurrentEnv)) {
+    if (/build\-/.test($currentEnv)) {
         buildHandler();
     }
 
