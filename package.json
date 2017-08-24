@@ -1,12 +1,19 @@
 {
-  "name": "my-website",
+  "name": "vue-markdown-book",
   "version": "1.0.0",
   "description": "",
-  "main": "webpack.config.js",
   "bin": {
     "vuebook": "./bin/cmd.js"
   },
-  "author": "",
+  "author": "https://github.com/hoperyy",
+  "bugs": {
+    "url": "https://github.com/hoperyy/vue-markdown-book/issues"
+  },
+  "homepage": "https://github.com/hoperyy/vue-markdown-book",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoperyy/vue-markdown-book.git"
+  },
   "license": "ISC",
   "dependencies": {
     "autoprefixer": "^7.1.2",
