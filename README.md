@@ -9,7 +9,7 @@
 
 ## 演示页面：[https://hoperyy.github.io/vue-markdown-book/index.html#/test](https://hoperyy.github.io/vue-markdown-book/index.html#/test)
 
-## 使用
+## develop
 
 +   `npm i vue-markdown-book -g`
 +   `mkdir doc`
@@ -17,6 +17,10 @@
 +   `vuebook init`
 +   `vuebook dev`
 +   打开 [http:127.0.0.1:9000/index.html](http:127.0.0.1:9000/index.html)
+
+## build
+
++   `vuebook build`
 
 ## 个性化配置
 
