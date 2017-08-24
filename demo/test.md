@@ -6,7 +6,7 @@
 
 + 可以用 markdown 语法插入图片，但图片路径不要有中文
 
-![img](./assets/markdown-img-paste-20170817210743612.png)
+![img](./assets/img.png)
 
 + 可以随时插入 vue 编写的 demo
 

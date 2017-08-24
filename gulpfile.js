@@ -42,8 +42,52 @@ const syncDoc = (from, to, {watch}) => {
     });
 };
 
-const prepare = cacheFolder => {
+const run = currentEnv => {
 
+    const urlRoot = '/vue-markdown-book';
+
+    const isDev = /dev\-/.test(currentEnv);
+
+    const cacheFolder = path.join(process.env.HOME, '.v2u2eb2ook');
+
+    const scaffoldFolder = path.join(cacheFolder, 'scaffold');
+
+    const docFolder = path.join(scaffoldFolder, 'workspace', encodeURIComponent(cwd), cwd.replace(/\/$/, '').split('/').pop());
+
+    // sync scaffold
+    syncScaffold(scaffoldFolder);
+
+    syncDoc(cwd, docFolder, { watch: isDev });
+
+    const config = {
+        docFolder,
+        buildFolder: path.join(cwd, 'build'),
+        codeFolder: path.join(scaffoldFolder, 'vuebook-temp-code'),
+        currentEnv: currentEnv,
+        urlRoot,
+        pagePath: {
+            index: '/index.html',
+            iframe: '/iframe.html'
+        },
+        replace(currentFolder) {
+            return {
+                '$$_CDNURL_$$': {
+                    'dev-daily': `${urlRoot}/static`,
+                    'dev-pre': `${urlRoot}/static`,
+                    'dev-prod': `${urlRoot}/static`,
+                    'build-daily': `${urlRoot}/static`,
+                    'build-pre': `${urlRoot}/static`,
+                    'build-prod': `${urlRoot}/static`
+                }
+            };
+        }
+    };
+
+    if (isDev) {
+        config.debugPort = 9000;
+    }
+
+    processer(config);
 };
 
 const tasks = {
@@ -52,63 +96,14 @@ const tasks = {
 
         console.log('preparing...');
 
-        const cacheFolder = path.join(process.env.HOME, '.v2u2eb2ook');
-
-        const scaffoldFolder = path.join(cacheFolder, 'scaffold');
-
-        const docFolder = path.join(scaffoldFolder, 'workspace', encodeURIComponent(cwd), cwd.replace(/\/$/, '').split('/').pop());
-
-        // sync scaffold
-        syncScaffold(scaffoldFolder);
-
-        syncDoc(cwd, docFolder, { watch: true });
-
-        processer({
-            docFolder,
-            buildFolder: path.join(cwd, 'build'),
-            codeFolder: path.join(scaffoldFolder, 'vuebook-temp-code'),
-            debugPort: 9000,
-            currentEnv: 'dev-prod',
-            pagePath: {
-                index: '/index.html',
-                iframe: '/iframe.html'
-            },
-            replace(currentFolder) {
-                return {
-                    '$$_CDNURL_$$': {
-                        'dev-daily': '../static',
-                        'dev-pre': '../static',
-                        'dev-prod': '../static',
-                        'build-daily': '../static',
-                        'build-pre': '../static',
-                        'build-prod': '../static'
-                    }
-                };
-            }
-        });
+        run('dev-prod');
     },
 
     build() {
 
         console.log('preparing...');
 
-        const cacheFolder = path.join(process.env.HOME, '.v2u2eb2ook');
-
-        const scaffoldFolder = path.join(cacheFolder, 'scaffold');
-
-        const docFolder = path.join(scaffoldFolder, 'workspace', encodeURIComponent(cwd), cwd.replace(/\/$/, '').split('/').pop());
-
-        // sync scaffold
-        syncScaffold(scaffoldFolder);
-
-        syncDoc(cwd, docFolder, { watch: false });
-
-        processer({
-            docFolder,
-            buildFolder: path.join(cwd, 'build'),
-            codeFolder: path.join(scaffoldFolder, 'vuebook-temp-code'),
-            currentEnv: 'build-prod'
-        });
+        run('build-prod');
     }
 };
 

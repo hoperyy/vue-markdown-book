@@ -30,7 +30,7 @@ function getEntry(root) {
     return entry;
 }
 
-module.exports = (docFolder, codeFolder, buildFolder) => {
+module.exports = (docFolder, codeFolder, buildFolder, urlRoot) => {
 
     // 获取入口
     const entry = getEntry(codeFolder);
@@ -39,7 +39,7 @@ module.exports = (docFolder, codeFolder, buildFolder) => {
 				entry: entry,
                 output: {
                     path: path.join(buildFolder, 'static'),
-                    publicPath: '/static/',
+                    publicPath: `${urlRoot}/static/`,
                     filename: '[name].js',
                     chunkFilename: '[name].js'
                 },

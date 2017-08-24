@@ -19,6 +19,8 @@ function processer(context) {
 
     const $currentEnv = context.currentEnv;
 
+    const $urlRoot = context.urlRoot;
+
     // can be replaced
     const $docFolder = context.docFolder;
     const $buildFolder = context.buildFolder;
@@ -412,7 +414,7 @@ function processer(context) {
         const WebpackDevServer = require('webpack-dev-server');
 
         // get default webpack config
-        const webpackConfig = require('../webpack.config')($docFolder, $codeFolder, $buildFolder);
+        const webpackConfig = require('../webpack.config')($docFolder, $codeFolder, $buildFolder, $urlRoot);
 
         // HMR
         webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
