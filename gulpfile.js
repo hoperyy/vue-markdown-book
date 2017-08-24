@@ -26,9 +26,7 @@ const { cwd, task } = getArgv();
 
 const syncScaffold = (scaffoldFolder) => {
     const nmPath = path.join(scaffoldFolder, 'node_modules');
-    if (fs.existsSync(nmPath)) {
-        fse.removeSync(nmPath);
-    }
+
     syncDirectory(__dirname, scaffoldFolder, {
         ignored: /node\_modules/i
     });
