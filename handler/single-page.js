@@ -60,21 +60,26 @@ const getReplaceMap = (currentFolder) => {
 
 function processer(context) {
 
-    const globalCurrentEnv = context.currentEnv;
+    const $currentEnv = context.currentEnv;
 
     // can be replaced
-    const globalPageFolder = context.docFolder;
-    let globalBuildFolder = context.buildFolder;
-    const globalCodeFolder = context.codeFolder;
-    const globalReplaceMap = getReplaceMap(globalPageFolder);
-    let globalPageInfo = dirInfoUtil.getDocInfo(globalPageFolder, globalPageFolder);
-    const globalPageName = pathUtil.getNameFromPath(globalPageFolder);
-    const globalCopiedDocFolder = path.join(globalCodeFolder, globalPageName, 'routes/copied-doc');
-    const globalIframeWatchList = {};
+    const $docFolder = context.docFolder;
+    const $buildFolder = context.buildFolder;
+
+    const $pagePath = '/pages/index.html';
+    const $iframePagePath = '/pages/iframe.html';
+
+    const $codeFolder = context.codeFolder;
+    const $replaceMap = getReplaceMap($docFolder);
+    let $dirInfo = dirInfoUtil.getDocInfo($docFolder, $docFolder);
+    const $dirName = pathUtil.getNameFromPath($docFolder);
+    const $copiedDocFolder = path.join($codeFolder, $dirName, 'routes/copied-doc');
+
+    const $iframeWatchList = {};
 
     const processIframeDoc = (docFilePath, targetFilePath) => {
 
-        const md5IframeTheme = globalPageInfo.md5IframeTheme;
+        const md5IframeTheme = $dirInfo.md5IframeTheme;
 
         const fileContent = fs.readFileSync(targetFilePath).toString();
         const matchedArr = fileContent.match(/\<iframe\-doc[\s\S]+?\<\/iframe\-doc\>/g);
@@ -122,7 +127,7 @@ function processer(context) {
 
                 // add into watch list
                 const srcDocFileFolderName = path.dirname(docFilePath);
-                globalIframeWatchList[path.join(srcDocFileFolderName, src)] = {
+                $iframeWatchList[path.join(srcDocFileFolderName, src)] = {
                     target: loadedIframeFile
                 }
 
@@ -132,7 +137,7 @@ function processer(context) {
             const replaced = matchedItem
                               .replace('<iframe-doc', '<iframe')
                               .replace('</iframe-doc>', '</iframe>')
-                              .replace(src, `/pages/iframe.html#/${md5String}`);
+                              .replace(src, `${$iframePagePath}#/${md5String}`);
 
             while(replacedContent.indexOf(matchedItem) !== -1) {
                 replacedContent = replacedContent.replace(matchedItem, replaced);
@@ -140,7 +145,7 @@ function processer(context) {
             fileUtil.writeFileSync(targetFilePath, replacedContent);
 
             // update iframe routes
-            const iframeRouteFileInSrc = path.join(globalCodeFolder, `${md5IframeTheme}/routes.js`);
+            const iframeRouteFileInSrc = path.join($codeFolder, `${md5IframeTheme}/routes.js`);
 
             let content = fs.readFileSync(iframeRouteFileInSrc).toString();
             const loadedName = md5String + '.md';
@@ -165,28 +170,24 @@ function processer(context) {
 
     const transforFilePath = (relativeDocFilePath) => {
 
-        const docFilePath = path.join(globalPageFolder, relativeDocFilePath);
-        const copiedDocFilePath = path.join(globalCopiedDocFolder, relativeDocFilePath);
-
-        const isFile = true; //fs.statSync(docFilePath).isFile();
+        const docFilePath = path.join($docFolder, relativeDocFilePath);
+        const copiedDocFilePath = path.join($copiedDocFolder, relativeDocFilePath);
 
         let processedFilePath = copiedDocFilePath;
 
         let isImg = false;
         let isMd = false;
 
-        if (isFile) {
-            if (/\.((jpg)|(png)|(gif))$/.test(copiedDocFilePath)) {
-                processedFilePath = copiedDocFilePath;
-                processedFilePath += '.md';
-                isImg = true;
-            } else if (!/\.md$/.test(copiedDocFilePath)) {
-                processedFilePath = copiedDocFilePath;
-                processedFilePath += '.md';
-                isMd = false;
-            } else if (/\.md$/.test(copiedDocFilePath)) {
-                isMd = true;
-            }
+        if (/\.((jpg)|(png)|(gif))$/.test(copiedDocFilePath)) {
+            processedFilePath = copiedDocFilePath;
+            processedFilePath += '.md';
+            isImg = true;
+        } else if (!/\.md$/.test(copiedDocFilePath)) {
+            processedFilePath = copiedDocFilePath;
+            processedFilePath += '.md';
+            isMd = false;
+        } else if (/\.md$/.test(copiedDocFilePath)) {
+            isMd = true;
         }
 
         return {
@@ -237,21 +238,21 @@ function processer(context) {
         const transforedFilePath = transforFilePath(relativeDocFilePath);
         const processedFilePath = transforedFilePath.processedFilePath;
 
-        const shownFilesMapItem = globalPageInfo.shownFilesMap[relativeDocFilePath];
+        const shownFilesMapItem = $dirInfo.shownFilesMap[relativeDocFilePath];
 
         // create shown vue pages
-        const shownFilePath = path.join(globalCodeFolder, globalPageName, 'routes', 'route-' + shownFilesMapItem.md5String + '.vue');
+        const shownFilePath = path.join($codeFolder, $dirName, 'routes', 'route-' + shownFilesMapItem.md5String + '.vue');
 
         // format 'x-x-x' to '[x, x, x]'
         const fileIndex = JSON.stringify(shownFilesMapItem.index.split('-')).replace(/\"/g, "'");
 
         let shownVueContent = '';
         if (fs.statSync(transforedFilePath.docFilePath).isFile()) {
-            const templateContent = fs.readFileSync(path.join(globalPageInfo.themeTemplateFolder, 'routes-template/file-template.vue')).toString();
+            const templateContent = fs.readFileSync(path.join($dirInfo.themeTemplateFolder, 'routes-template/file-template.vue')).toString();
             shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex))
                                              .replace(/\$\$\_DOC\_PATH\_\$\$/g, JSON.stringify('./' + pathUtil.relative(shownFilePath, processedFilePath)));
         } else {
-            const templateContent = fs.readFileSync(path.join(globalPageInfo.themeTemplateFolder, 'routes-template/dir-template.vue')).toString();
+            const templateContent = fs.readFileSync(path.join($dirInfo.themeTemplateFolder, 'routes-template/dir-template.vue')).toString();
             shownVueContent = templateContent.replace(/\$\$\_FILE\_INDEX\_\$\$/g, JSON.stringify(fileIndex));
         }
 
@@ -264,13 +265,13 @@ function processer(context) {
     // create file-tree.js
     const writeFileTreeJsFile = (targetFile) => {
         fse.ensureFileSync(targetFile);
-        fileUtil.writeFileSync(targetFile, `module.exports=${JSON.stringify(globalPageInfo.dirTree)}`);
+        fileUtil.writeFileSync(targetFile, `module.exports=${JSON.stringify($dirInfo.dirTree)}`);
     };
 
     // create vue routes
     const writeRouteFile = (targetRouteFile) => {
 
-        const shownFilesMap = globalPageInfo.shownFilesMap;
+        const shownFilesMap = $dirInfo.shownFilesMap;
 
         // 创建 routes.js
         const routesFilePath = targetRouteFile;
@@ -297,44 +298,44 @@ function processer(context) {
     const createPage = () => {
 
         // if it is not folder, return
-        if (!fs.statSync(globalPageFolder).isDirectory()) {
+        if (!fs.statSync($docFolder).isDirectory()) {
             return;
         }
 
-        if (!fs.existsSync(globalPageInfo.themeTemplateFolder)) {
-            throw Error('theme: ' + globalPageInfo.theme + ' not exists');
+        if (!fs.existsSync($dirInfo.themeTemplateFolder)) {
+            throw Error('theme: ' + $dirInfo.theme + ' not exists');
             return;
         }
 
-        if (!fs.existsSync(globalPageInfo.iframeThemeTemplateFolder)) {
-            throw Error('iframe theme: ' + globalPageInfo.iframeTheme + ' not exists');
+        if (!fs.existsSync($dirInfo.iframeThemeTemplateFolder)) {
+            throw Error('iframe theme: ' + $dirInfo.iframeTheme + ' not exists');
             return;
         }
 
         // create page from template
-        fileUtil.copyPageFromThemeTemplate(globalPageInfo.themeTemplateFolder, path.join(globalCodeFolder, globalPageName));
+        fileUtil.copyPageFromThemeTemplate($dirInfo.themeTemplateFolder, path.join($codeFolder, $dirName));
 
         // copy iframe page from template
-        fileUtil.copyPageFromThemeTemplate(globalPageInfo.iframeThemeTemplateFolder, path.join(globalCodeFolder, globalPageInfo.md5IframeTheme));
+        fileUtil.copyPageFromThemeTemplate($dirInfo.iframeThemeTemplateFolder, path.join($codeFolder, $dirInfo.md5IframeTheme));
 
         // copy all current doc files to tmp/**/routes/copied-doc
-        fs.readdirSync(globalPageFolder).forEach((filename) => {
-            const filePath = path.join(globalPageFolder, filename);
+        fs.readdirSync($docFolder).forEach((filename) => {
+            const filePath = path.join($docFolder, filename);
 
             if (configUtil._shouldNotPutInCopiedFolder.test(filename)) {
                 return;
             }
 
-            fse.copySync(filePath, path.join(globalCopiedDocFolder, filename));
+            fse.copySync(filePath, path.join($copiedDocFolder, filename));
         });
 
         // set utimes to prevent multi webpack callback
-        fileUtil.readdirSync(globalCopiedDocFolder).forEach((filePath) => {
+        fileUtil.readdirSync($copiedDocFolder).forEach((filePath) => {
             fileUtil.utime(filePath);
         });
 
         // only create shown page
-        for (let relativeDocFilePath in globalPageInfo.shownFilesMap) {
+        for (let relativeDocFilePath in $dirInfo.shownFilesMap) {
 
             processDocFile(relativeDocFilePath);
 
@@ -344,39 +345,39 @@ function processer(context) {
         }
 
         // write route file
-        writeRouteFile(path.join(globalCodeFolder, globalPageName, 'routes.js'));
+        writeRouteFile(path.join($codeFolder, $dirName, 'routes.js'));
 
         // write filetree.js
-        writeFileTreeJsFile(path.join(globalCodeFolder, globalPageName, 'file-tree.js'));
+        writeFileTreeJsFile(path.join($codeFolder, $dirName, 'file-tree.js'));
 
-        const cdnUrl = globalReplaceMap['$$_CDNURL_$$'][globalCurrentEnv];
-        fileUtil.replaceHtmlKeywords(path.join(globalCodeFolder, globalPageName, 'index.html'), { pageName: configUtil.mergeUserConfig(globalPageFolder, globalPageFolder).pageName || globalPageName, docName: globalPageName, cdnUrl});
-        fileUtil.replaceHtmlKeywords(path.join(globalCodeFolder, globalPageInfo.md5IframeTheme, 'index.html'), { pageName: globalPageInfo.md5IframeTheme, docName: globalPageInfo.md5IframeTheme, cdnUrl});
+        const cdnUrl = $replaceMap['$$_CDNURL_$$'][$currentEnv];
+        fileUtil.replaceHtmlKeywords(path.join($codeFolder, $dirName, 'index.html'), { pageName: configUtil.mergeUserConfig($docFolder, $docFolder).pageName || $dirName, docName: $dirName, cdnUrl});
+        fileUtil.replaceHtmlKeywords(path.join($codeFolder, $dirInfo.md5IframeTheme, 'index.html'), { pageName: $dirInfo.md5IframeTheme, docName: $dirInfo.md5IframeTheme, cdnUrl});
 
         // create .html files in build
-        fse.copySync(path.join(globalCodeFolder, globalPageName, 'index.html'), path.join(globalBuildFolder, 'pages/index.html'));
-        fse.copySync(path.join(globalCodeFolder, globalPageInfo.md5IframeTheme, 'index.html'), path.join(globalBuildFolder, 'pages/iframe.html'));
+        fse.copySync(path.join($codeFolder, $dirName, 'index.html'), path.join($buildFolder, $pagePath));
+        fse.copySync(path.join($codeFolder, $dirInfo.md5IframeTheme, 'index.html'), path.join($buildFolder, $iframePagePath));
     };
 
     const processPage = () => {
-        fse.removeSync(globalBuildFolder);
-        fse.ensureDirSync(globalBuildFolder);
-        fse.ensureDirSync(globalCodeFolder);
-        fileUtil.emptyFolder(globalCodeFolder, /(node_modules)|(\.babelrc)|(postcss\.config\.js)|(components)|(libs)/);
-        fileUtil.emptyFolder(globalBuildFolder);
-        createPage(globalPageFolder);
+        fse.removeSync($buildFolder);
+        fse.ensureDirSync($buildFolder);
+        fse.ensureDirSync($codeFolder);
+        fileUtil.emptyFolder($codeFolder, /(node_modules)|(\.babelrc)|(postcss\.config\.js)|(components)|(libs)/);
+        fileUtil.emptyFolder($buildFolder);
+        createPage($docFolder);
     };
 
     const devHandler = () => {
 
         processPage();
 
-        gulpWatch([path.join(globalPageFolder, '**/*')], (stats) => {
+        gulpWatch([path.join($docFolder, '**/*')], (stats) => {
 
             const filePath = stats.path;
 
-            const userConfig = configUtil.mergeUserConfig(globalPageFolder, globalPageFolder);
-            let relativeDocFilePath = filePath.replace(globalPageFolder, '');
+            const userConfig = configUtil.mergeUserConfig($docFolder, $docFolder);
+            let relativeDocFilePath = filePath.replace($docFolder, '');
 
             if (configUtil._shouldNotPutInCopiedFolder.test(relativeDocFilePath)) {
                 return;
@@ -388,13 +389,13 @@ function processer(context) {
             }
 
             // copy iframe files
-            if (globalIframeWatchList[filePath]) {
-                fse.copySync(filePath, globalIframeWatchList[filePath].target);
+            if ($iframeWatchList[filePath]) {
+                fse.copySync(filePath, $iframeWatchList[filePath].target);
             }
 
             switch(stats.event) {
                 case 'change':
-                    if (checkUtil.checkShouldNotShow(globalPageFolder, filePath)) {
+                    if (checkUtil.checkShouldNotShow($docFolder, filePath)) {
                         copyDocFile(relativeDocFilePath);
                     } else {
                         copyDocFile(relativeDocFilePath);
@@ -404,12 +405,12 @@ function processer(context) {
                     break;
                 case 'add':
 
-                    if (checkUtil.checkShouldNotShow(globalPageFolder, filePath)) {
+                    if (checkUtil.checkShouldNotShow($docFolder, filePath)) {
                         copyDocFile(relativeDocFilePath);
                     } else {
 
                         // reget dir tree and shownFilesMap
-                        globalPageInfo = dirInfoUtil.getDocInfo(globalPageFolder, globalPageFolder);
+                        $dirInfo = dirInfoUtil.getDocInfo($docFolder, $docFolder);
 
                         // copy doc file
                         copyDocFile(relativeDocFilePath);
@@ -430,22 +431,22 @@ function processer(context) {
                         }
 
                         // write route file
-                        writeRouteFile(path.join(globalCodeFolder, globalPageName, 'routes.js'));
+                        writeRouteFile(path.join($codeFolder, $dirName, 'routes.js'));
 
                         // write filetree.js
-                        writeFileTreeJsFile(path.join(path.join(globalCodeFolder, globalPageName, 'file-tree.js')));
+                        writeFileTreeJsFile(path.join(path.join($codeFolder, $dirName, 'file-tree.js')));
                     }
                     break;
                 case 'unlink':
 
                     // reget dir tree and shownFilesMap
-                    globalPageInfo = dirInfoUtil.getDocInfo(globalPageFolder, globalPageFolder);
+                    $dirInfo = dirInfoUtil.getDocInfo($docFolder, $docFolder);
 
                     // write route file
-                    writeRouteFile(path.join(globalCodeFolder, globalPageName, 'routes.js'));
+                    writeRouteFile(path.join($codeFolder, $dirName, 'routes.js'));
 
                     // write filetree.js
-                    writeFileTreeJsFile(path.join(path.join(globalCodeFolder, globalPageName, 'file-tree.js')));
+                    writeFileTreeJsFile(path.join(path.join($codeFolder, $dirName, 'file-tree.js')));
                     break;
             }
 
@@ -454,12 +455,12 @@ function processer(context) {
         const WebpackDevServer = require('webpack-dev-server');
 
         // get default webpack config
-        const webpackConfig = require('../webpack.config')(globalPageFolder, globalCodeFolder, globalBuildFolder);
+        const webpackConfig = require('../webpack.config')($docFolder, $codeFolder, $buildFolder);
 
         // HMR
         webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
 
-        webpackConfig.module.rules.push(getStringReplaceLoader(globalReplaceMap, globalCurrentEnv));
+        webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, $currentEnv));
 
         // rules
         webpackConfig.module.rules.forEach((item) => {
@@ -481,7 +482,7 @@ function processer(context) {
 
         console.log('\nwebpack compiling...');
         const server = new WebpackDevServer(webpack(webpackConfig), {
-            contentBase: globalBuildFolder,
+            contentBase: $buildFolder,
             hot: true,
             historyApiFallback: true,
             quiet: false,
@@ -508,10 +509,10 @@ function processer(context) {
         processPage();
 
         // get default webpack config
-        const webpackConfig = require('../webpack.config')(globalPageFolder, globalCodeFolder, globalBuildFolder);
+        const webpackConfig = require('../webpack.config')($docFolder, $codeFolder, $buildFolder);
 
         // rules
-        webpackConfig.module.rules.push(getStringReplaceLoader(globalReplaceMap, globalCurrentEnv));
+        webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, $currentEnv));
 
         // rules
         webpackConfig.module.rules.forEach((item) => {
@@ -535,11 +536,11 @@ function processer(context) {
     };
 
     // run
-    if (/dev\-/.test(globalCurrentEnv)) {
+    if (/dev\-/.test($currentEnv)) {
         devHandler();
     }
 
-    if (/build\-/.test(globalCurrentEnv)) {
+    if (/build\-/.test($currentEnv)) {
         buildHandler();
     }
 

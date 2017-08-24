@@ -20,7 +20,7 @@
 +   `cd doc`
 +   `vuebook init`
 +   `vuebook dev`
-+   打开 [http:127.0.0.1:9000/doc.html](http:127.0.0.1:9000/doc.html)
++   打开 [http:127.0.0.1:9000/pages/index.html](http:127.0.0.1:9000/pages/index.html)
 
 ## 个性化配置
 
