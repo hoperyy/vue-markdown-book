@@ -173,8 +173,6 @@ function processer(context) {
         const docFilePath = path.join($docFolder, relativeDocFilePath);
         const copiedDocFilePath = path.join($copiedDocFolder, relativeDocFilePath);
 
-        const isFile = true; //fs.statSync(docFilePath).isFile();
-
         let processedFilePath = copiedDocFilePath;
 
         let isImg = false;
