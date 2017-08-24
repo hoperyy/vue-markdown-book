@@ -7,9 +7,7 @@
 
 有项目需要写文档的话，可以考虑这个工具
 
-## 效果图
-
-![效果图](./assets/demo.png)
+## 演示页面：[https://hoperyy.github.io/vue-markdown-book/index.html#/test](https://hoperyy.github.io/vue-markdown-book/index.html#/test)
 
 ## 使用
 
