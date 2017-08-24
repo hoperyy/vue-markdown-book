@@ -65,12 +65,16 @@ function processer(context) {
     // can be replaced
     const $docFolder = context.docFolder;
     const $buildFolder = context.buildFolder;
+
+    const $pagePath = '/pages/index.html';
+    const $iframePagePath = '/pages/iframe.html';
+
     const $codeFolder = context.codeFolder;
     const $replaceMap = getReplaceMap($docFolder);
     let $dirInfo = dirInfoUtil.getDocInfo($docFolder, $docFolder);
-    const $pageName = pathUtil.getNameFromPath($docFolder);
-    const $copiedDocFolder = path.join($codeFolder, $pageName, 'routes/copied-doc');
-    
+    const $dirName = pathUtil.getNameFromPath($docFolder);
+    const $copiedDocFolder = path.join($codeFolder, $dirName, 'routes/copied-doc');
+
     const $iframeWatchList = {};
 
     const processIframeDoc = (docFilePath, targetFilePath) => {
@@ -133,7 +137,7 @@ function processer(context) {
             const replaced = matchedItem
                               .replace('<iframe-doc', '<iframe')
                               .replace('</iframe-doc>', '</iframe>')
-                              .replace(src, `/pages/iframe.html#/${md5String}`);
+                              .replace(src, `${$iframePagePath}#/${md5String}`);
 
             while(replacedContent.indexOf(matchedItem) !== -1) {
                 replacedContent = replacedContent.replace(matchedItem, replaced);
@@ -239,7 +243,7 @@ function processer(context) {
         const shownFilesMapItem = $dirInfo.shownFilesMap[relativeDocFilePath];
 
         // create shown vue pages
-        const shownFilePath = path.join($codeFolder, $pageName, 'routes', 'route-' + shownFilesMapItem.md5String + '.vue');
+        const shownFilePath = path.join($codeFolder, $dirName, 'routes', 'route-' + shownFilesMapItem.md5String + '.vue');
 
         // format 'x-x-x' to '[x, x, x]'
         const fileIndex = JSON.stringify(shownFilesMapItem.index.split('-')).replace(/\"/g, "'");
@@ -311,7 +315,7 @@ function processer(context) {
         }
 
         // create page from template
-        fileUtil.copyPageFromThemeTemplate($dirInfo.themeTemplateFolder, path.join($codeFolder, $pageName));
+        fileUtil.copyPageFromThemeTemplate($dirInfo.themeTemplateFolder, path.join($codeFolder, $dirName));
 
         // copy iframe page from template
         fileUtil.copyPageFromThemeTemplate($dirInfo.iframeThemeTemplateFolder, path.join($codeFolder, $dirInfo.md5IframeTheme));
@@ -343,18 +347,18 @@ function processer(context) {
         }
 
         // write route file
-        writeRouteFile(path.join($codeFolder, $pageName, 'routes.js'));
+        writeRouteFile(path.join($codeFolder, $dirName, 'routes.js'));
 
         // write filetree.js
-        writeFileTreeJsFile(path.join($codeFolder, $pageName, 'file-tree.js'));
+        writeFileTreeJsFile(path.join($codeFolder, $dirName, 'file-tree.js'));
 
         const cdnUrl = $replaceMap['$$_CDNURL_$$'][$currentEnv];
-        fileUtil.replaceHtmlKeywords(path.join($codeFolder, $pageName, 'index.html'), { pageName: configUtil.mergeUserConfig($docFolder, $docFolder).pageName || $pageName, docName: $pageName, cdnUrl});
+        fileUtil.replaceHtmlKeywords(path.join($codeFolder, $dirName, 'index.html'), { pageName: configUtil.mergeUserConfig($docFolder, $docFolder).pageName || $dirName, docName: $dirName, cdnUrl});
         fileUtil.replaceHtmlKeywords(path.join($codeFolder, $dirInfo.md5IframeTheme, 'index.html'), { pageName: $dirInfo.md5IframeTheme, docName: $dirInfo.md5IframeTheme, cdnUrl});
 
         // create .html files in build
-        fse.copySync(path.join($codeFolder, $pageName, 'index.html'), path.join($buildFolder, 'pages/index.html'));
-        fse.copySync(path.join($codeFolder, $dirInfo.md5IframeTheme, 'index.html'), path.join($buildFolder, 'pages/iframe.html'));
+        fse.copySync(path.join($codeFolder, $dirName, 'index.html'), path.join($buildFolder, $pagePath));
+        fse.copySync(path.join($codeFolder, $dirInfo.md5IframeTheme, 'index.html'), path.join($buildFolder, $iframePagePath));
     };
 
     const processPage = () => {
@@ -429,10 +433,10 @@ function processer(context) {
                         }
 
                         // write route file
-                        writeRouteFile(path.join($codeFolder, $pageName, 'routes.js'));
+                        writeRouteFile(path.join($codeFolder, $dirName, 'routes.js'));
 
                         // write filetree.js
-                        writeFileTreeJsFile(path.join(path.join($codeFolder, $pageName, 'file-tree.js')));
+                        writeFileTreeJsFile(path.join(path.join($codeFolder, $dirName, 'file-tree.js')));
                     }
                     break;
                 case 'unlink':
@@ -441,10 +445,10 @@ function processer(context) {
                     $dirInfo = dirInfoUtil.getDocInfo($docFolder, $docFolder);
 
                     // write route file
-                    writeRouteFile(path.join($codeFolder, $pageName, 'routes.js'));
+                    writeRouteFile(path.join($codeFolder, $dirName, 'routes.js'));
 
                     // write filetree.js
-                    writeFileTreeJsFile(path.join(path.join($codeFolder, $pageName, 'file-tree.js')));
+                    writeFileTreeJsFile(path.join(path.join($codeFolder, $dirName, 'file-tree.js')));
                     break;
             }
 
