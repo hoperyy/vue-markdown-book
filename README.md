@@ -11,14 +11,12 @@
 
 ## 使用
 
-+   `git clone git@github.com:hoperyy/vue-markdown-book.git`
-+   `npm link` (生成全局命令 `vuebook`，可能需要加 `sudo`)
-+   进入另一个目录
++   `npm i vue-markdown-book -g`
 +   `mkdir doc`
 +   `cd doc`
 +   `vuebook init`
 +   `vuebook dev`
-+   打开 [http:127.0.0.1:9000/pages/index.html](http:127.0.0.1:9000/pages/index.html)
++   打开 [http:127.0.0.1:9000/index.html](http:127.0.0.1:9000/index.html)
 
 ## 个性化配置
 
