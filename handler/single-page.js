@@ -15,49 +15,6 @@ const configUtil = require('../util/config');
 const checkUtil = require('../util/check');
 const dirInfoUtil = require('../util/dir-info');
 
-// not working now, to be fixed
-function getStringReplaceLoader(replaceMap, currentEnv){
-
-    const replacements = [];
-
-    for(let key in replaceMap){
-
-        replacements.push({
-            pattern: new RegExp(key.replace(/\$/g, '\\$'), 'g'),
-            replacement() {
-                return replaceMap[key][currentEnv];
-            }
-        });
-    }
-
-    return {
-        test: /\.((vue)|(vuex)|(js)|(jsx)|(html)|(md))$/,
-        exclude: /(node_modules|bower_components)/,
-        loader: StringReplacePlugin.replace({
-            replacements: replacements
-        })
-    };
-}
-
-// replace
-const getReplaceMap = (currentFolder) => {
-
-    const gitVersion = gitUtil.getGitVersion(currentFolder);
-
-    const keyWords = {
-        '$$_CDNURL_$$': {
-            'dev-daily': '../static',
-            'dev-pre': '../static',
-            'dev-prod': '../static',
-            'build-daily': '../static',
-            'build-pre': '../static',
-            'build-prod': '../static'
-        }
-    };
-
-    return keyWords;
-};
-
 function processer(context) {
 
     const $currentEnv = context.currentEnv;
@@ -66,11 +23,11 @@ function processer(context) {
     const $docFolder = context.docFolder;
     const $buildFolder = context.buildFolder;
 
-    const $pagePath = '/pages/index.html';
-    const $iframePagePath = '/pages/iframe.html';
+    const $pagePath = context.pagePath.index;
+    const $iframePagePath = context.pagePath.iframe;
 
     const $codeFolder = context.codeFolder;
-    const $replaceMap = getReplaceMap($docFolder);
+    const $replaceMap = context.replace($docFolder);
     let $dirInfo = dirInfoUtil.getDocInfo($docFolder, $docFolder);
     const $dirName = pathUtil.getNameFromPath($docFolder);
     const $copiedDocFolder = path.join($codeFolder, $dirName, 'routes/copied-doc');
@@ -137,7 +94,7 @@ function processer(context) {
             const replaced = matchedItem
                               .replace('<iframe-doc', '<iframe')
                               .replace('</iframe-doc>', '</iframe>')
-                              .replace(src, `${$iframePagePath}#/${md5String}`);
+                              .replace(src, `iframe.html#/${md5String}`);
 
             while(replacedContent.indexOf(matchedItem) !== -1) {
                 replacedContent = replacedContent.replace(matchedItem, replaced);
@@ -460,7 +417,7 @@ function processer(context) {
         // HMR
         webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
 
-        webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, $currentEnv));
+        // webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, $currentEnv));
 
         // rules
         webpackConfig.module.rules.forEach((item) => {
@@ -512,7 +469,7 @@ function processer(context) {
         const webpackConfig = require('../webpack.config')($docFolder, $codeFolder, $buildFolder);
 
         // rules
-        webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, $currentEnv));
+        // webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, $currentEnv));
 
         // rules
         webpackConfig.module.rules.forEach((item) => {

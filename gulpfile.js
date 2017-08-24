@@ -68,7 +68,23 @@ const tasks = {
             buildFolder: path.join(cwd, 'build'),
             codeFolder: path.join(scaffoldFolder, 'vuebook-temp-code'),
             debugPort: 9000,
-            currentEnv: 'dev-prod'
+            currentEnv: 'dev-prod',
+            pagePath: {
+                index: '/index.html',
+                iframe: '/iframe.html'
+            },
+            replace(currentFolder) {
+                return {
+                    '$$_CDNURL_$$': {
+                        'dev-daily': '../static',
+                        'dev-pre': '../static',
+                        'dev-prod': '../static',
+                        'build-daily': '../static',
+                        'build-pre': '../static',
+                        'build-prod': '../static'
+                    }
+                };
+            }
         });
     },
 
