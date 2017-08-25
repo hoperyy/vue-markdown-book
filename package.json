@@ -1,6 +1,6 @@
 {
   "name": "vue-markdown-book",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "bin": {
     "vuebook": "./bin/cmd.js"
