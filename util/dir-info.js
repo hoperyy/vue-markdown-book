@@ -16,7 +16,6 @@ module.exports = {
 
         // get dir tree
         const dirTree = fileUtil.readdirTree(currentDocFolder, {
-
             // same as checkUtil.checkShouldNotShow()
             exclude: [configUtil._shouldNotPutInCopiedFolder, configUtil._shouldNotShowReg, mergedConfig.shouldNotShowReg]
         });
@@ -72,6 +71,9 @@ module.exports = {
               }
 
           });
+
+          // sort
+          
 
         };
 
