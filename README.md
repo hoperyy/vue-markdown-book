@@ -33,7 +33,8 @@
         shouldNotShowReg: /(assets)/i, // File path which matches this RegExp will not be shown
         shouldNotShowExtnameReg: /(\.md)/i, // File extname which matches this RegExp will not be shown
         theme: 'default', // Website theme ('default' by default)
-        iframeTheme: 'iframe-default' // Iframe page theme（'iframe-default' by default）
+        iframeTheme: 'iframe-default', // Iframe page theme（'iframe-default' by default）
+        sort: [ 'b.md', 'a.md' ] // sort menu, Those two files will be in front.
     };
     ```
 
