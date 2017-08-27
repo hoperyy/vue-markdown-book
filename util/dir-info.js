@@ -73,7 +73,31 @@ module.exports = {
           });
 
           // sort
-          
+          let pathArr = [];
+          tree.children.forEach(item => {
+              pathArr.push(item.path.replace(/^\//, ''));
+          });
+          if (mergedConfig.sort && Object.prototype.toString.call(mergedConfig.sort) === '[object Array]') {
+
+              for (let i = mergedConfig.sort.length - 1; i >= 0; i--) {
+                  const item = mergedConfig.sort[i];
+                  const index = pathArr.indexOf(item);
+
+                  if (index !== -1) {
+                      const obj = tree.children[index];
+                      tree.children.splice(index, 1);
+                      tree.children.unshift(obj);
+                  }
+
+
+                  pathArr = [];
+                  tree.children.forEach(item => {
+                      pathArr.push(item.path.replace(/^\//, ''));
+                  });
+                  
+              }
+
+          }
 
         };
 
