@@ -6,6 +6,7 @@ const gulpWatch = require('gulp-watch');
 const fse = require('fs-extra');
 const md5 = require('md5');
 
+const WebpackOnBuildPlugin = require('on-build-webpack');
 const StringReplacePlugin = require('string-replace-webpack-plugin');
 
 const pathUtil = require('../util/path');
@@ -438,6 +439,19 @@ function processer(context) {
         for(let i in webpackConfig.entry) {
             webpackConfig.entry[i].unshift(`webpack-dev-server/client?http://127.0.0.1:${context.debugPort}`, 'webpack/hot/dev-server');
         }
+
+        // after build
+        let hadRemindOpenSite = false;
+        webpackConfig.plugins.push(new WebpackOnBuildPlugin(function(stats) {
+            if (!hadRemindOpenSite) {
+                const timer = setTimeout(() => {
+                    console.log(`\n\nopen website: http://127.0.0.1:${context.debugPort}/index.html\n\n`);
+                    clearTimeout(timer);
+                }, 1000);
+
+                hadRemindOpenSite = true;
+            }
+        }));
 
         console.log('\nwebpack compiling...');
         const server = new WebpackDevServer(webpack(webpackConfig), {
