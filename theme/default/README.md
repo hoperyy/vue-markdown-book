@@ -17,7 +17,6 @@
 
     顾名思义，就是如果访问的路由是文件，页面结构是 `file-template.vue` 确定的，如果访问的路由是目录，页面结构是 `dir-template.vue`
 
-## index.html 中有 2 个关键词，都是什么意思
+## index.html 中有关键词，是什么意思
 
-+   `$$_DOCNAME_$$` 文档名称，以文档的文件夹为名字
 +   `$$_CDNURL_$$` 静态资源路径，在开发和发布环境不同（本案例适配 github pages 的路径）
