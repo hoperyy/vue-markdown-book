@@ -33,7 +33,14 @@ const syncScaffold = (scaffoldFolder) => {
     if (fs.existsSync(nmPath)) {
         fse.removeSync(nmPath);
     }
-    fse.ensureSymlinkSync(path.join(__dirname, 'node_modules'), nmPath);
+
+    if (fs.existsSync(path.join(__dirname, 'node_modules'))) {
+        fse.ensureSymlinkSync(path.join(__dirname, 'node_modules'), nmPath);
+    } else {
+        fse.ensureSymlinkSync(path.join(__dirname, '..'), nmPath);
+    }
+
+
 };
 
 const syncDoc = (from, to, {watch}) => {
