@@ -72,29 +72,54 @@ module.exports = {
 
           });
 
+          const getTreePathArr = (children) => {
+              let treePathArr = [];
+              children.forEach(item => {
+                  let _path = item.path.replace(/^\//, '');
+
+                  if (!/^\//.test(_path)) {
+                      _path = '/' + _path;
+                  }
+
+                  if (!/\/$/.test(_path)) {
+                      _path += '/';
+                  }
+
+                  treePathArr.push(_path);
+              });
+
+              return treePathArr;
+          };
+
+          const moveToFront = (arr, index) => {
+              const obj = arr[index];
+              arr.splice(index, 1);
+              arr.unshift(obj);
+          };
+
           // sort
-          let pathArr = [];
-          tree.children.forEach(item => {
-              pathArr.push(item.path.replace(/^\//, ''));
-          });
+          let treePathArr = getTreePathArr(tree.children);
           if (mergedConfig.sort && Object.prototype.toString.call(mergedConfig.sort) === '[object Array]') {
 
               for (let i = mergedConfig.sort.length - 1; i >= 0; i--) {
-                  const item = mergedConfig.sort[i];
-                  const index = pathArr.indexOf(item);
+                  let item = mergedConfig.sort[i];
 
-                  if (index !== -1) {
-                      const obj = tree.children[index];
-                      tree.children.splice(index, 1);
-                      tree.children.unshift(obj);
+                  if (!/^\//.test(item)) {
+                      item = '/' + item;
                   }
 
+                  if (!/\/$/.test(item)) {
+                      item += '/';
+                  }
 
-                  pathArr = [];
-                  tree.children.forEach(item => {
-                      pathArr.push(item.path.replace(/^\//, ''));
-                  });
-                  
+                  const index = treePathArr.indexOf(item);
+
+                  if (index !== -1) {
+                      moveToFront(tree.children, index);
+                  }
+
+                  treePathArr = getTreePathArr(tree.children);
+
               }
 
           }
