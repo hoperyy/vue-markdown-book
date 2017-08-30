@@ -5,6 +5,8 @@ const gulp = require('gulp');
 
 const fse = require('fs-extra');
 
+const isRelative = require('is-relative');
+
 const syncDirectory = require('sync-directory');
 
 const processer = require('./handler/single-page');
@@ -36,10 +38,12 @@ const syncScaffold = (scaffoldFolder) => {
 
     if (fs.existsSync(path.join(__dirname, 'node_modules'))) {
         fse.ensureSymlinkSync(path.join(__dirname, 'node_modules'), nmPath);
-    } else {
-        fse.ensureSymlinkSync(path.join(__dirname, '..'), nmPath);
     }
 
+    // if vue markdown book is in node_modules
+    if (path.join(__dirname, '../').replace(/\/$/, '').split('/').pop() === 'node_modules') {
+        fse.ensureSymlinkSync(path.join(__dirname, '..'), path.join(scaffoldFolder, '../node_modules'));
+    }
 
 };
 
@@ -47,6 +51,18 @@ const syncDoc = (from, to, {watch}) => {
     syncDirectory(from, to, {
         watch: watch
     });
+};
+
+const getUserConfig = (cwd) => {
+    const configFilePath = path.join(cwd, '.bookrc');
+
+    if (!fs.existsSync(configFilePath)) {
+        return null;
+    }
+
+    let obj = require(configFilePath);
+
+    return obj;
 };
 
 const run = currentEnv => {
@@ -66,9 +82,21 @@ const run = currentEnv => {
 
     syncDoc(cwd, docFolder, { watch: isDev });
 
+    const userConfig = getUserConfig(cwd);
+
+    let buildFolder = path.join(cwd, 'build');
+
+    if (userConfig && userConfig.buildDir) {
+        if (isRelative(userConfig.buildDir)) {
+            buildFolder = path.join(cwd, userConfig.buildDir);
+        } else {
+            buildFolder = userConfig.buildDir;
+        }
+    }
+
     const config = {
         docFolder,
-        buildFolder: path.join(cwd, 'build'),
+        buildFolder,
         codeFolder: path.join(scaffoldFolder, 'vuebook-temp-code'),
         currentEnv: currentEnv,
         urlRoot,

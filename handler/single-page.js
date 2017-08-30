@@ -320,8 +320,12 @@ function processer(context) {
     };
 
     const processPage = () => {
-        fse.removeSync($buildFolder);
-        fse.ensureDirSync($buildFolder);
+        if (fs.existsSync($buildFolder)) {
+            fileUtil.emptyFolder($buildFolder);
+        } else {
+            fse.ensureDirSync($buildFolder);
+        }
+
         fse.ensureDirSync($codeFolder);
         fileUtil.emptyFolder($codeFolder, /(node_modules)|(\.babelrc)|(postcss\.config\.js)|(components)|(libs)/);
         fileUtil.emptyFolder($buildFolder);
