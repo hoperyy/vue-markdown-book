@@ -34,7 +34,8 @@
         shouldNotShowExtnameReg: /(\.md)/i, // File extname which matches this RegExp will not be shown
         theme: 'default', // Website theme ('default' by default)
         iframeTheme: 'iframe-default', // Iframe page theme（'iframe-default' by default）
-        sort: [ 'b.md', 'a.md' ] // sort menu, Those two files will be in front.
+        sort: [ 'b.md', 'a.md' ], // sort menu, Those two files will be in front.
+        root: '/' // static root path when build, like: <script src="/static/index.js"></script>
     };
     ```
 

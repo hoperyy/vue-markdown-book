@@ -32,6 +32,7 @@ const syncScaffold = (scaffoldFolder) => {
     syncDirectory(__dirname, scaffoldFolder, {
         ignored: /node\_modules/i
     });
+
     if (fs.existsSync(nmPath)) {
         fse.removeSync(nmPath);
     }
@@ -67,7 +68,17 @@ const getUserConfig = (cwd) => {
 
 const run = currentEnv => {
 
-    const urlRoot = '/vue-markdown-book';
+    const userConfig = getUserConfig(cwd);
+
+    let urlRoot = userConfig.root && userConfig.root || '';
+
+    if (urlRoot === '/') {
+        urlRoot = '';
+    }
+
+    if (urlRoot && !/^\//.test(urlRoot)) {
+        urlRoot = '/' + urlRoot;
+    }
 
     const isDev = /dev\-/.test(currentEnv);
 
@@ -81,8 +92,6 @@ const run = currentEnv => {
     syncScaffold(scaffoldFolder);
 
     syncDoc(cwd, docFolder, { watch: isDev });
-
-    const userConfig = getUserConfig(cwd);
 
     let buildFolder = path.join(cwd, 'build');
 
