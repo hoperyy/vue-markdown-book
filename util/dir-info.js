@@ -8,6 +8,60 @@ const configUtil = require('./config');
 const fileUtil = require('./file');
 const pathUtil = require('./path');
 
+const sortTree = (tree, userSort) => {
+    const getTreePathArr = (children) => {
+        let treePathArr = [];
+        children.forEach(item => {
+            let _path = item.path.replace(/^\//, '');
+
+            if (!/^\//.test(_path)) {
+                _path = '/' + _path;
+            }
+
+            if (!/\/$/.test(_path)) {
+                _path += '/';
+            }
+
+            treePathArr.push(_path);
+        });
+
+        return treePathArr;
+    };
+
+    const moveToFront = (arr, index) => {
+        const obj = arr[index];
+        arr.splice(index, 1);
+        arr.unshift(obj);
+    };
+
+    // sort
+    let treePathArr = getTreePathArr(tree.children);
+    if (userSort && Object.prototype.toString.call(userSort) === '[object Array]') {
+
+        for (let i = userSort.length - 1; i >= 0; i--) {
+            let item = userSort[i];
+
+            if (!/^\//.test(item)) {
+                item = '/' + item;
+            }
+
+            if (!/\/$/.test(item)) {
+                item += '/';
+            }
+
+            const index = treePathArr.indexOf(item);
+
+            if (index !== -1) {
+                moveToFront(tree.children, index);
+            }
+
+            treePathArr = getTreePathArr(tree.children);
+
+        }
+
+    }
+};
+
 module.exports = {
 
     getFormatedDirTree(rootFolder, currentDocFolder) {
@@ -26,6 +80,8 @@ module.exports = {
           if (!tree || !tree.children) {
               return;
           }
+
+          sortTree(tree, mergedConfig.sort);
 
           tree.children.forEach((item, index) => {
 
@@ -71,58 +127,6 @@ module.exports = {
               }
 
           });
-
-          const getTreePathArr = (children) => {
-              let treePathArr = [];
-              children.forEach(item => {
-                  let _path = item.path.replace(/^\//, '');
-
-                  if (!/^\//.test(_path)) {
-                      _path = '/' + _path;
-                  }
-
-                  if (!/\/$/.test(_path)) {
-                      _path += '/';
-                  }
-
-                  treePathArr.push(_path);
-              });
-
-              return treePathArr;
-          };
-
-          const moveToFront = (arr, index) => {
-              const obj = arr[index];
-              arr.splice(index, 1);
-              arr.unshift(obj);
-          };
-
-          // sort
-          let treePathArr = getTreePathArr(tree.children);
-          if (mergedConfig.sort && Object.prototype.toString.call(mergedConfig.sort) === '[object Array]') {
-
-              for (let i = mergedConfig.sort.length - 1; i >= 0; i--) {
-                  let item = mergedConfig.sort[i];
-
-                  if (!/^\//.test(item)) {
-                      item = '/' + item;
-                  }
-
-                  if (!/\/$/.test(item)) {
-                      item += '/';
-                  }
-
-                  const index = treePathArr.indexOf(item);
-
-                  if (index !== -1) {
-                      moveToFront(tree.children, index);
-                  }
-
-                  treePathArr = getTreePathArr(tree.children);
-
-              }
-
-          }
 
         };
 
