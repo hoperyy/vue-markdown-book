@@ -70,7 +70,7 @@ const run = currentEnv => {
 
     const userConfig = getUserConfig(cwd);
 
-    let urlRoot = userConfig.root && userConfig.root || '';
+    let urlRoot = (userConfig && userConfig.root && userConfig.root) || '';
 
     if (urlRoot === '/') {
         urlRoot = '';

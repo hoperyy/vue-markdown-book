@@ -8,11 +8,11 @@ const configUtil = require('./config');
 const fileUtil = require('./file');
 const pathUtil = require('./path');
 
-const sortTree = (tree, userSort) => {
+const sortTree = (tree, userSort, rootFolder) => {
     const getTreePathArr = (children) => {
         let treePathArr = [];
         children.forEach(item => {
-            let _path = item.path.replace(/^\//, '');
+            let _path = item.path.replace(rootFolder, '').replace(/^\//, '');
 
             if (!/^\//.test(_path)) {
                 _path = '/' + _path;
@@ -81,7 +81,7 @@ module.exports = {
               return;
           }
 
-          sortTree(tree, mergedConfig.sort);
+          sortTree(tree, mergedConfig.sort, rootFolder);
 
           tree.children.forEach((item, index) => {
 
