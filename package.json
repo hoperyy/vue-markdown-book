@@ -29,6 +29,7 @@
     "git-rev-sync": "^1.9.1",
     "gulp": "^3.9.1",
     "gulp-watch": "^4.3.11",
+    "is-relative": "^1.0.0",
     "less": "^2.7.2",
     "less-loader": "^4.0.5",
     "md5": "^2.2.1",
