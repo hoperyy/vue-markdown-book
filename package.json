@@ -1,6 +1,6 @@
 {
   "name": "vue-markdown-book",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "",
   "bin": {
     "vuebook": "./bin/cmd.js"
@@ -38,7 +38,6 @@
     "readdir-enhanced": "^1.5.2",
     "relative": "^3.0.2",
     "string-replace-webpack-plugin": "^0.1.3",
-    "sync-directory": "^1.0.1",
     "url-loader": "^0.5.9",
     "vue": "^2.3.4",
     "vue-loader": "^13.0.1",
