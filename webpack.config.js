@@ -32,7 +32,6 @@ function getEntry(root) {
 
 module.exports = (docFolder, codeFolder, buildFolder, urlRoot) => {
 
-    // 获取入口
     const entry = getEntry(codeFolder);
 
 		const config = {
