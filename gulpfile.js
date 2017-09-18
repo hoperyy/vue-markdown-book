@@ -7,8 +7,6 @@ const fse = require('fs-extra');
 
 const isRelative = require('is-relative');
 
-const syncDirectory = require('sync-directory');
-
 const processer = require('./handler/single-page');
 
 const getArgv = () => {
@@ -25,34 +23,6 @@ const getArgv = () => {
 };
 
 const { cwd, task } = getArgv();
-
-const syncScaffold = (scaffoldFolder) => {
-    const nmPath = path.join(scaffoldFolder, 'node_modules');
-
-    syncDirectory(__dirname, scaffoldFolder, {
-        ignored: /node\_modules/i
-    });
-
-    if (fs.existsSync(nmPath)) {
-        fse.removeSync(nmPath);
-    }
-
-    if (fs.existsSync(path.join(__dirname, 'node_modules'))) {
-        fse.ensureSymlinkSync(path.join(__dirname, 'node_modules'), nmPath);
-    }
-
-    // if vue markdown book is in node_modules
-    if (path.join(__dirname, '../').replace(/\/$/, '').split('/').pop() === 'node_modules') {
-        fse.ensureSymlinkSync(path.join(__dirname, '..'), path.join(scaffoldFolder, '../node_modules'));
-    }
-
-};
-
-const syncDoc = (from, to, {watch}) => {
-    syncDirectory(from, to, {
-        watch: watch
-    });
-};
 
 const getUserConfig = (cwd) => {
     const configFilePath = path.join(cwd, '.bookrc');
@@ -86,13 +56,6 @@ const run = currentEnv => {
 
     const scaffoldFolder = path.join(cacheFolder, 'scaffold');
 
-    const docFolder = path.join(scaffoldFolder, 'workspace', encodeURIComponent(cwd), cwd.replace(/\/$/, '').split('/').pop());
-
-    // sync scaffold
-    syncScaffold(scaffoldFolder);
-
-    syncDoc(cwd, docFolder, { watch: isDev });
-
     let buildFolder = path.join(cwd, 'build');
 
     if (userConfig && userConfig.buildDir) {
@@ -104,7 +67,7 @@ const run = currentEnv => {
     }
 
     const config = {
-        docFolder,
+        userFolder: cwd,
         buildFolder,
         codeFolder: path.join(scaffoldFolder, 'vuebook-temp-code'),
         currentEnv: currentEnv,
@@ -137,16 +100,10 @@ const run = currentEnv => {
 const tasks = {
 
     dev() {
-
-        console.log('preparing...');
-
         run('dev-prod');
     },
 
     build() {
-
-        console.log('preparing...');
-
         run('build-prod');
     }
 };

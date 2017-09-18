@@ -18,12 +18,10 @@ const dirInfoUtil = require('../util/dir-info');
 
 function processer(context) {
 
+    const $userFolder = context.userFolder;
     const $currentEnv = context.currentEnv;
-
     const $urlRoot = context.urlRoot;
-
-    // can be replaced
-    const $docFolder = context.docFolder;
+    const $docFolder = context.userFolder;
     const $buildFolder = context.buildFolder;
 
     const $pagePath = context.pagePath.index;
@@ -486,7 +484,7 @@ function processer(context) {
         processPage();
 
         // get default webpack config
-        const webpackConfig = require('../webpack.config')($docFolder, $codeFolder, $buildFolder);
+        const webpackConfig = require('../webpack.config')($docFolder, $codeFolder, $buildFolder, $urlRoot);
 
         // rules
         // webpackConfig.module.rules.push(getStringReplaceLoader($replaceMap, $currentEnv));
