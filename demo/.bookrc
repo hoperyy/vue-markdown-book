@@ -13,6 +13,12 @@ module.exports = {
     iframeTheme: 'iframe-default',
 
     // {Array}; sort menu; dir or filename is supported
-    sort: [ 'detail.md', 'index.md' ]
+    sort: [ 'detail.md', 'index.md' ],
+
+    // {String}; static root path used in html file; '/' by default
+    // for example, if 'staticPath' is '/', this static source path in index.html will be '<script src="/static/common.js"></script>'
+    // for example, if 'staticPath' is '/vue-markdown-book', this static source path in index.html will be '<script src="/vue-markdown-book/static/common.js"></script>'
+    // for example, if 'staticPath' is '/test', this static source path in index.html will be '<script src="/test/static/common.js"></script>'
+    staticPath: '/'
 
 };
