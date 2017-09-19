@@ -7,7 +7,7 @@
 
 ## demo
 
-[https://hoperyy.github.io/vue-markdown-book/index.html#/test](https://hoperyy.github.io/vue-markdown-book/index.html#/test)
+[https://hoperyy.github.io/vue-markdown-book/index.html#/index](https://hoperyy.github.io/vue-markdown-book/index.html#/index)
 
 ## debug
 
