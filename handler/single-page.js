@@ -475,9 +475,7 @@ function processer(context) {
         });
 
         server.listen(context.debugPort);
-
     };
-
 
     const buildHandler = () => {
 

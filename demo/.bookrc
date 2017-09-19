@@ -1,6 +1,18 @@
 module.exports = {
-    shouldNotShowReg: /(assets)/i, // 设置不显示在页面的文件
-    shouldNotShowExtnameReg: /(\.md)/i, // 设置不显示的文件后缀
-    theme: 'default', // 选择主题（默认是 default）
-    iframeTheme: 'iframe-default' // 选择 iframe 页面的主题（默认是 default-iframe）
+
+    // {RegExp}; Files which should not be shown
+    shouldNotShowReg: /(inserted)/i, 
+
+    // {RegExp}; File extname which should not be shown
+    shouldNotShowExtnameReg: /(\.md)/i,
+
+    // {String}; page theme; 'default' by default
+    theme: 'h5-doc',
+
+    // {String}; iframe page theme; 'iframe-default' by default
+    iframeTheme: 'iframe-default',
+
+    // {Array}; sort menu; dir or filename is supported
+    sort: [ 'detail.md', 'index.md' ]
+
 };

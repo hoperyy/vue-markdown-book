@@ -16,7 +16,7 @@
 +   `cd doc`
 +   `vuebook init`
 +   `vuebook dev`
-+   [http:127.0.0.1:9000/index.html](http:127.0.0.1:9000/index.html)
++   [http:127.0.0.1:9000/index.html#/index](http:127.0.0.1:9000/index.html#/index)
 
 ## build
 
@@ -28,18 +28,24 @@
 
     ```
     module.exports = {
-        shouldNotShowReg: /(assets)/i, // File path which matches this RegExp will not be shown
-        shouldNotShowExtnameReg: /(\.md)/i, // File extname which matches this RegExp will not be shown
-        theme: 'default', // Website theme ('default' by default)
-        iframeTheme: 'iframe-default', // Iframe page theme（'iframe-default' by default）
-        sort: [ 'b.md', 'a.md' ], // sort menu, Those two files will be in front.
-        root: '/' // static root path when build, like: <script src="/static/index.js"></script>
+
+        // {RegExp}; Files which should not be shown
+        shouldNotShowReg: /(inserted\-)/i, 
+
+        // {RegExp}; File extname which should not be shown
+        shouldNotShowExtnameReg: /(\.md)/i,
+
+        // {String}; page theme; 'default' by default
+        theme: 'default',
+
+        // {String}; iframe page theme; 'iframe-default' by default
+        iframeTheme: 'iframe-default',
+
+        // {Array}; sort menu; dir or filename is supported
+        sort: [ 'b.md', 'a.md' ]
+
     };
     ```
-
-+   code themes
-    +   `cd book-themes`
-    +   coding...
 
 +   New Pogrammer
 

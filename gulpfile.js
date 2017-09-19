@@ -9,6 +9,12 @@ const isRelative = require('is-relative');
 
 const processer = require('./handler/single-page');
 
+const cacheFolder = path.join(process.env.HOME, '.v2u2eb2ook');
+const scaffoldFolder = path.join(cacheFolder, 'scaffold');
+
+// prepare
+require('./util/file').copySync(path.join(__dirname, 'postcss.config.js'), path.join(scaffoldFolder, 'postcss.config.js'));
+
 const getArgv = () => {
     const params = {};
     const argv = process.argv;
@@ -51,10 +57,6 @@ const run = currentEnv => {
     }
 
     const isDev = /dev\-/.test(currentEnv);
-
-    const cacheFolder = path.join(process.env.HOME, '.v2u2eb2ook');
-
-    const scaffoldFolder = path.join(cacheFolder, 'scaffold');
 
     let buildFolder = path.join(cwd, 'build');
 

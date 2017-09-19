@@ -1,5 +1,5 @@
 <template>
-  <div>这是 iframe 页面</div>
+  <div>This is iframe page</div>
 </template>
 
 <style lang="less" scoped>

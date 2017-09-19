@@ -1,5 +1,5 @@
 <template>
-  <div>这是 vue 代码引入的 vue 组件</div>
+  <div>This is an inserted vue file</div>
 </template>
 
 <style lang="less" scoped>
