@@ -1,9 +1,9 @@
 module.exports = {
 
-    // {RegExp}; Files which should not be shown
+    // {RegExp}; Files which should not be shown; null by default
     shouldNotShowReg: /(inserted)/i, 
 
-    // {RegExp}; File extname which should not be shown
+    // {RegExp}; File extname which should not be shown; null by default
     shouldNotShowExtnameReg: /(\.md)/i,
 
     // {String}; page theme; 'default' by default
