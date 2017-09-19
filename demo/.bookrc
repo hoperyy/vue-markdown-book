@@ -13,7 +13,7 @@ module.exports = {
     iframeTheme: 'iframe-default',
 
     // {Array}; sort menu; dir or filename is supported
-    sort: [ 'detail.md', 'index.md' ],
+    sort: [ 'detail.md', 'index.md', 'index.html' ],
 
     // {String}; static root path used in html file; '/' by default
     // for example, if 'staticPath' is '/', this static source path in index.html will be '<script src="/static/common.js"></script>'
