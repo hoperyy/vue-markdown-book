@@ -29,10 +29,10 @@
     ```
     module.exports = {
 
-        // {RegExp}; Files which should not be shown
-        shouldNotShowReg: /(inserted)|(build)|(\.bookrc)/i, 
+        // {RegExp}; Files which should not be shown; null by default
+        shouldNotShowReg: /(inserted)/i, 
 
-        // {RegExp}; File extname which should not be shown
+        // {RegExp}; File extname which should not be shown; null by default
         shouldNotShowExtnameReg: /(\.md)/i,
 
         // {String}; page theme; 'default' by default
@@ -42,12 +42,13 @@
         iframeTheme: 'iframe-default',
 
         // {Array}; sort menu; dir or filename is supported
-        sort: [ 'detail.md', 'index.md' ],
+        sort: [ 'detail.md', 'index.md', 'index.html' ],
 
+        // {String}; static root path used in html file; '/' by default
         // for example, if 'staticPath' is '/', this static source path in index.html will be '<script src="/static/common.js"></script>'
         // for example, if 'staticPath' is '/vue-markdown-book', this static source path in index.html will be '<script src="/vue-markdown-book/static/common.js"></script>'
         // for example, if 'staticPath' is '/test', this static source path in index.html will be '<script src="/test/static/common.js"></script>'
-        staticPath: '/'
+        staticPath: '/vue-markdown-book'
 
     };
     ```
