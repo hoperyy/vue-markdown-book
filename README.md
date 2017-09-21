@@ -1,7 +1,7 @@
 ## Introductions
 
 +   It is a command cli.
-+   It will process markdown file into website.
++   It will process markdown files into website.
 +   You can write vue code in markdown file, and also npm package is supported.
 +   It will display content directly when touching file type which is not markdown.
 
