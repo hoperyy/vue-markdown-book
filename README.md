@@ -52,11 +52,3 @@
 
     };
     ```
-
-+   New Pogrammer
-
-    `<iframe-doc src="xxx"></iframe-doc>`
-
-    It will insert an iframe page, whose attribute `src` should link `.vue` or `.md` file, such as `<iframe-doc src="./test.vue"></iframe-doc>`.
-
-
