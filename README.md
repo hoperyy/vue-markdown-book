@@ -35,12 +35,6 @@
         // {RegExp}; File extname which should not be shown; null by default
         shouldNotShowExtnameReg: /(\.md)/i,
 
-        // {String}; page theme; 'default' by default
-        theme: 'h5-doc',
-
-        // {String}; iframe page theme; 'iframe-default' by default
-        iframeTheme: 'iframe-default',
-
         // {Array}; sort menu; dir or filename is supported
         sort: [ 'detail.md', 'index.md', 'index.html' ],
 
