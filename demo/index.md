@@ -1,9 +1,5 @@
 # This is a markdown file
 
-+ insert an image
-
-  ![img](./inserted/inserted-img-demo.png)
-
 + insert vue demo
 
 <inserted-vue class="test">test</inserted-vue>
@@ -25,3 +21,7 @@ export default {
   }
 }
 </script>
+
++ insert an image
+
+  ![img](./inserted/inserted-img-demo.png)
