@@ -25,7 +25,3 @@ export default {
   }
 }
 </script>
-
-+ insert an iframe page
-
-<iframe-doc src="./inserted/inserted-iframe-demo.vue"></iframe-doc>
