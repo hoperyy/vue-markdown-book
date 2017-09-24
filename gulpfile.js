@@ -12,8 +12,19 @@ const processer = require('./handler/single-page');
 const cacheFolder = path.join(process.env.HOME, '.v2u2eb2ook');
 const scaffoldFolder = path.join(cacheFolder, 'scaffold');
 
+const fileUtil = require('./util/file');
 // prepare
-require('./util/file').copySync(path.join(__dirname, 'postcss.config.js'), path.join(scaffoldFolder, 'postcss.config.js'));
+const symlink = (src, target, type) => {
+    if (!fs.existsSync(target)) {
+        fse.removeSync(target);
+    }
+
+    fse.ensureSymlinkSync(src, target, type);
+};
+
+symlink(path.join(__dirname, 'postcss.config.js'), path.join(scaffoldFolder, 'postcss.config.js'), 'file');
+symlink(path.join(__dirname, '.babelrc'), path.join(scaffoldFolder, '.babelrc'), 'file');
+symlink(path.join(__dirname, 'node_modules'), path.join(scaffoldFolder, 'node_modules'), 'dir');
 
 const getArgv = () => {
     const params = {};
