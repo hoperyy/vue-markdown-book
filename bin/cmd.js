@@ -43,9 +43,9 @@ commander
     .description('启动.')
     .parse(process.argv)
     .action(() => {
-        const gulpfile = path.join(__dirname, '../gulpfile.js');
+        const index = path.join(__dirname, '../index.js');
         const cwd = process.cwd();
-        require('child_process').execSync(`node ${gulpfile} task=dev cwd=${cwd}`, {
+        require('child_process').execSync(`node ${index} task=dev cwd=${cwd}`, {
             cwd: path.join(__dirname, '..'),
             stdio: 'inherit'
         });
@@ -56,9 +56,9 @@ commander
     .description('build.')
     .parse(process.argv)
     .action(() => {
-        const gulpfile = path.join(__dirname, '../gulpfile.js');
+        const index = path.join(__dirname, '../index.js');
         const cwd = process.cwd();
-        require('child_process').execSync(`node ${gulpfile} task=build cwd=${cwd}`, {
+        require('child_process').execSync(`node ${index} task=build cwd=${cwd}`, {
             cwd: path.join(__dirname, '..'),
             stdio: 'inherit'
         });
