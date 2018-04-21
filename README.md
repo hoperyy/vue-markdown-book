@@ -1,5 +1,6 @@
 ## Introductions
 
++   Mac only for now. Windows support later.
 +   It is a command cli.
 +   It will process markdown files into website.
 +   You can write vue code in markdown file, and also npm package is supported.

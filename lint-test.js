@@ -1,0 +1,2 @@
+var eslint = require('eslint');
+

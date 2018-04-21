@@ -77,19 +77,11 @@ module.exports = (docFolder, codeFolder, buildFolder, urlRoot) => {
                 test: /\.md$/,
                 loader: 'vue-markdown-loader',
                 options: {
-                    // markdown-it config
                     preset: 'default',
                     breaks: true,
                     preprocess: function(markdownIt, source) {
-                        // do any thing
                         return source
-                    },
-                    use: [
-                        /* markdown-it plugin */
-                        // require('markdown-it-xxx'),
-                        /* or */
-                        // [require('markdown-it-xxx'), 'this is options']
-                    ]
+                    }
                 }
             }, {
                 test: /\.css$/,

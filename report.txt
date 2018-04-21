@@ -1,0 +1,210 @@
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mbin/cmd.js:10:1[39m:
+   8 | require('colors');
+   9 | 
+> 10 | const commander = require('commander');
+     | ^
+  11 | const fs = require('fs');
+  12 | const path = require('path');
+  13 | const fse = require('fs-extra');
+
+
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mhandler/single-page.js:1:1[39m:
+> 1 | const path = require('path');
+    | ^
+  2 | const fs = require('fs');
+  3 | const webpack = require('webpack');
+  4 | const gulp = require('gulp');
+
+
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mindex.js:2:1[39m:
+  1 | 
+> 2 | const fs = require('fs');
+    | ^
+  3 | const path = require('path');
+  4 | const gulp = require('gulp');
+  5 | 
+
+
+[31merror[39m: [1mExpected indentation of 4 spaces but found 2[22m [2m(indent)[22m at [32mpostcss.config.js:2:1[39m:
+  1 | module.exports = {
+> 2 |   plugins: [
+    | ^
+  3 |     require('autoprefixer')({
+  4 |         browsers: [
+  5 |             "Android >= 4",
+
+
+[31merror[39m: [1mExpected indentation of 8 spaces but found 4[22m [2m(indent)[22m at [32mpostcss.config.js:3:1[39m:
+  1 | module.exports = {
+  2 |   plugins: [
+> 3 |     require('autoprefixer')({
+    | ^
+  4 |         browsers: [
+  5 |             "Android >= 4",
+  6 |             "iOS >= 5"
+
+
+[31merror[39m: [1mExpected indentation of 12 spaces but found 8[22m [2m(indent)[22m at [32mpostcss.config.js:4:1[39m:
+  2 |   plugins: [
+  3 |     require('autoprefixer')({
+> 4 |         browsers: [
+    | ^
+  5 |             "Android >= 4",
+  6 |             "iOS >= 5"
+  7 |         ],
+
+
+[31merror[39m: [1mExpected indentation of 16 spaces but found 12[22m [2m(indent)[22m at [32mpostcss.config.js:5:1[39m:
+  3 |     require('autoprefixer')({
+  4 |         browsers: [
+> 5 |             "Android >= 4",
+    | ^
+  6 |             "iOS >= 5"
+  7 |         ],
+  8 |         cascade: true
+
+
+[31merror[39m: [1mExpected indentation of 16 spaces but found 12[22m [2m(indent)[22m at [32mpostcss.config.js:6:1[39m:
+  4 |         browsers: [
+  5 |             "Android >= 4",
+> 6 |             "iOS >= 5"
+    | ^
+  7 |         ],
+  8 |         cascade: true
+  9 |     })
+
+
+[31merror[39m: [1mExpected indentation of 12 spaces but found 8[22m [2m(indent)[22m at [32mpostcss.config.js:7:1[39m:
+   5 |             "Android >= 4",
+   6 |             "iOS >= 5"
+>  7 |         ],
+     | ^
+   8 |         cascade: true
+   9 |     })
+  10 |   ]
+
+
+[31merror[39m: [1mExpected indentation of 12 spaces but found 8[22m [2m(indent)[22m at [32mpostcss.config.js:8:1[39m:
+   6 |             "iOS >= 5"
+   7 |         ],
+>  8 |         cascade: true
+     | ^
+   9 |     })
+  10 |   ]
+  11 | }
+
+
+[31merror[39m: [1mExpected indentation of 8 spaces but found 4[22m [2m(indent)[22m at [32mpostcss.config.js:9:1[39m:
+   7 |         ],
+   8 |         cascade: true
+>  9 |     })
+     | ^
+  10 |   ]
+  11 | }
+  12 | 
+
+
+[31merror[39m: [1mExpected indentation of 4 spaces but found 2[22m [2m(indent)[22m at [32mpostcss.config.js:10:1[39m:
+   8 |         cascade: true
+   9 |     })
+> 10 |   ]
+     | ^
+  11 | }
+  12 | 
+
+
+[31merror[39m: [1mParsing error: The keyword 'import' is reserved[22m at [32mtheme/default/index.js:1:1[39m:
+> 1 | import './theme.less';
+    | ^
+  2 | 
+  3 | import Vue from 'vue';
+  4 | import VueRouter from 'vue-router';
+
+
+[31merror[39m: [1mParsing error: The keyword 'import' is reserved[22m at [32mtheme/h5-doc/index.js:1:1[39m:
+> 1 | import './theme.less';
+    | ^
+  2 | 
+  3 | import Vue from 'vue';
+  4 | import VueRouter from 'vue-router';
+
+
+[31merror[39m: [1mParsing error: The keyword 'import' is reserved[22m at [32mtheme/iframe-default/index.js:1:1[39m:
+> 1 | import './theme.less';
+    | ^
+  2 | 
+  3 | import Vue from 'vue';
+  4 | import VueRouter from 'vue-router';
+
+
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mutil/check.js:2:1[39m:
+  1 | 
+> 2 | const configUtil = require('./config');
+    | ^
+  3 | 
+  4 | module.exports = {
+  5 | 
+
+
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mutil/config.js:2:1[39m:
+  1 | 
+> 2 | const path = require('path');
+    | ^
+  3 | const fs = require('fs');
+  4 | 
+  5 | const defaultUserConfig = {
+
+
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mutil/dir-info.js:2:1[39m:
+  1 | 
+> 2 | const fs = require('fs');
+    | ^
+  3 | const path = require('path');
+  4 | 
+  5 | const md5 = require('md5');
+
+
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mutil/file.js:1:1[39m:
+> 1 | const fs = require('fs');
+    | ^
+  2 | const path = require('path');
+  3 | const fse = require('fs-extra');
+  4 | const readdirTree = require('directory-tree-enhancer');
+
+
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mutil/git.js:1:1[39m:
+> 1 | const git = require('git-rev-sync');
+    | ^
+  2 | 
+  3 | module.exports = {
+  4 |     getGitVersion(folder) {
+
+
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mutil/path.js:1:1[39m:
+> 1 | const relative = require('relative');
+    | ^
+  2 | const path = require('path');
+  3 | 
+  4 | module.exports = {
+
+
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mutil/process-content.js:2:1[39m:
+  1 | 
+> 2 | const path = require('path');
+    | ^
+  3 | const fs = require('fs');
+  4 | 
+  5 | module.exports = {
+
+
+[31merror[39m: [1mParsing error: The keyword 'const' is reserved[22m at [32mwebpack.config.js:2:1[39m:
+  1 | 
+> 2 | const path = require('path');
+    | ^
+  3 | const fs = require('fs');
+  4 | 
+  5 | const webpack = require('webpack');
+
+
+[31m[1m23 errors found.[22m[39m[31m[1m[22m[39m
+[31m[1m9 errors potentially fixable with the `--fix` option.[22m[39m
